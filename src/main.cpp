@@ -19,7 +19,7 @@ int main()
 {
     //cifar_generate();
     //personality_generate();
-    songs_generate();
+    //songs_generate();
     //Test<byte,byte> mTest("/Users/janetzhai/Desktop/nn-xcode/nn-xcode/mnist");
     //Test<byte,float> mTest("/Users/janetzhai/Desktop/nn-xcode/nn-xcode/cifar");
     //Test<byte,float> mTest("/Users/janetzhai/Desktop/nn-xcode/nn-xcode/personality");

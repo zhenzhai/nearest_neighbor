@@ -4,6 +4,9 @@
 
 #ifndef PERSONALITY_H
 #define PERSONALITY_H
+
+#include <cstdio>
+#include <cstring>
 #include <iostream>
 #include <sstream>
 #include <fstream>
