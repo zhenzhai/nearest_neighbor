@@ -62,7 +62,7 @@ protected:
 public:
     KDTreeNode(const vector<size_t> domain);
     KDTreeNode(size_t index, T pivot, vector<size_t> domain);
-    //KDTreeNode(ifstream & in);
+    KDTreeNode(ifstream & in);
     ~KDTreeNode();
     size_t get_index() const
     { return index_; }
@@ -143,6 +143,7 @@ KDTreeNode<Label, T> * KDTree<Label, T>::build_tree(size_t c,
         return new KDTreeNode<Label, T>(domain);
     }
     DataSet<Label, T> subst = st.subset(domain);
+    vector<double> vars = variances(subst);
     size_t mx_var_index = max_variance_index(subst);
     vector<T> values;
     for (size_t i = 0; i < subst.size(); i++) {
@@ -212,7 +213,7 @@ KDTreeNode<Label, T>::KDTreeNode(size_t index,
             domain.size());
 }
 
-/*template<class Label, class T>
+template<class Label, class T>
 KDTreeNode<Label, T>::KDTreeNode(ifstream & in)
 {
     LOG_INFO("KDTreeNode Constructed\n"); 
@@ -228,7 +229,7 @@ KDTreeNode<Label, T>::KDTreeNode(ifstream & in)
         in.read((char *)&v, sizeof(size_t));
         domain_.push_back(v);
     }
-}*/
+}
 
 template<class Label, class T>
 KDTreeNode<Label, T>::~KDTreeNode()

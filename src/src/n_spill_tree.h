@@ -9,6 +9,7 @@
 #include <queue>
 #include <map>
 #include <array>
+#include <random>
 #include "logging.h"
 #include "data_set.h"
 using namespace std;
@@ -53,17 +54,22 @@ class NSpillTreeNode
 protected:
     size_t index_;
     size_t splits_;
+    size_t dimension_;
     vector<T> pivots_;
+    vector<double> tie_breaker_;
+    vector<T> tie_pivots_;
     vector<NSpillTreeNode *> children_;
     vector<size_t> domain_;
 public:
     NSpillTreeNode(const vector<size_t> domain);
-    NSpillTreeNode(size_t max_var_index, vector<T> pivots, size_t splits, vector<NSpillTreeNode *> children, vector<size_t> domain);
+    NSpillTreeNode(size_t dimension, size_t max_var_index, vector<T> pivots, size_t splits, vector<double> tie_breaker, vector<T> tie_pivots, vector<NSpillTreeNode *> children, vector<size_t> domain);
     NSpillTreeNode(ifstream & in);
     ~NSpillTreeNode();
+    size_t get_dimension() const
+    { return dimension_; }
     size_t get_index() const
     { return index_; }
-    vector<size_t> get_pivots() const
+    vector<T> get_pivots() const
     { return pivots_; }
     size_t get_splits() const
     { return splits_; }
@@ -71,6 +77,10 @@ public:
     { return children_; }
     vector<size_t> get_domain() const
     { return domain_; }
+    vector<double> tie_breaker() const
+    { return tie_breaker_; }
+    vector<T> tie_pivots() const
+    { return tie_pivots_; }
     virtual void save(ofstream & out) const;
     friend class NSpillTree<Label, T>;
 };
@@ -158,32 +168,87 @@ NSpillTreeNode<Label, T> * NSpillTree<Label, T>::build_tree(size_t leaf_size,
     vector<T> pivots;
     size_t subdomain_lim = (size_t)(values.size() / splits) + (spill_factor * domain.size());
     LOG_FINE("> lim = %ld\n", subdomain_lim);
+    size_t child_size = (size_t)(values.size() / splits);
     for (int i=1; i<splits; i++) { // only (#_of_splits - 1) pivots
-        pivots.push_back(selector(values, (size_t)(values.size() / splits) * i));
+        pivots.push_back(selector(values, child_size * i));
     }
     
     //split the values into groups
-    vector<size_t> * pivots_pool = new vector<size_t>[splits];
-    vector<size_t> * children = new vector<size_t>[splits];
+    vector<vector<size_t>> pivot_pools(splits-1);
+    vector<vector<size_t>> children(splits);
     for (int i=0; i<domain.size(); i++) {
         bool not_pushed = true;
         for (int j=0; j<splits-1; j++) {
             if (values[i] < pivots[j]) {
                 children[j].push_back(domain[i]);
                 not_pushed = false;
+                break;
             }
             else if (values[i] == pivots[j]) {
                 //if value equal to pivot, push into pivot pool
-                pivots_pool[j].push_back(domain[i]);
+                pivot_pools[j].push_back(domain[i]);
                 not_pushed = false;
+                break;
             }
         }
         if (not_pushed) {
             children[splits-1].push_back(domain[i]);
         }
     }
+    
     //distribute pivot pool to all the children nodes
-    //children = break_tie(subdomain_lim, children, pivots_pool);
+    //dot a random vector then do split again
+    default_random_engine generator;
+    normal_distribution<double> distribution(0.0,1.0);
+    size_t dimension = (*subst[0]).size();
+    vector<double> tie_breaker(dimension);
+    vector<T> tie_pivots(splits-1);
+    for (int i=0; i<dimension; i++) {
+        tie_breaker[i] = distribution(generator);
+    }
+    for (int i = 0; i < pivot_pools.size(); i++) {
+        //extract the vectors from dataset
+        DataSet<Label, T> tie_vectors = st.subset(pivot_pools[i]);
+        //calculate dot product and save to update_pool
+        vector<double> update_pool;
+        for (int j = 0; j < tie_vectors.size(); j++) {
+            double product = dot(*tie_vectors[j], tie_breaker);
+            update_pool.push_back(product);
+        }
+        //find the tie_pivots and distribute tie vectors
+        int filled_size = 0;
+        int old_i = i;
+        i -= 1;
+        while (update_pool.size() > filled_size) {
+            i += 1;
+            int k = child_size - children[i].size() + 1;
+            tie_pivots[i] = selector(update_pool, k);
+            for (int j = 0; j < update_pool.size(); j++) {
+                if (i == 0 && update_pool[j] < tie_pivots[i]) {
+                    children[i].push_back(pivot_pools[old_i][j]);
+                    filled_size++;
+                }
+                else if (update_pool[j] < tie_pivots[i] && update_pool[j] >= tie_pivots[i-1]) {
+                    children[i].push_back(pivot_pools[old_i][j]);
+                    filled_size++;
+                }
+                else if (i == tie_pivots.size() && update_pool[j] >= tie_pivots[i-1]) {
+                    children[i].push_back(pivot_pools[old_i][j]);
+                    filled_size++;
+                }
+            }
+            //children[i] should be full now
+        }
+        
+    }
+    //store the dot product into the last index of pivot_pools
+    vector<double> update_pools;
+    for (size_t i = 0; i < pivot_pools.size(); i++) {
+        double update_pool = dot(pivot_pools[i], tie_breaker);
+        update_pools.push_back(update_pool);
+    }
+    
+
     
     //call build tree recursively to build tree
     vector<NSpillTreeNode<Label, T> *> children_array;
@@ -192,7 +257,7 @@ NSpillTreeNode<Label, T> * NSpillTree<Label, T>::build_tree(size_t leaf_size,
         children_array.push_back(node);
     }
     //return newly built tree
-    NSpillTreeNode<Label, T> * result = new NSpillTreeNode<Label, T>(mx_var_index, pivots, splits, children_array, domain);
+    NSpillTreeNode<Label, T> * result = new NSpillTreeNode<Label, T>(dimension, mx_var_index, pivots, splits, tie_breaker, tie_pivots, children_array, domain);
     LOG_INFO("Exit build_tree\n");
     return result;
 }
@@ -201,9 +266,12 @@ NSpillTreeNode<Label, T> * NSpillTree<Label, T>::build_tree(size_t leaf_size,
 
 template<class Label, class T>
 NSpillTreeNode<Label, T>::NSpillTreeNode(const vector<size_t> domain) :
+  dimension_ (0),
   index_ (0),
   pivots_ (NULL),
   splits_ (0),
+  tie_breaker_(NULL),
+  tie_pivots_(NULL),
   children_ (NULL),
   domain_ (domain)
 { 
@@ -213,14 +281,20 @@ NSpillTreeNode<Label, T>::NSpillTreeNode(const vector<size_t> domain) :
 
 template<class Label, class T>
 NSpillTreeNode<Label, T>::NSpillTreeNode(
+        size_t dimension,
 		size_t index,
         vector<T> pivots,
-		size_t splits, 
+		size_t splits,
+        vector<double> tie_breaker,
+        vector<T> tie_pivots,
 		vector<NSpillTreeNode *> children, 
 		vector<size_t> domain) :
+  dimension_ (dimension),
   index_ (index),
   pivots_ (pivots),
   splits_ (splits),
+  tie_breaker_(tie_breaker),
+  tie_pivots_(tie_pivots),
   children_ (children),
   domain_ (domain)
 { 
@@ -252,6 +326,16 @@ NSpillTreeNode<Label, T>::NSpillTreeNode(ifstream & in)
         in.read((char *)&v, sizeof(size_t));
         domain_.push_back(v);
     }
+    in.read((char *)&dimension_, sizeof(size_t));
+    size_t dimen = dimension_;
+    LOG_FINE("> dimension = %ld\n", dimen);
+    while (dimen--)
+    {
+        size_t v;
+        in.read((char *)&v, sizeof(size_t));
+        tie_breaker_.push_back(v);
+    }
+    //TODO: ADD TIE PIVOTS
 }
 
 template<class Label, class T>
@@ -266,6 +350,8 @@ void NSpillTreeNode<Label, T>::save(ofstream & out) const
     size_t sz = domain_.size();
     out.write((char *)&sz, sizeof(size_t)); 
     out.write((char *)&domain_[0], sizeof(size_t) * domain_.size());
+    out.write((char *)&dimension_, sizeof(size_t));
+    out.write((char *)&tie_breaker_[0], sizeof(size_t) * dimension_);
 }
 
 template<class Label, class T>

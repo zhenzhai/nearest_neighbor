@@ -55,7 +55,8 @@ KDTreeNode<Label, T> * KDSpillTree<Label, T>::build_tree(size_t c, double a,
         return new KDTreeNode<Label, T>(domain);
     }
     DataSet<Label, T> subst = st.subset(domain);
-    size_t mx_var_index = max_variance_index(subst);
+    vector<double> vars = variances(subst);
+    size_t mx_var_index = max_variance_index(subst, vars);
     vector<T> values;
     for (size_t i = 0; i < subst.size(); i++)
         values.push_back((*subst[i])[mx_var_index]);

@@ -54,7 +54,7 @@ PCATreeNode<Label, T> * PCASpillTree<Label, T>::build_tree(size_t c, double a,
         return new PCATreeNode<Label, T>(domain);
     }
     DataSet<Label, T> subst = st.subset(domain);
-    vector<double> mx_var_dir = max_eigen_vector(subst);
+    vector<double> mx_var_dir = max_eigen_vector(subst, 1000);
     vector<double> values;
     for (size_t i = 0; i < subst.size(); i++)
         values.push_back(dot(*subst[i], mx_var_dir));

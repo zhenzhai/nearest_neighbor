@@ -54,22 +54,22 @@ public:
     DataSet<Label, T> subset(vector<size_t> domain);
 };
 
+
+
+
 /*
- * Name             : max_variance_index
- * Prototype        : size_t max_variance_index(DataSet<Label, T> &)
- * Description      : Gets the index that produces the greatest variance
- *                    out of all the vectors
+ * Name             : variances
+ * Prototype        : vector<double> variances(DataSet<Label, T> & subset)
+ * Description      : Find the variances of all vectors
  * Parameter(s)     : subset - The data set to find the max varianced
  *                             index
- * Return Value     : The index that produces the max variance
+ * Return Value     : variances of all vector in data set
  */
 template<class Label, class T>
-size_t max_variance_index(DataSet<Label, T> & subset)
+vector<double> variances(DataSet<Label, T> & subset)
 {
-    LOG_INFO("Enter max_variance_index\n");
-    LOG_FINE("with subset.size = %ld\n", subset.size());
-    vector<double> var;
     vector<T> vtr;
+    vector<double> var;
     size_t dimension = subset[0]->size();
     size_t subsize = subset.size();
     for (size_t i = 0; i < dimension; i++) {
@@ -86,9 +86,27 @@ size_t max_variance_index(DataSet<Label, T> & subset)
         variance = variance / subsize;
         var.push_back(variance);
     }
+    return var;
+}
+
+
+/*
+ * Name             : max_variance_index
+ * Prototype        : size_t max_variance_index(DataSet<Label, T> &)
+ * Description      : Gets the index that produces the greatest variance
+ *                    out of all the vectors
+ * Parameter(s)     : variances - The variances of all vectors
+ * Return Value     : The index that produces the max variance
+ */
+template<class Label, class T>
+size_t max_variance_index(DataSet<Label, T> & subset)
+{
+    LOG_INFO("Enter max_variance_index\n");
     size_t maxIndex = 0;
+    vector<double> vars = variances(subset);
+    size_t dimension = vars.size();
     for (size_t i = 1; i < dimension; i++) {
-        if (var[i] > var[maxIndex]) {
+        if (vars[i] > vars[maxIndex]) {
             maxIndex = i;
         }
     }
@@ -161,24 +179,8 @@ vector<size_t> k_max_variance_indices(size_t k, DataSet<Label, T> & subset)
 {
     LOG_INFO("Enter k_max_variance_index\n");
     LOG_FINE("with k = %ld, subset.size = %ld\n", k, subset.size());
-    vector<double> var;
-    vector<T> vtr;
+    vector<double> var = variances(subset);
     size_t dimension = subset[0]->size();
-    size_t subsize = subset.size();
-    for (size_t i = 0; i < dimension; i++) {
-        vtr.clear();
-        for (size_t j = 0; j < subsize; j++) {
-            vtr.push_back((*subset[j])[i]);
-        }
-        T median = selector(vtr, (size_t)(subset.size() * 0.5));
-        double variance = 0.0;
-        for (size_t j = 0; j < subsize; j++) {
-            double dif = (double)(*subset[j])[i] - (double)median;
-            variance += dif * dif;
-        }
-        variance = variance / subsize;
-        var.push_back(variance);
-    }
     size_t idx [dimension];
     for (size_t i = 0; i < dimension; i++) {
         idx[i] = i;
@@ -282,7 +284,7 @@ vector<double> max_eigen_vector_oja(DataSet<Label, T> & subset)
  * Return Value     : The (max) eigen vector of the data set
  */
 template<class Label, class T>
-vector<double> max_eigen_vector(DataSet<Label, T> & subset)
+vector<double> max_eigen_vector(DataSet<Label, T> & subset, size_t sample_size)
 {
     LOG_INFO("Enter max_eigen_vector\n");
     LOG_FINE("with subset.size = %ld\n", subset.size());
@@ -290,12 +292,23 @@ vector<double> max_eigen_vector(DataSet<Label, T> & subset)
     int rows = subset[0]->size();
     int cols = subset.size();
     */
-    int dim = (*subset[0]).size();  /* Dimension of each vector */
-    int num = subset.size();        /* Number of vectors */
-    Eigen::MatrixXd mtx = Eigen::MatrixXd::Zero(num, dim);
+    int dim = int((*subset[0]).size());  /* Dimension of each vector */
+    int num = int(subset.size());        /* Number of vectors */
+    
+    //random samples
+    vector<int> ran_ints;
+    for (int i=0; i<num; i++) ran_ints.push_back(i);
+    random_shuffle(ran_ints.begin(), ran_ints.end());
+    while (ran_ints.size() > sample_size) ran_ints.pop_back();
+    int mtx_size = int(ran_ints.size());
+    
+    int count = 0;
+    Eigen::MatrixXd mtx = Eigen::MatrixXd::Zero(mtx_size, dim);
     for (size_t i = 0; i < num; i++) {
-        for (size_t j = 0; j < dim; j++) {
-            mtx(i, j) = (double)(*subset[i])[j];
+        if (find(ran_ints.begin(), ran_ints.end(), i) != ran_ints.end()) {
+            for (size_t j = 0; j < dim; j++) {
+                mtx(count++, j) = (double)(*subset[i])[j];
+            }
         }
     }
     LOG_FINE("> Subset [%d, %d] copied over\n", num, dim);
@@ -307,7 +320,7 @@ vector<double> max_eigen_vector(DataSet<Label, T> & subset)
     Eigen::VectorXd eigVtr = eig.eigenvectors().rightCols(1);
     LOG_FINE("> Done eigenvectors...\n");
     vector<double> maxEigVtr;
-    double len;
+    double len = 0.0;
     for (size_t i = 0; i < dim; i++) {
         len += eigVtr(i) * eigVtr(i);
     }
@@ -318,6 +331,50 @@ vector<double> max_eigen_vector(DataSet<Label, T> & subset)
     LOG_INFO("Exit max_eigen_vector\n");
     return maxEigVtr;
 }
+
+
+/*template<class Label, class T>
+T break_tie(size_t size_lim, DataSet<Label, T> & subset, vector<vector<T>> *children, vector<vector<T>> pivot_pools)
+{
+    default_random_engine generator;
+    normal_distribution<double> distribution(0,1.0);
+    size_t dimension = subset[0];
+    vector<double> ran_vector(dimension);
+    for (int i=0; i<dimension; i++) {
+        ran_vector[i] = distribution(generator);
+    }
+    vector<vector<double>> update_pools;
+    for (size_t i = 0; i < pivot_pools.size(); i++) {
+        vector<double> update_pool;
+        for (size_t j = 0; j < pivot_pools[i].size(); j++) {
+            update_pool.push_back(dot(pivot_pools[i][j], ran_vector));
+        }
+        update_pools.push_back(update_pool);
+    }
+    
+    double pivot = selector(values, (size_t)(values.size() * 0.5));
+    int splits = (int)pivots.size();
+    vector<size_t> * pivots_pool = new vector<size_t>[splits];
+    vector<size_t> * children = new vector<size_t>[splits];
+    for (size_t i=0; i < domain.size(); i++) {
+        int j = 0;
+        while (j < splits) {
+            if (values[i] < pivots[j]) {
+                children[j].push_back(domain[i]);
+            }
+            else if (values[i] == pivots[j]) {
+                pivots_pool[j].push_back(domain[i]);
+            }
+            else {
+                children[j+1].push_back(domain[i]);
+            }
+            j++;
+        }
+    }
+    break_tie;
+    return children;
+}*/
+
 
 /* Private Functions */
 
