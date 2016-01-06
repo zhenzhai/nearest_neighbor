@@ -57,12 +57,12 @@ protected:
     size_t dimension_;
     vector<T> pivots_;
     vector<double> tie_breaker_;
-    vector<T> tie_pivots_;
+    vector<double> tie_pivots_;
     vector<NSpillTreeNode *> children_;
     vector<size_t> domain_;
 public:
     NSpillTreeNode(const vector<size_t> domain);
-    NSpillTreeNode(size_t dimension, size_t max_var_index, vector<T> pivots, size_t splits, vector<double> tie_breaker, vector<T> tie_pivots, vector<NSpillTreeNode *> children, vector<size_t> domain);
+    NSpillTreeNode(size_t dimension, size_t max_var_index, vector<T> pivots, size_t splits, vector<double> tie_breaker, vector<double> tie_pivots, vector<NSpillTreeNode *> children, vector<size_t> domain);
     NSpillTreeNode(ifstream & in);
     ~NSpillTreeNode();
     size_t get_dimension() const
@@ -79,7 +79,7 @@ public:
     { return domain_; }
     vector<double> tie_breaker() const
     { return tie_breaker_; }
-    vector<T> tie_pivots() const
+    vector<double> tie_pivots() const
     { return tie_pivots_; }
     virtual void save(ofstream & out) const;
     friend class NSpillTree<Label, T>;
@@ -168,7 +168,7 @@ NSpillTreeNode<Label, T> * NSpillTree<Label, T>::build_tree(size_t leaf_size,
     vector<T> pivots;
     size_t subdomain_lim = (size_t)(values.size() / splits) + (spill_factor * domain.size());
     LOG_FINE("> lim = %ld\n", subdomain_lim);
-    size_t child_size = (size_t)(values.size() / splits);
+    int child_size = (size_t)(values.size() / splits);
     for (int i=1; i<splits; i++) { // only (#_of_splits - 1) pivots
         pivots.push_back(selector(values, child_size * i));
     }
@@ -202,7 +202,7 @@ NSpillTreeNode<Label, T> * NSpillTree<Label, T>::build_tree(size_t leaf_size,
     normal_distribution<double> distribution(0.0,1.0);
     size_t dimension = (*subst[0]).size();
     vector<double> tie_breaker(dimension);
-    vector<T> tie_pivots(splits-1);
+    vector<double> tie_pivots(splits-1);
     for (int i=0; i<dimension; i++) {
         tie_breaker[i] = distribution(generator);
     }
@@ -221,18 +221,18 @@ NSpillTreeNode<Label, T> * NSpillTree<Label, T>::build_tree(size_t leaf_size,
         i -= 1;
         while (update_pool.size() > filled_size) {
             i += 1;
-            int k = child_size - children[i].size() + 1;
+            int k = child_size - children[i].size();
             tie_pivots[i] = selector(update_pool, k);
             for (int j = 0; j < update_pool.size(); j++) {
-                if (i == 0 && update_pool[j] < tie_pivots[i]) {
+                if (i == 0 && update_pool[j] <= tie_pivots[i]) {
                     children[i].push_back(pivot_pools[old_i][j]);
                     filled_size++;
                 }
-                else if (update_pool[j] < tie_pivots[i] && update_pool[j] >= tie_pivots[i-1]) {
+                else if (update_pool[j] <= tie_pivots[i] && update_pool[j] > tie_pivots[i-1]) {
                     children[i].push_back(pivot_pools[old_i][j]);
                     filled_size++;
                 }
-                else if (i == tie_pivots.size() && update_pool[j] >= tie_pivots[i-1]) {
+                else if (i == tie_pivots.size() && update_pool[j] > tie_pivots[i-1]) {
                     children[i].push_back(pivot_pools[old_i][j]);
                     filled_size++;
                 }
@@ -286,7 +286,7 @@ NSpillTreeNode<Label, T>::NSpillTreeNode(
         vector<T> pivots,
 		size_t splits,
         vector<double> tie_breaker,
-        vector<T> tie_pivots,
+        vector<double> tie_pivots,
 		vector<NSpillTreeNode *> children, 
 		vector<size_t> domain) :
   dimension_ (dimension),
@@ -332,7 +332,7 @@ NSpillTreeNode<Label, T>::NSpillTreeNode(ifstream & in)
     while (dimen--)
     {
         size_t v;
-        in.read((char *)&v, sizeof(size_t));
+        in.read((char *)&v, sizeof(double));
         tie_breaker_.push_back(v);
     }
     //TODO: ADD TIE PIVOTS
@@ -454,7 +454,7 @@ vector<size_t> NSpillTree<Label, T>::subdomain(vector<T> * query, size_t l_c)
         if (!cur->children_.empty() &&
             cur->domain_.size() >= l_c) {
             bool pushed = false;
-            int splits = cur->splits_;
+            size_t splits = cur->splits_;
             for (int i=0; i<splits - 1; i++) {
                 if ((*query)[cur->index_] <= cur->pivots_[i]) {
                     expl.push(cur->children_[i]);
