@@ -2,6 +2,7 @@
 #define VECTOR_MATH_H_
 
 #include <vector>
+#include <random>
 
 using namespace std;
 
@@ -57,5 +58,16 @@ T selector(vector<T> st, size_t k)
 	else
 		return selector(right, (size_t)(k - left.size() - v.size()));
 }
+
+vector<double> random_tie_breaker(size_t dimension)
+{
+    default_random_engine generator;
+    normal_distribution<double> distribution(0.0,1.0);
+    vector<double> tie_breaker(dimension);
+    for (int i=0; i<dimension; i++)
+        tie_breaker[i] = distribution(generator);
+    return tie_breaker;
+}
+
 
 #endif

@@ -57,11 +57,14 @@ class KDTreeNode
 protected:
     size_t index_;
     T pivot_;
+    vector<double> tie_breaker_;
+    double tie_pivot_;
+    size_t dimension_;
     KDTreeNode * left_, * right_;
     vector<size_t> domain_;
 public:
     KDTreeNode(const vector<size_t> domain);
-    KDTreeNode(size_t index, T pivot, vector<size_t> domain);
+    KDTreeNode(size_t index, T pivot, vector<size_t> domain, size_t dimension, double tie_pivot, vector<double> tie_breaker);
     KDTreeNode(ifstream & in);
     ~KDTreeNode();
     size_t get_index() const
@@ -72,6 +75,10 @@ public:
     { return left_; }
     KDTreeNode * get_right() const
     { return right_; }
+    vector<double> get_tie_breaker() const
+    { return tie_breaker_; }
+    double get_tie_pivot() const
+    { return tie_pivot_; }
     vector<size_t> get_domain() const
     { return domain_; }
     void set_left(KDTreeNode * left)
@@ -165,7 +172,32 @@ KDTreeNode<Label, T> * KDTree<Label, T>::build_tree(size_t c,
                 subdomain_r.push_back(domain[i]);
         }
     }
-    while (subdomain_l_lim > subdomain_l.size()) {
+    //distribute pivot pool to all the children nodes
+    //dot a random vector then do split again
+    
+    size_t dimension = (*subst[0]).size();
+    vector<double> tie_breaker = random_tie_breaker(dimension);
+    //store new pivots in update_pool
+    double tie_pivot;
+    //extract the vectors from dataset
+    DataSet<Label, T> tie_vectors = st.subset(pivot_pool);
+    //update pool using randome tie breaker
+    vector<double> update_pool;
+    for (int j = 0; j < tie_vectors.size(); j++) {
+        double product = dot(*tie_vectors[j], tie_breaker);
+        update_pool.push_back(product);
+    }
+    //find the tie_pivots and distribute tie vectors
+    int k = subdomain_l_lim - subdomain_l.size();
+    tie_pivot = selector(update_pool, k);
+    for (int j = 0; j < update_pool.size(); j++) {
+        if (update_pool[j] <= tie_pivot)
+            subdomain_l.push_back(pivot_pool[j]);
+        else
+            subdomain_r.push_back(pivot_pool[j]);
+    }
+
+    /*while (subdomain_l_lim > subdomain_l.size()) {
         size_t curr = pivot_pool.back();
         pivot_pool.pop_back();
         subdomain_l.push_back(curr);
@@ -174,9 +206,10 @@ KDTreeNode<Label, T> * KDTree<Label, T>::build_tree(size_t c,
         size_t curr = pivot_pool.back();
         pivot_pool.pop_back();
         subdomain_r.push_back(curr);
-    }
+    }*/
+    
     KDTreeNode<Label, T> * result = new KDTreeNode<Label, T>
-            (mx_var_index, pivot, domain);
+            (mx_var_index, pivot, domain, dimension, tie_pivot, tie_breaker);
     result->left_ = build_tree(c, st, subdomain_l);
     result->right_ = build_tree(c, st, subdomain_r);
     LOG_FINE("> sdl = %ld\n", subdomain_l.size());
@@ -191,6 +224,9 @@ template<class Label, class T>
 KDTreeNode<Label, T>::KDTreeNode(const vector<size_t> domain) :
   index_ (0),
   pivot_ (0),
+  tie_pivot_(0),
+  dimension_(0),
+  tie_breaker_(NULL),
   left_ (NULL),
   right_ (NULL),
   domain_ (domain)
@@ -201,9 +237,13 @@ KDTreeNode<Label, T>::KDTreeNode(const vector<size_t> domain) :
 
 template<class Label, class T>
 KDTreeNode<Label, T>::KDTreeNode(size_t index, 
-        T pivot, vector<size_t> domain) :
+        T pivot, vector<size_t> domain, size_t dimension,
+        double tie_pivot, vector<double> tie_breaker) :
   index_ (index),
   pivot_ (pivot),
+  tie_pivot_(tie_pivot),
+  tie_breaker_(tie_breaker),
+  dimension_ (dimension),
   left_ (NULL), 
   right_ (NULL),
   domain_ (domain)
@@ -220,6 +260,16 @@ KDTreeNode<Label, T>::KDTreeNode(ifstream & in)
     LOG_FINE("with input stream\n");
     in.read((char *)&index_, sizeof(size_t));
     in.read((char *)&pivot_, sizeof(T));
+    in.read((char *)&tie_pivot_, sizeof(double));
+    in.read((char *)&dimension_, sizeof(size_t));
+    size_t dimen = dimension_;
+    LOG_FINE("> dimension = %ld\n", dimen);
+    while (dimen--)
+    {
+        size_t v;
+        in.read((char *)&v, sizeof(double));
+        tie_breaker_.push_back(v);
+    }
     size_t sz;
     LOG_FINE("> sz = %ld\n", sz);
     in.read((char *)&sz, sizeof(size_t));
@@ -251,7 +301,10 @@ void KDTreeNode<Label, T>::save(ofstream & out) const
     LOG_INFO("Saving KDTreeNode\n"); 
     LOG_FINE("> domain.size = %ld\n", domain_.size());
     out.write((char *)&index_, sizeof(size_t)); 
-    out.write((char *)&pivot_, sizeof(T)); 
+    out.write((char *)&pivot_, sizeof(T));
+    out.write((char *)&tie_pivot_,sizeof(double));
+    out.write((char *)&dimension_, sizeof(size_t));
+    out.write((char *)&tie_breaker_[0], sizeof(double) * dimension_);
     size_t sz = domain_.size();
     out.write((char *)&sz, sizeof(size_t)); 
     out.write((char *)&domain_[0], 
@@ -339,10 +392,19 @@ vector<size_t> KDTree<Label, T>::subdomain(vector<T> * query, size_t l_c)
         expl.pop();
         if (cur->left_ && cur->right_ &&
             cur->domain_.size() >= l_c) {
-            if ((*query)[cur->index_] <= cur->pivot_)
+            if ((*query)[cur->index_] < cur->pivot_)
                 expl.push(cur->left_);
-            else
+            else if ((*query)[cur->index_] > cur->pivot_)
                 expl.push(cur->right_);
+            else {
+                vector<double> tie_breaker = cur->tie_breaker_;
+                double product = dot(*query, tie_breaker);
+                if (product <= cur->tie_pivot_)
+                    expl.push(cur->left_);
+                else
+                    expl.push(cur->right_);
+
+            }
         }
         else
             return cur->domain_;

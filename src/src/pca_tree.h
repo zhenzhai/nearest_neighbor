@@ -209,7 +209,7 @@ PCATreeNode<Label, T>::PCATreeNode(vector<double> dir,
 template<class Label, class T>
 PCATreeNode<Label, T>::PCATreeNode(ifstream & in)
 {
-    LOG_INFO("KDTreeNode Constructed\n"); 
+    LOG_INFO("PCATreeNode Constructed\n"); 
     LOG_FINE("with input stream\n");
     size_t dim;
     in.read((char *)&dim, sizeof(size_t));

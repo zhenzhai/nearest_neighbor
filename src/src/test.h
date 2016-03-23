@@ -32,11 +32,12 @@ using namespace std;
 #endif
 
 static double multiple_tree     = 4;
-static double min_leaf  = 0.005;//0.0001;
+static double min_leaf  = 0.005; //0.0001;
 static double l []      = {0.015, 0.03, 0.06, 0.09, 0.1, 0.13, 0.15, 0.17, 0.19, 0.21};//{0.105, 0.12, 0.135, 0.15};
 const size_t l_len      = 10;
 static double a []      = {0.05, 0.1};//{0.07, 0.1, 0.12, 0.15, 0.17, 0.19, 0.21, 0.23};//, 0.25, 0.27, 0.29, 0.31, 0.33, 0.35, 0.37, 0.39};
-const size_t a_len      = 2;//9;
+const size_t a_len      = 2;
+const size_t splits     = 3;
 
 template<class Label, class T>
 class Test
@@ -63,10 +64,10 @@ public:
         s_kd_tree(min_leaf);
     }
     
-    void s_n_spill_tree(double ll, double la) {
+    void s_n_spill_tree(double ll, double la, int sp) {
         stringstream dir;
-        dir << base_dir_ << "/n_spill_tree_" << setprecision(2) << la << "_" << ll;
-        NSpillTree<Label, T> tree ((size_t)(ll * (*trn_st_).size()), *trn_st_);
+        dir << base_dir_ << "/" << sp << "_spill_tree_" << setprecision(2) << la << "_" << ll;
+        NSpillTree<Label, T> tree ((size_t)(ll * (*trn_st_).size()), sp, la, *trn_st_);
         ofstream tree_out (dir.str());
         tree.save(tree_out);
         tree_out.close();
@@ -75,7 +76,7 @@ public:
     void generate_n_spill_trees() {
         thread t [a_len];
         for (size_t i = 0; i < a_len; i++) {
-            t[i] = thread(&Test<Label, T>::s_n_spill_tree, this, min_leaf, a[i]);
+            t[i] = thread(&Test<Label, T>::s_n_spill_tree, this, min_leaf, a[i], splits);
         }
         for (size_t i = 0; i < a_len; i++) {
             t[i].join();
@@ -204,7 +205,7 @@ public:
 
     void generate_kd_tree_data(string out_dir)
     {
-        ofstream dat_out (out_dir + "/n_spill_tree.dat");
+        ofstream dat_out (out_dir + "/kd_tree.dat");
         dat_out <<  setw(COL_W) << "leaf";
         dat_out <<  setw(COL_W) << "error rate";
         dat_out <<  setw(COL_W) << "true nn";
@@ -222,12 +223,12 @@ public:
         dat_out.close();
     }
     
-    void s_n_spill_tree_data(double ll, double la, string * result)
+    void s_n_spill_tree_data(double ll, double la, int sp, string * result)
     {
         stringstream dir;
-        dir << base_dir_ << "/n_spill_tree_" << setprecision(2) << min_leaf;
+        dir << base_dir_ << "/" << sp << "_spill_tree_" << setprecision(2) << la << "_" << min_leaf;
         ifstream tree_in (dir.str());
-        NSpillTree<Label, T> tree (tree_in, *trn_st_);
+        NSpillTree<Label, T> tree (tree_in, sp, *trn_st_);
         size_t error_count = 0;
         size_t true_nn_count = 0;
         unsigned long long subdomain_count = 0;
@@ -253,19 +254,19 @@ public:
     
     void generate_n_spill_tree_data(string out_dir)
     {
-        ofstream dat_out (out_dir + "/n_spill_tree.dat");
+        ofstream dat_out (out_dir + "/" + to_string(splits) + "_spill_tree.dat");
         dat_out <<  setw(COL_W) << "leaf";
         dat_out <<  setw(COL_W) << "alpha";
         dat_out <<  setw(COL_W) << "error rate";
         dat_out <<  setw(COL_W) << "true nn";
         dat_out <<  setw(COL_W) << "subdomain";
-        dat_out <<  setw(COL_W) << "space blowup";
+        //dat_out <<  setw(COL_W) << "space blowup";
         dat_out << endl;
         thread t [l_len][a_len];
         string r [l_len][a_len];
         for (size_t i = 0; i < l_len; i++) {
             for (size_t j = 0; j < a_len; j++) {
-                t[i][j] = thread(&Test<Label, T>::s_n_spill_tree_data, this, l[i], a[j], &(r[i][j]));
+                t[i][j] = thread(&Test<Label, T>::s_n_spill_tree_data, this, l[i], a[j], splits, &(r[i][j]));
             }
         }
         for (size_t i = 0; i < l_len; i++) {
