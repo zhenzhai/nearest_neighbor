@@ -1,6 +1,5 @@
 /* 
  * File             : pca_tree.h
- * Date             : 2014-5-29
  * Summary          : Infrastructure to hold a binary space partition tree.
  */
 #ifndef PCA_TREE_H_
@@ -36,6 +35,8 @@ class PCATree;
  *                              - Create a PCATreeNode of given domain (non-leaf)
  *                    PCATreeNode(ifstream &)
  *                              - Creates a KDTreeNode through de-serialization
+ *                    vector<double> get_direction() const
+ *                              - Returns the direction to project the distance onto
  *                    size_t get_index() const
  *                              - Gets index of max variance
  *                    PCATreeNode * get_left() const
@@ -116,7 +117,7 @@ protected:
     DataSet<Label, T> & st_;
 public:
     PCATree(DataSet<Label, T> & st);
-    PCATree(size_t c, DataSet<Label, T> & st);
+    PCATree(size_t min_leaf_size, DataSet<Label, T> & st);
     PCATree(ifstream & in, DataSet<Label, T> & st);
     ~PCATree();
     PCATreeNode<Label, T> * get_root() const
@@ -130,12 +131,12 @@ public:
 };
 
 template<class Label, class T>
-PCATreeNode<Label, T> * PCATree<Label, T>::build_tree(size_t c,
+PCATreeNode<Label, T> * PCATree<Label, T>::build_tree(size_t min_leaf_size,
         DataSet<Label, T> & st, vector<size_t> domain)
 {
     LOG_INFO("Enter build_tree\n");
-    LOG_FINE("with c = %ld and domain.size = %ld\n", c, domain.size());
-    if (domain.size() < c) {
+    LOG_FINE("with min_leaf_size = %ld and domain.size = %ld\n", min_leaf_size, domain.size());
+    if (domain.size() < min_leaf_size) {
         LOG_INFO("Exit build_tree");
         LOG_FINE("by hitting base size");
         return new PCATreeNode<Label, T>(domain);
@@ -154,13 +155,12 @@ PCATreeNode<Label, T> * PCATree<Label, T>::build_tree(size_t c,
     for (size_t i = 0; i < domain.size(); i++) {
         if (pivot == values[i])
             pivot_pool.push_back(domain[i]);
-        else {
-            if (values[i] <= pivot)
-                subdomain_l.push_back(domain[i]);
-            else
-                subdomain_r.push_back(domain[i]);
-        }
+        else if (pivot > values[i])
+            subdomain_l.push_back(domain[i]);
+        else
+            subdomain_r.push_back(domain[i]);
     }
+    //TODO: use tie breaker here
     while (subdomain_l_lim > subdomain_l.size()) {
         size_t curr = pivot_pool.back();
         pivot_pool.pop_back();
@@ -173,8 +173,8 @@ PCATreeNode<Label, T> * PCATree<Label, T>::build_tree(size_t c,
     }
     PCATreeNode<Label, T> * result = new PCATreeNode<Label, T>(mx_var_dir, 
             pivot, domain);
-    result->left_ = build_tree(c, st, subdomain_l);
-    result->right_ = build_tree(c, st, subdomain_r);
+    result->left_ = build_tree(min_leaf_size, st, subdomain_l);
+    result->right_ = build_tree(min_leaf_size, st, subdomain_r);
     LOG_FINE("> sdl = %ld\n", subdomain_l.size());
     LOG_FINE("> sdr = %ld\n", subdomain_r.size());
     LOG_INFO("Exit build_tree\n");
@@ -263,24 +263,24 @@ PCATree<Label, T>::PCATree(DataSet<Label, T> & st) :
   root_ (NULL),
   st_ (st)
 { 
-    LOG_INFO("KDTree Constructed\n"); 
+    LOG_INFO("PCATree Constructed\n");
     LOG_FINE("with default constructor\n");
 }
 
 template<class Label, class T>
-PCATree<Label, T>::PCATree(size_t c, DataSet<Label, T> & st) :
-  root_ (build_tree(c, st, st.get_domain())),
+PCATree<Label, T>::PCATree(size_t min_leaf_size, DataSet<Label, T> & st) :
+  root_ (build_tree(min_leaf_size, st, st.get_domain())),
   st_ (st)
 { 
-    LOG_INFO("KDSpillTree Constructed\n"); 
-    LOG_FINE("with c = %ld", c);
+    LOG_INFO("PCATree Constructed\n");
+    LOG_FINE("with min_leaf_size = %ld", min_leaf_size);
 }
 
 template<class Label, class T>
 PCATree<Label, T>::PCATree(ifstream & in, DataSet<Label, T> & st) :
   st_ (st)
 {
-    LOG_INFO("PCASpillTree Constructed\n"); 
+    LOG_INFO("PCATree Constructed\n");
     LOG_FINE("with input stream\n");
     queue<PCATreeNode<Label, T> **> to_load;
     to_load.push(&root_);
@@ -326,17 +326,17 @@ void PCATree<Label, T>::save(ofstream & out) const
 }
 
 template<class Label, class T>
-vector<size_t> PCATree<Label, T>::subdomain(vector<T> * query, size_t l_c)
+vector<size_t> PCATree<Label, T>::subdomain(vector<T> * query, size_t leaf_size)
 {
     LOG_INFO("Enter subdomain\n");
-    LOG_FINE("with lc = %ld\n", l_c);
+    LOG_FINE("with leaf_size = %ld\n", leaf_size);
     queue<PCATreeNode<Label, T> *> expl;
     expl.push(root_);
     while (!expl.empty()) {
         PCATreeNode<Label, T> * cur = expl.front();
         expl.pop();
         if (cur->left_ && cur->right_ &&
-            cur->domain_.size() >= l_c) {
+            cur->domain_.size() >= leaf_size) {
             if (dot(*query, cur->dir_) <= cur->pivot_)
                 expl.push(cur->left_);
             else

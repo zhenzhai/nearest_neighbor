@@ -6,6 +6,7 @@
 
 using namespace std;
 
+/* Calculate distance between two vectors */
 template<class T>
 double distance_to(const vector<T> * v1, const vector<T> * v2)
 {
@@ -20,6 +21,7 @@ double distance_to(const vector<T> * v1, const vector<T> * v2)
     return distance;
 }
 
+/* Calculate dot product of two vectors */
 template<class A, class B>
 double dot(vector<A> v, vector<B> vd)
 {
@@ -29,6 +31,7 @@ double dot(vector<A> v, vector<B> vd)
     return factor;
 }
 
+/* Find the k smallest value in vector */
 template<class T>
 T selector(vector<T> st, size_t k)
 {
@@ -59,6 +62,7 @@ T selector(vector<T> st, size_t k)
 		return selector(right, (size_t)(k - left.size() - v.size()));
 }
 
+/* Generate a random tie breaker vector */
 vector<double> random_tie_breaker(size_t dimension)
 {
     default_random_engine generator;

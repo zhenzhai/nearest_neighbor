@@ -17,21 +17,24 @@ typedef unsigned char byte;
 
 const string DIR = "/Users/janetzhai/Desktop/nn-xcode/nn-xcode";
 //const stirng DIR = "/Users/zhen/Desktop/nn-code";
-const string set_DIR = "/personality";
 
-int main() 
+//const string set_DIR = "/cifar";
+const string set_DIR = "/personality";
+//const string set_DIR = "/songs";
+
+int main()
 {
     //cifar_generate();
     //personality_generate();
     //songs_generate();
-    Test<byte,byte> mTest(DIR + "/mnist");
-    //Test<byte,float> mTest(DIR + "/cifar");
-    //Test<byte,float> mTest(DIR + "/personality");
-    //Test<byte,float> mTest(DIR + "/songs");
-    mTest.generate_kd_trees();
-    mTest.generate_kd_tree_data(DIR + set_DIR);
-    //mTest.generate_n_spill_trees();
-    //mTest.generate_n_spill_tree_data(DIR + set_DIR);
+    
+    //Test<byte,byte> mTest(DIR + "/mnist");
+    Test<byte,float> mTest(DIR + set_DIR);
+    
+    //mTest.generate_kd_trees();
+    //mTest.generate_kd_tree_data(DIR + set_DIR);
+    mTest.generate_n_spill_trees();
+    mTest.generate_n_spill_tree_data(DIR + set_DIR);
     //mTest.generate_multi_kd_trees();
     //mTest.generate_multi_kd_tree_data(DIR + set_DIR);
     //mTest.generate_kd_spill_trees();
@@ -43,3 +46,4 @@ int main()
     //mTest.generate_kd_v_spill_trees();
     //mTest.generate_kd_v_spill_tree_data(DIR + set_DIR);
 }
+

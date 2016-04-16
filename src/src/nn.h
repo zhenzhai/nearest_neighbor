@@ -1,6 +1,5 @@
 /* 
  * File             : nn.h
- * Date             : 2014-5-29
  * Summary          : Basic nearest neighbor algorithms.
  */
 #ifndef NN_H_

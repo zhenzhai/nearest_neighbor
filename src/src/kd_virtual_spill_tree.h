@@ -1,6 +1,5 @@
 /* 
- * File             : kd_spill_tree.h
- * Date             : 2014-5-29
+ * File             : kd_virtual_spill_tree.h
  * Summary          : Infrastructure to hold a kd spill tree.
  */
 #ifndef KD_VIRTUAL_SPILL_TREE_H_
@@ -40,7 +39,7 @@ protected:
     map<KDTreeNode<Label, T> *, range> range_mp_;
     KDVirtualSpillTree(DataSet<Label, T> & st);
 public:
-    KDVirtualSpillTree(size_t c, double a, DataSet<Label, T> & st);
+    KDVirtualSpillTree(size_t min_leaf_size, double a_value, DataSet<Label, T> & st);
     KDVirtualSpillTree(ifstream & in, DataSet<Label, T> & st);
     virtual void save(ofstream & out) const;
     virtual vector<size_t> subdomain(vector<T> * query, size_t l_c = 0, size_t* l = 0);
@@ -59,12 +58,12 @@ KDVirtualSpillTree<Label, T>::KDVirtualSpillTree(DataSet<Label, T> & st) :
 /* Public Functions */
 
 template<class Label, class T>
-KDVirtualSpillTree<Label, T>::KDVirtualSpillTree(size_t c, double a, 
+KDVirtualSpillTree<Label, T>::KDVirtualSpillTree(size_t min_leaf_size, double a_value,
         DataSet<Label, T> & st) :
-  KDTree<Label, T>(c, st)
+  KDTree<Label, T>(min_leaf_size, st)
 {
     LOG_INFO("KDVirtualSpillTree Constructed\n"); 
-    LOG_FINE("with c = %ld, a = %lf\n", c, a);
+    LOG_FINE("with min_leaf_size = %ld, alpha = %lf\n", min_leaf_size, a_value);
     queue<KDTreeNode<Label, T> *> to_update;
     to_update.push((this->get_root()));
     while (!to_update.empty())
@@ -81,8 +80,8 @@ KDVirtualSpillTree<Label, T>::KDVirtualSpillTree(size_t c, double a,
             {
                 values.push_back((*subst[i])[mx_var_index]);
             }
-            double pivot_l = selector(values, (size_t)(values.size() * (0.5 - a)));
-            double pivot_r = selector(values, (size_t)(values.size() * (0.5 + a)));
+            double pivot_l = selector(values, (size_t)(values.size() * (0.5 - a_value)));
+            double pivot_r = selector(values, (size_t)(values.size() * (0.5 + a_value)));
             range_mp_[cur] = range(pivot_l, pivot_r);
             to_update.push(cur->get_left());
             to_update.push(cur->get_right());
@@ -140,10 +139,10 @@ void KDVirtualSpillTree<Label, T>::save(ofstream & out) const
 }
 
 template<class Label, class T>
-vector<size_t> KDVirtualSpillTree<Label, T>::subdomain(vector<T> * query, size_t l_c, size_t * number_of_leaves)
+vector<size_t> KDVirtualSpillTree<Label, T>::subdomain(vector<T> * query, size_t leaf_size, size_t * number_of_leaves)
 {
     LOG_INFO("Enter subdomain\n");
-    LOG_FINE("with lc = %ld\n", l_c);
+    LOG_FINE("with leaf_size = %ld\n", leaf_size);
     queue<KDTreeNode<Label, T> *> to_explore;
     set<size_t> domain_st;
     to_explore.push(this->get_root());
@@ -157,7 +156,7 @@ vector<size_t> KDVirtualSpillTree<Label, T>::subdomain(vector<T> * query, size_t
         {
             //size_t tmp_sum = domain_sum + cur->get_domain().size();
             if ((cur->get_left() || cur->get_right()) &&
-                cur->get_domain().size() >= l_c)
+                cur->get_domain().size() >= leaf_size)
             {
                 range cur_range = range_mp_.at(cur);
                 if (cur_range.first <= (*query)[cur->get_index()] &&

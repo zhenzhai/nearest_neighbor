@@ -1,6 +1,5 @@
 /* 
  * File             : pca_spill_tree.h
- * Date             : 2014-5-29
  * Summary          : Infrastructure to hold a binary space partition spill 
  *                    tree.
  */
@@ -34,7 +33,7 @@ template<class Label, class T>
 class PCASpillTree : public PCATree<Label, T>
 {
 private:
-    static PCATreeNode<Label, T> * build_tree(size_t c, double a,
+    static PCATreeNode<Label, T> * build_tree(size_t min_leaf_size, double a_value,
             DataSet<Label, T> & st, vector<size_t> domain);
 public:
     PCASpillTree(DataSet<Label, T> & st);
@@ -43,12 +42,12 @@ public:
 };
 
 template<class Label, class T>
-PCATreeNode<Label, T> * PCASpillTree<Label, T>::build_tree(size_t c, double a,
+PCATreeNode<Label, T> * PCASpillTree<Label, T>::build_tree(size_t min_leaf_size, double a_value,
         DataSet<Label, T> & st, vector<size_t> domain)
 {
     LOG_INFO("Enter build_tree\n");
-    LOG_FINE("with c = %ld and domain.size = %ld\n", c, domain.size());
-    if (domain.size() < c) {
+    LOG_FINE("with min_leaf_size = %ld and domain.size = %ld\n", min_leaf_size, domain.size());
+    if (domain.size() < min_leaf_size) {
         LOG_INFO("Exit build_tree");
         LOG_FINE("by hitting base size");
         return new PCATreeNode<Label, T>(domain);
@@ -58,14 +57,14 @@ PCATreeNode<Label, T> * PCASpillTree<Label, T>::build_tree(size_t c, double a,
     vector<double> values;
     for (size_t i = 0; i < subst.size(); i++)
         values.push_back(dot(*subst[i], mx_var_dir));
-    double pivot = selector(values, (size_t)(values.size() * 0.5));
-    double pivot_l = selector(values, (size_t)(values.size() * (0.5 - a)));
-    double pivot_r = selector(values, (size_t)(values.size() * (0.5 + a)));
-    vector<size_t> subdomain_l;
-    size_t subdomain_l_lim = (size_t)(values.size() * (0.5 + a));
-    size_t subdomain_r_lim = (size_t)(values.size() * (1 + 2*a) - subdomain_l_lim);
+    double pivot = selector(values, (size_t)(values.size() * 0.5)); //may not need pivot pool
+    double pivot_l = selector(values, (size_t)(values.size() * (0.5 - a_value)));
+    double pivot_r = selector(values, (size_t)(values.size() * (0.5 + a_value)));
+    size_t subdomain_l_lim = (size_t)(values.size() * (0.5 + a_value));
+    size_t subdomain_r_lim = subdomain_l_lim; //(size_t)(values.size() * (1 + 2 * a_value) - subdomain_l_lim);
     LOG_FINE("> l_lim = %ld\n", subdomain_l_lim);
-    LOG_FINE("> r_lim = %ld\n", subdomain_l_lim);
+    LOG_FINE("> r_lim = %ld\n", subdomain_r_lim);
+    vector<size_t> subdomain_l;
     vector<size_t> subdomain_r;
     vector<size_t> pivot_pool;
     vector<size_t> pivot_l_pool;
@@ -81,15 +80,16 @@ PCATreeNode<Label, T> * PCASpillTree<Label, T>::build_tree(size_t c, double a,
             if (pivot_l < values[i] && values[i] < pivot_r) {
                 subdomain_l.push_back(domain[i]);
                 subdomain_r.push_back(domain[i]);
+            } else if (values[i] < pivot) {
+                subdomain_l.push_back(domain[i]);
             } else {
-                if (values[i] < pivot) {
-                    subdomain_l.push_back(domain[i]);
-                } else {
-                    subdomain_r.push_back(domain[i]);
-                }
+                subdomain_r.push_back(domain[i]);
             }
         }
     }
+    
+    //Distribute values in pools
+    //TODO: tie breaking
     size_t d_l = MIN(subdomain_l_lim - subdomain_l.size(), pivot_pool.size() + pivot_l_pool.size() + pivot_r_pool.size());
     size_t d_r = MIN(subdomain_r_lim - subdomain_r.size(), pivot_pool.size() + pivot_l_pool.size() + pivot_r_pool.size());
     size_t spill = d_l + d_r - (pivot_pool.size() + pivot_l_pool.size() + pivot_r_pool.size());
@@ -142,8 +142,8 @@ PCATreeNode<Label, T> * PCASpillTree<Label, T>::build_tree(size_t c, double a,
     }
     PCATreeNode<Label, T> * result = new PCATreeNode<Label, T>
             (mx_var_dir, pivot, domain);
-    result->set_left(build_tree(c, a, st, subdomain_l));
-    result->set_right(build_tree(c, a, st, subdomain_r));
+    result->set_left(build_tree(min_leaf_size, a_value, st, subdomain_l));
+    result->set_right(build_tree(min_leaf_size, a_value, st, subdomain_r));
     LOG_FINE("> sdl = %ld\n", subdomain_l.size());
     LOG_FINE("> sdr = %ld\n", subdomain_r.size());
     LOG_INFO("Exit build_tree\n");

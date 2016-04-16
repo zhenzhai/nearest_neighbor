@@ -1,6 +1,5 @@
 /* 
  * File             : test.h
- * Date             : 2014-5-29
  * Summary          : Provides the testing interface for the data structures
  */
 #ifndef TEST_H_
@@ -33,10 +32,10 @@ using namespace std;
 
 static double multiple_tree     = 4;
 static double min_leaf  = 0.005; //0.0001;
-static double l []      = {0.015, 0.03, 0.06, 0.09, 0.1, 0.13, 0.15, 0.17, 0.19, 0.21};//{0.105, 0.12, 0.135, 0.15};
-const size_t l_len      = 10;
-static double a []      = {0.05, 0.1};//{0.07, 0.1, 0.12, 0.15, 0.17, 0.19, 0.21, 0.23};//, 0.25, 0.27, 0.29, 0.31, 0.33, 0.35, 0.37, 0.39};
-const size_t a_len      = 2;
+static double leaf_size_array []      = {0.015, 0.03, 0.06, 0.09, 0.1, 0.13, 0.15, 0.17, 0.19, 0.21};
+const size_t leaf_size_array_len      = 10;
+static double a_array []      = {0.05, 0.1};
+const size_t a_array_len      = 2;
 const size_t splits     = 3;
 
 template<class Label, class T>
@@ -51,10 +50,10 @@ public:
     Test(string base_dir);
     ~Test();
 
-    void s_kd_tree(double ll) {
+    void s_kd_tree(double min_leaf_size) {
         stringstream dir; 
-        dir << base_dir_ << "/kd_tree_" << setprecision(2) << ll;
-        KDTree<Label, T> tree ((size_t)(ll * (*trn_st_).size()), *trn_st_);
+        dir << base_dir_ << "/kd_tree_" << setprecision(2) << min_leaf_size;
+        KDTree<Label, T> tree ((size_t)(min_leaf_size * (*trn_st_).size()), *trn_st_);
         ofstream tree_out (dir.str());
         tree.save(tree_out);
         tree_out.close();
@@ -64,30 +63,30 @@ public:
         s_kd_tree(min_leaf);
     }
     
-    void s_n_spill_tree(double ll, double la, int sp) {
+    void s_n_spill_tree(double min_leaf_size, double a_value, int num_splits) {
         stringstream dir;
-        dir << base_dir_ << "/" << sp << "_spill_tree_" << setprecision(2) << la << "_" << ll;
-        NSpillTree<Label, T> tree ((size_t)(ll * (*trn_st_).size()), sp, la, *trn_st_);
+        dir << base_dir_ << "/" << num_splits << "_spill_tree_" << setprecision(2) << a_value << "_" << min_leaf_size;
+        NSpillTree<Label, T> tree ((size_t)(min_leaf_size * (*trn_st_).size()), num_splits, a_value, *trn_st_);
         ofstream tree_out (dir.str());
         tree.save(tree_out);
         tree_out.close();
     }
     
     void generate_n_spill_trees() {
-        thread t [a_len];
-        for (size_t i = 0; i < a_len; i++) {
-            t[i] = thread(&Test<Label, T>::s_n_spill_tree, this, min_leaf, a[i], splits);
+        thread t [a_array_len];
+        for (size_t i = 0; i < a_array_len; i++) {
+            t[i] = thread(&Test<Label, T>::s_n_spill_tree, this, min_leaf, a_array[i], splits);
         }
-        for (size_t i = 0; i < a_len; i++) {
+        for (size_t i = 0; i < a_array_len; i++) {
             t[i].join();
         }
     }
     
-    void s_multi_kd_tree(double ll, int n) {
+    void s_multi_kd_tree(double min_leaf_size, int n) {
         stringstream dir;
         for (int i=5; i<=n; i++) {
-            dir << base_dir_ << "/multi_kd_tree" << i << "_" << setprecision(2) << ll;
-            MultiKDTree<Label, T> tree ((size_t)(ll * (*trn_st_).size()), *trn_st_);
+            dir << base_dir_ << "/multi_kd_tree" << i << "_" << setprecision(2) << min_leaf_size;
+            MultiKDTree<Label, T> tree ((size_t)(min_leaf_size * (*trn_st_).size()), *trn_st_);
             ofstream tree_out (dir.str());
             tree.save(tree_out);
             tree_out.close();
@@ -99,30 +98,30 @@ public:
         s_multi_kd_tree(min_leaf, multiple_tree);
     }
 
-    void s_kd_spill_tree(double ll, double la) {
+    void s_kd_spill_tree(double min_leaf_size, double a_value) {
         stringstream dir; 
-        dir << base_dir_ << "/kd_spill_tree_" << setprecision(3) << la << "_" << ll;
-        KDSpillTree<Label, T> tree ((size_t)(ll * (*trn_st_).size()), la, *trn_st_);
+        dir << base_dir_ << "/kd_spill_tree_" << setprecision(3) << a_value << "_" << min_leaf_size;
+        KDSpillTree<Label, T> tree ((size_t)(min_leaf_size * (*trn_st_).size()), a_value, *trn_st_);
         ofstream tree_out (dir.str());
         tree.save(tree_out);
         tree_out.close();
     }
 
     void generate_kd_spill_trees() {
-        thread t [a_len];
-        for (size_t i = 0; i < a_len; i++) {
-            t[i] = thread(&Test<Label, T>::s_kd_spill_tree, this, min_leaf, a[i]);
+        thread t [a_array_len];
+        for (size_t i = 0; i < a_array_len; i++) {
+            t[i] = thread(&Test<Label, T>::s_kd_spill_tree, this, min_leaf, a_array[i]);
         }
-        for (size_t i = 0; i < a_len; i++) {
+        for (size_t i = 0; i < a_array_len; i++) {
             t[i].join();
         }
     }
 
-    void s_kd_v_spill_tree(double ll, double la)
+    void s_kd_v_spill_tree(double min_leaf_size, double a_value)
     {
         stringstream dir; 
-        dir << base_dir_ << "/kd_v_spill_tree_" << setprecision(2) << la << "_" << ll;
-        KDVirtualSpillTree<Label, T> tree ((size_t)(ll * (*trn_st_).size()), la, *trn_st_);
+        dir << base_dir_ << "/kd_v_spill_tree_" << setprecision(2) << a_value << "_" << min_leaf_size;
+        KDVirtualSpillTree<Label, T> tree ((size_t)(min_leaf_size * (*trn_st_).size()), a_value, *trn_st_);
         ofstream tree_out (dir.str());
         tree.save(tree_out);
         tree_out.close();
@@ -130,20 +129,20 @@ public:
 
     void generate_kd_v_spill_trees()
     {
-        thread t [a_len];
-        for (size_t i = 0; i < a_len; i++) {
-            t[i] = thread(&Test<Label, T>::s_kd_v_spill_tree, this, min_leaf, a[i]);
+        thread t [a_array_len];
+        for (size_t i = 0; i < a_array_len; i++) {
+            t[i] = thread(&Test<Label, T>::s_kd_v_spill_tree, this, min_leaf, a_array[i]);
         }
-        for (size_t i = 0; i < a_len; i++) {
+        for (size_t i = 0; i < a_array_len; i++) {
             t[i].join();
         }
     }
 
-    void s_pca_tree(double ll)
+    void s_pca_tree(double min_leaf_size)
     {
         stringstream dir; 
-        dir << base_dir_ << "/pca_tree_" << setprecision(2) << ll;
-        PCATree<Label, T> tree ((size_t)(ll * (*trn_st_).size()), *trn_st_);
+        dir << base_dir_ << "/pca_tree_" << setprecision(2) << min_leaf_size;
+        PCATree<Label, T> tree ((size_t)(min_leaf_size * (*trn_st_).size()), *trn_st_);
         ofstream tree_out (dir.str());
         tree.save(tree_out);
         tree_out.close();
@@ -154,11 +153,11 @@ public:
         s_pca_tree(min_leaf);
     }
 
-    void s_pca_spill_tree(double ll, double la)
+    void s_pca_spill_tree(double min_leaf_size, double a_value)
     {
         stringstream dir; 
-        dir << base_dir_ << "/pca_spill_tree_" << setprecision(2) << la << "_" << ll;
-        PCASpillTree<Label, T> tree ((size_t)(ll * (*trn_st_).size()), la, *trn_st_);
+        dir << base_dir_ << "/pca_spill_tree_" << setprecision(2) << a_value << "_" << min_leaf_size;
+        PCASpillTree<Label, T> tree ((size_t)(min_leaf_size * (*trn_st_).size()), a_value, *trn_st_);
         ofstream tree_out (dir.str());
         tree.save(tree_out);
         tree_out.close();
@@ -166,16 +165,16 @@ public:
 
     void generate_pca_spill_trees()
     {
-        thread t [a_len];
-        for (size_t i = 0; i < a_len; i++) {
-            t[i] = thread(&Test<Label, T>::s_pca_spill_tree, this, min_leaf, a[i]);
+        thread t [a_array_len];
+        for (size_t i = 0; i < a_array_len; i++) {
+            t[i] = thread(&Test<Label, T>::s_pca_spill_tree, this, min_leaf, a_array[i]);
         }
-        for (size_t i = 0; i < a_len; i++) {
+        for (size_t i = 0; i < a_array_len; i++) {
             t[i].join();
         }
     }
 
-    void s_kd_tree_data(double ll, string * result)
+    void s_kd_tree_data(double leaf_size, string * result)
     {
         stringstream dir; 
         dir << base_dir_ << "/kd_tree_" << setprecision(2) << min_leaf;
@@ -185,7 +184,7 @@ public:
         size_t true_nn_count = 0;
         unsigned long long subdomain_count = 0;
         for (size_t i = 0; i < (*tst_st_).size(); i++) {
-            DataSet<Label, T> subSet = (*trn_st_).subset(tree.subdomain((*tst_st_)[i], (size_t)(ll * (*trn_st_).size())));
+            DataSet<Label, T> subSet = (*trn_st_).subset(tree.subdomain((*tst_st_)[i], (size_t)(leaf_size * (*trn_st_).size())));
             vector<T> * nn_vtr = nearest_neighbor((*tst_st_)[i], subSet);
             Label nn_lbl = (*trn_st_).get_label(nn_vtr);
             if (nn_lbl != (*tst_st_).get_label(i))
@@ -195,7 +194,7 @@ public:
             subdomain_count += subSet.size();
         }
         stringstream data;
-        data <<  setw(COL_W) <<  ll;
+        data <<  setw(COL_W) <<  leaf_size;
         data <<  setw(COL_W) << (error_count * 1. / (*tst_st_).size());
         data <<  setw(COL_W) << (true_nn_count * 1. / (*tst_st_).size());
         data <<  setw(COL_W) << (subdomain_count * 1. / (*tst_st_).size());
@@ -211,29 +210,29 @@ public:
         dat_out <<  setw(COL_W) << "true nn";
         dat_out <<  setw(COL_W) << "subdomain";
         dat_out << endl;
-        thread t [l_len];
-        string r [l_len];
-        for (size_t i = 0; i < l_len; i++) {
-            t[i] = thread(&Test::s_kd_tree_data, this, l[i], &(r[i]));
+        thread t [leaf_size_array_len];
+        string r [leaf_size_array_len];
+        for (size_t i = 0; i < leaf_size_array_len; i++) {
+            t[i] = thread(&Test::s_kd_tree_data, this, leaf_size_array[i], &(r[i]));
         }
-        for (size_t i = 0; i < l_len; i++) {
+        for (size_t i = 0; i < leaf_size_array_len; i++) {
             t[i].join();
             dat_out << r[i];
         }
         dat_out.close();
     }
     
-    void s_n_spill_tree_data(double ll, double la, int sp, string * result)
+    void s_n_spill_tree_data(double leaf_size, double a_value, int num_splits, string * result)
     {
         stringstream dir;
-        dir << base_dir_ << "/" << sp << "_spill_tree_" << setprecision(2) << la << "_" << min_leaf;
+        dir << base_dir_ << "/" << num_splits << "_spill_tree_" << setprecision(2) << a_value << "_" << min_leaf;
         ifstream tree_in (dir.str());
-        NSpillTree<Label, T> tree (tree_in, sp, *trn_st_);
+        NSpillTree<Label, T> tree (tree_in, num_splits, *trn_st_);
         size_t error_count = 0;
         size_t true_nn_count = 0;
         unsigned long long subdomain_count = 0;
         for (size_t i = 0; i < (*tst_st_).size(); i++) {
-            DataSet<Label, T> subSet = (*trn_st_).subset(tree.subdomain((*tst_st_)[i], (size_t)(ll * (*trn_st_).size())));
+            DataSet<Label, T> subSet = (*trn_st_).subset(tree.subdomain((*tst_st_)[i], (size_t)(leaf_size * (*trn_st_).size())));
             vector<T> * nn_vtr = nearest_neighbor((*tst_st_)[i], subSet);
             Label nn_lbl = (*trn_st_).get_label(nn_vtr);
             if (nn_lbl != (*tst_st_).get_label(i))
@@ -243,8 +242,8 @@ public:
             subdomain_count += subSet.size();
         }
         stringstream data;
-        data <<  setw(COL_W) <<  ll;
-        data <<  setw(COL_W) <<  la;
+        data <<  setw(COL_W) <<  leaf_size;
+        data <<  setw(COL_W) <<  a_value;
         data <<  setw(COL_W) << (error_count * 1. / (*tst_st_).size());
         data <<  setw(COL_W) << (true_nn_count * 1. / (*tst_st_).size());
         data <<  setw(COL_W) << (subdomain_count * 1. / (*tst_st_).size());
@@ -262,15 +261,15 @@ public:
         dat_out <<  setw(COL_W) << "subdomain";
         //dat_out <<  setw(COL_W) << "space blowup";
         dat_out << endl;
-        thread t [l_len][a_len];
-        string r [l_len][a_len];
-        for (size_t i = 0; i < l_len; i++) {
-            for (size_t j = 0; j < a_len; j++) {
-                t[i][j] = thread(&Test<Label, T>::s_n_spill_tree_data, this, l[i], a[j], splits, &(r[i][j]));
+        thread t [leaf_size_array_len][a_array_len];
+        string r [leaf_size_array_len][a_array_len];
+        for (size_t i = 0; i < leaf_size_array_len; i++) {
+            for (size_t j = 0; j < a_array_len; j++) {
+                t[i][j] = thread(&Test<Label, T>::s_n_spill_tree_data, this, leaf_size_array[i], a_array[j], splits, &(r[i][j]));
             }
         }
-        for (size_t i = 0; i < l_len; i++) {
-            for (size_t j = 0; j < a_len; j++) {
+        for (size_t i = 0; i < leaf_size_array_len; i++) {
+            for (size_t j = 0; j < a_array_len; j++) {
                 t[i][j].join();
                 dat_out << r[i][j];
             }
@@ -278,7 +277,7 @@ public:
         dat_out.close();
     }
     
-    void s_multi_kd_tree_data(double ll, string * result, int n)
+    void s_multi_kd_tree_data(double leaf_size, string * result, int n)
     {
         size_t error_count = 0;
         size_t true_nn_count = 0;
@@ -291,7 +290,7 @@ public:
                 string test = dir.str();
                 ifstream tree_in (dir.str());
                 MultiKDTree<Label, T> tree (tree_in, *trn_st_);
-                DataSet<Label, T> subSet = (*trn_st_).subset(tree.subdomain((*tst_st_)[i], (size_t)((ll / n) * (*trn_st_).size())));
+                DataSet<Label, T> subSet = (*trn_st_).subset(tree.subdomain((*tst_st_)[i], (size_t)((leaf_size / n) * (*trn_st_).size())));
                 if (nn_domain.size() == 0){
                     nn_domain = subSet.get_domain();
                 } else {
@@ -309,7 +308,7 @@ public:
                 true_nn_count++;
         }
         stringstream data;
-        data <<  setw(COL_W) <<  ll;
+        data <<  setw(COL_W) << leaf_size;
         data <<  setw(COL_W) << (error_count * 1. / (*tst_st_).size());
         data <<  setw(COL_W) << (true_nn_count * 1. / (*tst_st_).size());
         data <<  setw(COL_W) << (subdomain_count * 1. / (*tst_st_).size());
@@ -325,29 +324,29 @@ public:
         dat_out <<  setw(COL_W) << "true nn";
         dat_out <<  setw(COL_W) << "subdomain";
         dat_out << endl;
-        thread t [l_len];
-        string r [l_len];
-        for (size_t i = 0; i < l_len; i++) {
-            t[i] = thread(&Test::s_multi_kd_tree_data, this, l[i], &(r[i]), multiple_tree);
+        thread t [leaf_size_array_len];
+        string r [leaf_size_array_len];
+        for (size_t i = 0; i < leaf_size_array_len; i++) {
+            t[i] = thread(&Test::s_multi_kd_tree_data, this, leaf_size_array[i], &(r[i]), multiple_tree);
         }
-        for (size_t i = 0; i < l_len; i++) {
+        for (size_t i = 0; i < leaf_size_array_len; i++) {
             t[i].join();
             dat_out << r[i];
         }
         dat_out.close();
     }
 
-    void s_kd_spill_tree_data(double ll, double la, string * result)
+    void s_kd_spill_tree_data(double leaf_size, double a_value, string * result)
     {
         stringstream dir; 
-        dir << base_dir_ << "/kd_spill_tree_" << setprecision(2) << la << "_" << min_leaf;
+        dir << base_dir_ << "/kd_spill_tree_" << setprecision(2) << a_value << "_" << min_leaf;
         ifstream tree_in (dir.str());
         KDSpillTree<Label, T> tree (tree_in, *trn_st_);
         size_t error_count = 0;
         size_t true_nn_count = 0;
         unsigned long long subdomain_count = 0;
         for (size_t i = 0; i < (*tst_st_).size(); i++) {
-            DataSet<Label, T> subSet = (*trn_st_).subset(tree.subdomain((*tst_st_)[i], (size_t)(ll * (*trn_st_).size())));
+            DataSet<Label, T> subSet = (*trn_st_).subset(tree.subdomain((*tst_st_)[i], (size_t)(leaf_size * (*trn_st_).size())));
             vector<T> * nn_vtr = nearest_neighbor((*tst_st_)[i],subSet);
             Label nn_lbl = (*trn_st_).get_label(nn_vtr);
             if (nn_lbl != (*tst_st_).get_label(i))
@@ -362,7 +361,7 @@ public:
         int tree_height = 0;
         int number_leaves = 1;
         LOG_INFO("Space calculation\n");
-        size_t l_c = (size_t)(ll * (*trn_st_).size());
+        size_t l_c = (size_t)(leaf_size * (*trn_st_).size());
         queue<KDTreeNode<Label, T> *> expl;
         expl.push(tree.get_root());
         while (!expl.empty())
@@ -383,8 +382,8 @@ public:
         size_t root_size = tree.get_root()->get_domain().size();
         
         stringstream data;
-        data <<  setw(COL_W) <<  ll;
-        data <<  setw(COL_W) <<  la;
+        data <<  setw(COL_W) << leaf_size;
+        data <<  setw(COL_W) << a_value;
         data <<  setw(COL_W) << (error_count * 1. / (*tst_st_).size());
         data <<  setw(COL_W) << (true_nn_count * 1. / (*tst_st_).size());
         data <<  setw(COL_W) << (subdomain_count * 1. / (*tst_st_).size());
@@ -403,15 +402,15 @@ public:
         dat_out <<  setw(COL_W) << "subdomain";
         dat_out <<  setw(COL_W) << "space blowup";
         dat_out << endl;
-        thread t [l_len][a_len];
-        string r [l_len][a_len];
-        for (size_t i = 0; i < l_len; i++) {
-            for (size_t j = 0; j < a_len; j++) {
-                t[i][j] = thread(&Test<Label, T>::s_kd_spill_tree_data, this, l[i], a[j], &(r[i][j]));
+        thread t [leaf_size_array_len][a_array_len];
+        string r [leaf_size_array_len][a_array_len];
+        for (size_t i = 0; i < leaf_size_array_len; i++) {
+            for (size_t j = 0; j < a_array_len; j++) {
+                t[i][j] = thread(&Test<Label, T>::s_kd_spill_tree_data, this, leaf_size_array[i], a_array[j], &(r[i][j]));
             }
         }
-        for (size_t i = 0; i < l_len; i++) {
-            for (size_t j = 0; j < a_len; j++) {
+        for (size_t i = 0; i < leaf_size_array_len; i++) {
+            for (size_t j = 0; j < a_array_len; j++) {
                 t[i][j].join();
                 dat_out << r[i][j];
             }
@@ -419,10 +418,10 @@ public:
         dat_out.close();
     }
 
-    void s_kd_v_spill_tree_data(double ll, double la, string * result)
+    void s_kd_v_spill_tree_data(double leaf_size, double a_value, string * result)
     {
         stringstream dir; 
-        dir << base_dir_ << "/kd_v_spill_tree_" << setprecision(2) << la << "_" << min_leaf;
+        dir << base_dir_ << "/kd_v_spill_tree_" << setprecision(2) << a_value << "_" << min_leaf;
         ifstream tree_in (dir.str());
         KDVirtualSpillTree<Label, T> tree (tree_in, *trn_st_);
         size_t error_count = 0;
@@ -430,7 +429,7 @@ public:
         unsigned long long subdomain_count = 0;
         size_t number_of_leaves = 0;
         for (size_t i = 0; i < (*tst_st_).size(); i++) {
-            DataSet<Label, T> subSet = (*trn_st_).subset(tree.subdomain((*tst_st_)[i], (size_t)(ll * (*trn_st_).size()), & number_of_leaves));
+            DataSet<Label, T> subSet = (*trn_st_).subset(tree.subdomain((*tst_st_)[i], (size_t)(leaf_size * (*trn_st_).size()), & number_of_leaves));
             vector<T> * nn_vtr = nearest_neighbor((*tst_st_)[i], subSet);
             Label nn_lbl = (*trn_st_).get_label(nn_vtr);
             if (nn_lbl != (*tst_st_).get_label(i))
@@ -440,8 +439,8 @@ public:
             subdomain_count += subSet.size();
         }
         stringstream data;
-        data <<  setw(COL_W) <<  ll;
-        data <<  setw(COL_W) <<  la;
+        data <<  setw(COL_W) << leaf_size;
+        data <<  setw(COL_W) << a_value;
         data <<  setw(COL_W) << (error_count * 1. / (*tst_st_).size());
         data <<  setw(COL_W) << (true_nn_count * 1. / (*tst_st_).size());
         data <<  setw(COL_W) << (subdomain_count * 1. / (*tst_st_).size());
@@ -460,15 +459,15 @@ public:
         dat_out <<  setw(COL_W) << "subdomain";
         dat_out <<  setw(COL_W) << "number of leaves";
         dat_out << endl;
-        thread t [l_len][a_len];
-        string r [l_len][a_len];
-        for (size_t i = 0; i < l_len; i++) {
-            for (size_t j = 0; j < a_len; j++) {
-                t[i][j] = thread(&Test<Label, T>::s_kd_v_spill_tree_data, this, l[i], a[j], &(r[i][j]));
+        thread t [leaf_size_array_len][a_array_len];
+        string r [leaf_size_array_len][a_array_len];
+        for (size_t i = 0; i < leaf_size_array_len; i++) {
+            for (size_t j = 0; j < a_array_len; j++) {
+                t[i][j] = thread(&Test<Label, T>::s_kd_v_spill_tree_data, this, leaf_size_array[i], a_array[j], &(r[i][j]));
             }
         }
-        for (size_t i = 0; i < l_len; i++) {
-            for (size_t j = 0; j < a_len; j++) {
+        for (size_t i = 0; i < leaf_size_array_len; i++) {
+            for (size_t j = 0; j < a_array_len; j++) {
                 t[i][j].join();
                 dat_out << r[i][j];
             }
@@ -476,7 +475,7 @@ public:
         dat_out.close();
     }
 
-    void s_pca_tree_data(double ll, string * result)
+    void s_pca_tree_data(double leaf_size, string * result)
     {
         stringstream dir; 
         dir << base_dir_ << "/pca_tree_" << setprecision(2) << min_leaf;
@@ -486,7 +485,7 @@ public:
         size_t true_nn_count = 0;
         unsigned long long subdomain_count = 0;
         for (size_t i = 0; i < (*tst_st_).size(); i++) {
-            DataSet<Label, T> subSet = (*trn_st_).subset(tree.subdomain((*tst_st_)[i], (size_t)(ll * (*trn_st_).size())));
+            DataSet<Label, T> subSet = (*trn_st_).subset(tree.subdomain((*tst_st_)[i], (size_t)(leaf_size * (*trn_st_).size())));
             vector<T> * nn_vtr = nearest_neighbor((*tst_st_)[i], subSet);
             Label nn_lbl = (*trn_st_).get_label(nn_vtr);
             if (nn_lbl != (*tst_st_).get_label(i))
@@ -496,7 +495,7 @@ public:
             subdomain_count += subSet.size();
         }
         stringstream data;
-        data <<  setw(COL_W) <<  ll;
+        data <<  setw(COL_W) << leaf_size;
         data <<  setw(COL_W) << (error_count * 1. / (*tst_st_).size());
         data <<  setw(COL_W) << (true_nn_count * 1. / (*tst_st_).size());
         data <<  setw(COL_W) << (subdomain_count * 1. / (*tst_st_).size());
@@ -512,29 +511,29 @@ public:
         dat_out <<  setw(COL_W) << "true nn";
         dat_out <<  setw(COL_W) << "subdomain";
         dat_out << endl;
-        thread t [l_len];
-        string r [l_len];
-        for (size_t i = 0; i < l_len; i++) {
-            t[i] = thread(&Test::s_pca_tree_data, this, l[i], &(r[i]));
+        thread t [leaf_size_array_len];
+        string r [leaf_size_array_len];
+        for (size_t i = 0; i < leaf_size_array_len; i++) {
+            t[i] = thread(&Test::s_pca_tree_data, this, leaf_size_array[i], &(r[i]));
         }
-        for (size_t i = 0; i < l_len; i++) {
+        for (size_t i = 0; i < leaf_size_array_len; i++) {
             t[i].join();
             dat_out << r[i];
         }
         dat_out.close();
     }
 
-    void s_pca_spill_tree_data(double ll, double la, string * result)
+    void s_pca_spill_tree_data(double leaf_size, double a_value, string * result)
     {
         stringstream dir; 
-        dir << base_dir_ << "/pca_spill_tree_" << setprecision(2) << la << "_" << min_leaf;
+        dir << base_dir_ << "/pca_spill_tree_" << setprecision(2) << a_value << "_" << min_leaf;
         ifstream tree_in (dir.str());
         PCASpillTree<Label, T> tree (tree_in, *trn_st_);
         size_t error_count = 0;
         size_t true_nn_count = 0;
         unsigned long long subdomain_count = 0;
         for (size_t i = 0; i < (*tst_st_).size(); i++) {
-            DataSet<Label, T> subSet = (*trn_st_).subset(tree.subdomain((*tst_st_)[i], (size_t)(ll * (*trn_st_).size())));
+            DataSet<Label, T> subSet = (*trn_st_).subset(tree.subdomain((*tst_st_)[i], (size_t)(leaf_size * (*trn_st_).size())));
             vector<T> * nn_vtr = nearest_neighbor((*tst_st_)[i],
                                  subSet);
             Label nn_lbl = (*trn_st_).get_label(nn_vtr);
@@ -550,7 +549,7 @@ public:
         int tree_height = 0;
         int number_leaves = 1;
         LOG_INFO("Space calculation\n");
-        size_t l_c = (size_t)(ll * (*trn_st_).size());
+        size_t l_c = (size_t)(leaf_size * (*trn_st_).size());
         queue<PCATreeNode<Label, T> *> expl;
         expl.push(tree.get_root());
         while (!expl.empty())
@@ -571,8 +570,8 @@ public:
         size_t root_size = tree.get_root()->get_domain().size();
 
         stringstream data;
-        data <<  setw(COL_W) <<  ll;
-        data <<  setw(COL_W) <<  la;
+        data <<  setw(COL_W) << leaf_size;
+        data <<  setw(COL_W) << a_value;
         data <<  setw(COL_W) << (error_count * 1. / (*tst_st_).size());
         data <<  setw(COL_W) << (true_nn_count * 1. / (*tst_st_).size());
         data <<  setw(COL_W) << (subdomain_count * 1. / (*tst_st_).size());
@@ -591,15 +590,15 @@ public:
         dat_out <<  setw(COL_W) << "subdomain";
         dat_out <<  setw(COL_W) << "space blowup";
         dat_out << endl;
-        thread t [l_len][a_len];
-        string r [l_len][a_len];
-        for (size_t i = 0; i < l_len; i++) {
-            for (size_t j = 0; j < a_len; j++) {
-                t[i][j] = thread(&Test<Label, T>::s_pca_spill_tree_data, this, l[i], a[j], &(r[i][j]));
+        thread t [leaf_size_array_len][a_array_len];
+        string r [leaf_size_array_len][a_array_len];
+        for (size_t i = 0; i < leaf_size_array_len; i++) {
+            for (size_t j = 0; j < a_array_len; j++) {
+                t[i][j] = thread(&Test<Label, T>::s_pca_spill_tree_data, this, leaf_size_array[i], a_array[j], &(r[i][j]));
             }
         }
-        for (size_t i = 0; i < l_len; i++) {
-            for (size_t j = 0; j < a_len; j++) {
+        for (size_t i = 0; i < leaf_size_array_len; i++) {
+            for (size_t j = 0; j < a_array_len; j++) {
                 t[i][j].join();
                 dat_out << r[i][j];
             }

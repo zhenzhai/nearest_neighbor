@@ -1,7 +1,7 @@
 //
 //  multi_kd_tree.h
 //  Created by Zhen Zhai on 5/15/15.
-//  Copyright (c) 2015 Janet Zhai. All rights reserved.
+//  Copyright (c) 2015 Zhen Zhai. All rights reserved.
 //
 
 #ifndef MULTI_KD_TREE_H

@@ -1,6 +1,5 @@
 /* 
  * File             : kd_tree.h
- * Date             : 2014-5-29
  * Summary          : Infrastructure to hold a kd tree.
  */
 #ifndef KD_TREE_H_
@@ -25,11 +24,14 @@ class KDTree;
 /* 
  * Name             : KDTreeNode
  * Description      : Data structure to hold a node of a KDTree
- * Data Field(s)    : index_    - The max variance index
- *                    pivot_    - The value to pivot on
- *                    left_     - Pointer to left subtree node
- *                    right_    - Pointer to right subtree node
- *                    domain_   - vectors out of vector space in data set
+ * Data Field(s)    : index_        - The max variance index
+ *                    pivot_        - The value of pivot
+ *                    tie_breaker_  - The tie breaker vector
+ *                    tie_pivot_    - The value of pivot of tie breaker
+ *                    dimension_    - The dimension of feature, used in de-serialization
+ *                    left_         - Pointer to left subtree node
+ *                    right_        - Pointer to right subtree node
+ *                    domain_       - vectors out of vector space in data set
  * Functions(s)     : KDTreeNode(const vector<size_t>) 
  *                              - Create a KDTreeNode of given domain (leaf)
  *                    KDTreeNode(size_t, T, vector<size_t>)
@@ -69,16 +71,10 @@ public:
     ~KDTreeNode();
     size_t get_index() const
     { return index_; }
-    T get_pivot() const
-    { return pivot_; }
     KDTreeNode * get_left() const
     { return left_; }
     KDTreeNode * get_right() const
     { return right_; }
-    vector<double> get_tie_breaker() const
-    { return tie_breaker_; }
-    double get_tie_pivot() const
-    { return tie_pivot_; }
     vector<size_t> get_domain() const
     { return domain_; }
     void set_left(KDTreeNode * left)
@@ -116,14 +112,14 @@ template<class Label, class T>
 class KDTree
 {
 private:
-    static KDTreeNode<Label, T> * build_tree(size_t c,
+    static KDTreeNode<Label, T> * build_tree(size_t min_leaf_size,
             DataSet<Label, T> & st, vector<size_t> domain);
 protected:
     KDTreeNode<Label, T> * root_;
     DataSet<Label, T> & st_;
     KDTree(DataSet<Label, T> & st);
 public:
-    KDTree(size_t c, DataSet<Label, T> & st);
+    KDTree(size_t min_leaf_size, DataSet<Label, T> & st);
     KDTree(ifstream & in, DataSet<Label, T> & st);
     ~KDTree();
     KDTreeNode<Label, T> * get_root() const
@@ -139,12 +135,12 @@ public:
 /* Private Functions */
 
 template<class Label, class T>
-KDTreeNode<Label, T> * KDTree<Label, T>::build_tree(size_t c,
+KDTreeNode<Label, T> * KDTree<Label, T>::build_tree(size_t min_leaf_size,
         DataSet<Label, T> & st, vector<size_t> domain)
 {
     LOG_INFO("Enter build_tree\n");
-    LOG_FINE("with c = %ld and domain.size = %ld\n", c, domain.size());
-    if (domain.size() < c) {
+    LOG_FINE("with min_leaf_size = %ld and domain.size = %ld\n", min_leaf_size, domain.size());
+    if (domain.size() < min_leaf_size) {
         LOG_INFO("Exit build_tree");
         LOG_FINE("by hitting base size");
         return new KDTreeNode<Label, T>(domain);
@@ -159,34 +155,36 @@ KDTreeNode<Label, T> * KDTree<Label, T>::build_tree(size_t c,
     double pivot = selector(values, (size_t)(values.size() * 0.5));
     vector<size_t> subdomain_l;
     size_t subdomain_l_lim = (size_t)(values.size() * 0.5);
-    LOG_FINE("> l_lim = %ld\n", subdomain_l_lim);
+    LOG_FINE("> left_limit = %ld\n", subdomain_l_lim);
     vector<size_t> subdomain_r;
     vector<size_t> pivot_pool;
     for (size_t i = 0; i < domain.size(); i++) {
-        if (pivot == values[i]) {
+        if (values[i] == pivot)
             pivot_pool.push_back(domain[i]);
-        } else {
-            if (values[i] <= pivot)
-                subdomain_l.push_back(domain[i]);
-            else
-                subdomain_r.push_back(domain[i]);
-        }
+        else if (values[i] < pivot)
+            subdomain_l.push_back(domain[i]);
+        else
+            subdomain_r.push_back(domain[i]);
     }
+    
     //distribute pivot pool to all the children nodes
     //dot a random vector then do split again
-    
     size_t dimension = (*subst[0]).size();
     vector<double> tie_breaker = random_tie_breaker(dimension);
+    
     //store new pivots in update_pool
     double tie_pivot;
+    
     //extract the vectors from dataset
     DataSet<Label, T> tie_vectors = st.subset(pivot_pool);
+    
     //update pool using randome tie breaker
     vector<double> update_pool;
     for (int j = 0; j < tie_vectors.size(); j++) {
         double product = dot(*tie_vectors[j], tie_breaker);
         update_pool.push_back(product);
     }
+    
     //find the tie_pivots and distribute tie vectors
     int k = subdomain_l_lim - subdomain_l.size();
     tie_pivot = selector(update_pool, k);
@@ -210,8 +208,8 @@ KDTreeNode<Label, T> * KDTree<Label, T>::build_tree(size_t c,
     
     KDTreeNode<Label, T> * result = new KDTreeNode<Label, T>
             (mx_var_index, pivot, domain, dimension, tie_pivot, tie_breaker);
-    result->left_ = build_tree(c, st, subdomain_l);
-    result->right_ = build_tree(c, st, subdomain_r);
+    result->left_ = build_tree(min_leaf_size, st, subdomain_l);
+    result->right_ = build_tree(min_leaf_size, st, subdomain_r);
     LOG_FINE("> sdl = %ld\n", subdomain_l.size());
     LOG_FINE("> sdr = %ld\n", subdomain_r.size());
     LOG_INFO("Exit build_tree\n");
@@ -321,12 +319,12 @@ KDTree<Label, T>::KDTree(DataSet<Label, T> & st) :
 }
 
 template<class Label, class T>
-KDTree<Label, T>::KDTree(size_t c, DataSet<Label, T> & st) :
-  root_ (build_tree(c, st, st.get_domain())),
+KDTree<Label, T>::KDTree(size_t min_leaf_size, DataSet<Label, T> & st) :
+  root_ (build_tree(min_leaf_size, st, st.get_domain())),
   st_ (st)
 { 
     LOG_INFO("KDTree Constructed\n"); 
-    LOG_FINE("with c = %ld", c);
+    LOG_FINE("with min_leaf_size = %ld", min_leaf_size);
 }
 
 template<class Label, class T>
