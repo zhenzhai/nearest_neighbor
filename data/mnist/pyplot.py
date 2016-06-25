@@ -35,6 +35,15 @@ def label_points(x_index, y_index, x_off, y_off, labels):
 					 connectionstyle="arc,rad=10"))
 
 
+def kd():
+	plt.axis([0,8000,0.3,0.8])
+	kd_x, kd_y = read_file(3,2,'kd_tree.dat')
+	kd_line, = plt.plot(kd_x, kd_y, 'ro-', label='KD Tree', lw=3, ms=8)
+	plt.legend(handles=[kd_line],loc=4)
+	figure = plt.gcf()
+	figure.set_size_inches(13, 10)
+	plt.savefig("mnist_kd.png")
+
 def kd_pca():
 	plt.axis([0,8000,0.3,0.8])
 	kd_x, kd_y = read_file(3,2,'kd_tree.dat')
@@ -109,15 +118,15 @@ def ran_spill_vspill():
 	plt.savefig("mnist_multi_spill_vspill.png")
 
 def ran_kd():
-	plt.axis([0,8000,0.2,0.8])
-	kd_x, kd_y = read_file(3,2,'kd_tree.dat')
-	ran_x, ran_y = read_file(3,2,'1multi_kd_tree.dat')
+	plt.axis([0,8000,0.3,1])
+	kd_x, kd_y = read_partial_file(3,2,1,10,1,'kd_tree.dat')
+	ran_x, ran_y = read_partial_file(3,2,0,5,1,'4multi_kd_tree.dat')
 	kd_line, = plt.plot(kd_x, kd_y, 'ro-', label='KD Tree', lw=3, ms=8)
-	ran_line, = plt.plot(ran_x, ran_y, 'bo-', label='1 Randomized Tree', lw=3, ms=8)
+	ran_line, = plt.plot(ran_x, ran_y, 'bo-', label='RP Tree', lw=3, ms=8)
 	plt.legend(handles=[kd_line,ran_line],loc=4)
 	figure = plt.gcf()
 	figure.set_size_inches(13, 10)
-	plt.savefig("ran_kd.png")
+	plt.savefig("ran4_kd.png")
 
 def main():
 	font = {'size' : 25}

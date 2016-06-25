@@ -33,6 +33,14 @@ def label_points(x_index, y_index, x_off, y_off, labels):
 					 arrowprops=dict(arrowstyle="->",
 					 connectionstyle="arc,rad=10"))
 
+def kd():
+	plt.axis([0,110000,0,0.6])
+	kd_x, kd_y = read_file(3,2,'kd_tree.dat')
+	kd_line, = plt.plot(kd_x, kd_y, 'ro-', label='KD Tree', lw=3, ms=8)
+	plt.legend(handles=[kd_line],loc=4)
+	figure = plt.gcf()
+	figure.set_size_inches(13, 10)
+	plt.savefig("songs_kd")
 
 def kd_pca():
 	plt.axis([0,120000,0,0.8])
@@ -73,7 +81,7 @@ def pca_spill():
 	plt.legend(handles=[pca_line, spill05_line, spill1_line],loc=4)
 	figure = plt.gcf()
 	figure.set_size_inches(13, 10)
-	plt.savefig("person_pca_spill.png")
+	plt.savefig("song_pca_spill.png")
 
 def spill_vspill():
 	plt.axis([0,8000,0,0.4])
@@ -86,7 +94,7 @@ def spill_vspill():
 	plt.legend(handles=[spill_line,vspill_line],loc=4)
 	figure = plt.gcf()
 	figure.set_size_inches(13, 10)
-	plt.savefig("person_05spill_vspill.png")
+	plt.savefig("song_05spill_vspill.png")
 
 def ran_spill_vspill():
 	plt.axis([0,7000,0,0.4])
@@ -103,7 +111,19 @@ def ran_spill_vspill():
 	plt.legend(handles=[spill_line,vspill_line,ran_line,ran4_line],loc=4)
 	figure = plt.gcf()
 	figure.set_size_inches(13, 10)
-	plt.savefig("person_multi_spill_vspill.png")
+	plt.savefig("song_multi_spill_vspill.png")
+
+
+def ran_kd():
+	plt.axis([0,6000,0,0.4])
+	kd_x, kd_y = read_file(3,2,'kd_tree.dat')
+	ran_x, ran_y = read_partial_file(3,2,0,8,1,'4multi_kd_tree.dat')
+	kd_line, = plt.plot(kd_x, kd_y, 'ro-', label='KD Tree', lw=3, ms=8)
+	ran_line, = plt.plot(ran_x, ran_y, 'bo-', label='RP Tree', lw=3, ms=8)
+	plt.legend(handles=[kd_line,ran_line],loc=4)
+	figure = plt.gcf()
+	figure.set_size_inches(13, 10)
+	plt.savefig("song_ran4_kd.png")
 
 def main():
 	font = {'size' : 25}
@@ -112,7 +132,7 @@ def main():
 	plt.xlabel('Number of Distance Computations', labelpad = 10)
 	plt.ylabel('Fraction Correct NN', labelpad = 10)
 
-	kd_spill()
+	ran_kd()
 	#ran_spill_vspill()
 
 main()

@@ -34,6 +34,15 @@ def label_points(x_index, y_index, x_off, y_off, labels):
 					 connectionstyle="arc,rad=10"))
 
 
+def kd():
+	plt.axis([0,6000,0,0.4])
+	kd_x, kd_y = read_file(3,2,'kd_tree.dat')
+	kd_line, = plt.plot(kd_x, kd_y, 'ro-', label='KD Tree', lw=3, ms=8)
+	plt.legend(handles=[kd_line],loc=4)
+	figure = plt.gcf()
+	figure.set_size_inches(13, 10)
+	plt.savefig("person_kd.png")
+
 def kd_pca():
 	plt.axis([0,6000,0,0.6])
 	kd_x, kd_y = read_file(3,2,'kd_tree.dat')
@@ -105,6 +114,17 @@ def ran_spill_vspill():
 	figure.set_size_inches(13, 10)
 	plt.savefig("person_multi_spill_vspill.png")
 
+def ran_kd():
+	plt.axis([0,6000,0,0.4])
+	kd_x, kd_y = read_file(3,2,'kd_tree.dat')
+	ran_x, ran_y = read_partial_file(3,2,0,3,1,'4multi_kd_tree.dat')
+	kd_line, = plt.plot(kd_x, kd_y, 'ro-', label='KD Tree', lw=3, ms=8)
+	ran_line, = plt.plot(ran_x, ran_y, 'bo-', label='RP Tree', lw=3, ms=8)
+	plt.legend(handles=[kd_line,ran_line],loc=4)
+	figure = plt.gcf()
+	figure.set_size_inches(13, 10)
+	plt.savefig("person_ran4_kd.png")
+
 def main():
 	font = {'size' : 25}
 	plt.rc('font', **font)
@@ -112,7 +132,7 @@ def main():
 	plt.xlabel('Number of Distance Computations', labelpad = 10)
 	plt.ylabel('Fraction Correct NN', labelpad = 10)
 
-	ran_spill_vspill()
+	ran_kd()
 
 main()
 
