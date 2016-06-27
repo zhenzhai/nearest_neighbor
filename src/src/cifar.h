@@ -8,9 +8,6 @@
 
 #ifndef CIFAR_H
 #define CIFAR_H
-
-#include <cstdio>
-#include <cstring>
 #include <iostream>
 #include <sstream>
 #include <fstream>

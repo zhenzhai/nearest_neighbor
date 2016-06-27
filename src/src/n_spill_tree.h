@@ -203,7 +203,7 @@ NSpillTreeNode<Label, T> * NSpillTree<Label, T>::build_tree(size_t leaf_size,
         }
     }
     
-    /*
+    
     //distribute pivot pool to children nodes
     //dot a random vector to break tie then do split again
     size_t dimension = (*subst[0]).size();
@@ -212,7 +212,7 @@ NSpillTreeNode<Label, T> * NSpillTree<Label, T>::build_tree(size_t leaf_size,
     //store tie breaker pivots in update_pool
     vector<double> tie_left_pivots(splits-1);
     vector<double> tie_right_pivots(splits-1);
-    for (int i = 0; i < left_pivot_pools.size(); i++) {
+    /*for (int i = 0; i < left_pivot_pools.size(); i++) {
         //extract the vectors from dataset
         DataSet<Label, T> left_pivot_vectors = st.subset(left_pivot_pools[i]);
         DataSet<Label, T> right_pivot_vectors = st.subsest(right_pivot_pools[i]);
@@ -281,7 +281,7 @@ NSpillTreeNode<Label, T> * NSpillTree<Label, T>::build_tree(size_t leaf_size,
         children_vector.push_back(node);
     }
     //return newly built tree
-    NSpillTreeNode<Label, T> * result = new NSpillTreeNode<Label, T>(dimension, mx_var_index, pivots, splits, tie_breaker, tie_pivots, children_vector, domain);
+    NSpillTreeNode<Label, T> * result = new NSpillTreeNode<Label, T>(mx_var_index, splits, dimension, left_pivots, right_pivots, tie_breaker, tie_left_pivots, tie_right_pivots,children_vector, domain);
     LOG_INFO("Exit build_tree\n");
     return result;
 }
