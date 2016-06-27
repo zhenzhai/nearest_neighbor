@@ -36,8 +36,8 @@ int main()
     
     Test<byte,float> mTest(DIR + set_DIR);
     
-    mTest.generate_kd_trees();
-    mTest.generate_kd_tree_data(DIR + set_DIR);
+    //mTest.generate_kd_trees();
+    //mTest.generate_kd_tree_data(DIR + set_DIR);
     //mTest.generate_n_spill_trees();
     //mTest.generate_n_spill_tree_data(DIR + set_DIR);
     //mTest.generate_multi_kd_trees();
