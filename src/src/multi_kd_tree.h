@@ -75,18 +75,37 @@ KDTreeNode<Label, T> * MultiKDTree<Label, T>::build_tree(size_t c,
                 subdomain_r.push_back(domain[i]);
         }
     }
-    while (subdomain_l_lim > subdomain_l.size()) {
-        size_t curr = pivot_pool.back();
-        pivot_pool.pop_back();
-        subdomain_l.push_back(curr);
+    
+    //distribute pivot pool to all the children nodes
+    //dot a random vector then do split again
+    size_t dimension = (*subst[0]).size();
+    vector<double> tie_breaker = random_tie_breaker(dimension);
+    
+    //store new pivots in update_pool
+    double tie_pivot;
+    
+    //extract the vectors from dataset
+    DataSet<Label, T> tie_vectors = st.subset(pivot_pool);
+    
+    //update pool using randome tie breaker
+    vector<double> update_pool;
+    for (int j = 0; j < tie_vectors.size(); j++) {
+        double product = dot(*tie_vectors[j], tie_breaker);
+        update_pool.push_back(product);
     }
-    while (!pivot_pool.empty()) {
-        size_t curr = pivot_pool.back();
-        pivot_pool.pop_back();
-        subdomain_r.push_back(curr);
+    
+    //find the tie_pivots and distribute tie vectors
+    size_t k = subdomain_l_lim - subdomain_l.size();
+    tie_pivot = selector(update_pool, k);
+    for (int j = 0; j < update_pool.size(); j++) {
+        if (update_pool[j] <= tie_pivot)
+            subdomain_l.push_back(pivot_pool[j]);
+        else
+            subdomain_r.push_back(pivot_pool[j]);
     }
-    KDTreeNode<Label, T> * result = new KDTreeNode<Label, T>
-    (mx_var_index, pivot, domain);
+    
+    
+    KDTreeNode<Label, T> * result = new KDTreeNode<Label, T> (mx_var_index, pivot, domain, dimension, tie_pivot, tie_breaker);
     result->set_left(build_tree(c, st, subdomain_l));
     result->set_right(build_tree(c, st, subdomain_r));
     LOG_FINE("> sdl = %ld\n", subdomain_l.size());

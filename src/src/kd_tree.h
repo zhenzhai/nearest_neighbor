@@ -146,7 +146,7 @@ KDTreeNode<Label, T> * KDTree<Label, T>::build_tree(size_t min_leaf_size,
         return new KDTreeNode<Label, T>(domain);
     }
     DataSet<Label, T> subst = st.subset(domain);
-    vector<double> vars = variances(subst);
+    //vector<double> vars = variances(subst);
     size_t mx_var_index = max_variance_index(subst);
     vector<T> values;
     for (size_t i = 0; i < subst.size(); i++) {
@@ -172,9 +172,6 @@ KDTreeNode<Label, T> * KDTree<Label, T>::build_tree(size_t min_leaf_size,
     size_t dimension = (*subst[0]).size();
     vector<double> tie_breaker = random_tie_breaker(dimension);
     
-    //store new pivots in update_pool
-    double tie_pivot;
-    
     //extract the vectors from dataset
     DataSet<Label, T> tie_vectors = st.subset(pivot_pool);
     
@@ -187,6 +184,10 @@ KDTreeNode<Label, T> * KDTree<Label, T>::build_tree(size_t min_leaf_size,
     
     //find the tie_pivots and distribute tie vectors
     int k = subdomain_l_lim - subdomain_l.size();
+    
+    //store new pivots in update_pool
+    double tie_pivot;
+    
     tie_pivot = selector(update_pool, k);
     for (int j = 0; j < update_pool.size(); j++) {
         if (update_pool[j] <= tie_pivot)
@@ -264,13 +265,13 @@ KDTreeNode<Label, T>::KDTreeNode(ifstream & in)
     LOG_FINE("> dimension = %ld\n", dimen);
     while (dimen--)
     {
-        size_t v;
+        double v;
         in.read((char *)&v, sizeof(double));
         tie_breaker_.push_back(v);
     }
     size_t sz;
-    LOG_FINE("> sz = %ld\n", sz);
     in.read((char *)&sz, sizeof(size_t));
+    LOG_FINE("> sz = %ld\n", sz);
     while (sz--)
     {
         size_t v;
@@ -395,13 +396,11 @@ vector<size_t> KDTree<Label, T>::subdomain(vector<T> * query, size_t l_c)
             else if ((*query)[cur->index_] > cur->pivot_)
                 expl.push(cur->right_);
             else {
-                vector<double> tie_breaker = cur->tie_breaker_;
-                double product = dot(*query, tie_breaker);
+                double product = dot(*query, cur->tie_breaker_);
                 if (product <= cur->tie_pivot_)
                     expl.push(cur->left_);
                 else
                     expl.push(cur->right_);
-
             }
         }
         else
