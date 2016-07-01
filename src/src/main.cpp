@@ -16,8 +16,8 @@ using namespace std;
 
 typedef unsigned char byte;
 
-const string DIR = "/Users/janetzhai/Desktop/nn-xcode/nn-xcode";
-//const string DIR = "/Users/zhen/Desktop/nn-code";
+//const string DIR = "/Users/janetzhai/Desktop/nn-xcode/nn-xcode";
+const string DIR = "/Users/zhenzhai/Desktop/nearest_neighbor/src";
 
 const string set_DIR = "/mnist";
 //const string set_DIR = "/cifar";
@@ -34,8 +34,8 @@ int main()
     
     Test<byte,float> mTest(DIR + set_DIR);
     
-    //mTest.generate_kd_trees();
-    //mTest.generate_kd_tree_data(DIR + set_DIR);
+    mTest.generate_kd_trees();
+    mTest.generate_kd_tree_data(DIR + set_DIR);
     //mTest.generate_n_spill_trees();
     //mTest.generate_n_spill_tree_data(DIR + set_DIR);
     mTest.generate_multi_kd_trees();

@@ -1,12 +1,16 @@
-CC := g++
+CC := xcrun clang++ 
 SRCDIR := src
 BUILDDIR := build
 TARGET := main.o
  
 SRCEXT := cpp
 SOURCE := main.cpp
-OBJECTS := $(patsubst $(SRCDIR)/%,$(BUILDDIR)/%,$(SOURCES:.$(SRCEXT)=.o))
-CFLAGS := -std=c++11 -pthread
+OBJECTS := $(patsubst $(SRCDIR)/%, $(BUILDDIR)/%, $(SOURCES:.$(SRCEXT)=.o))
+CFLAGS := -std=c++11 -pthread -mmacosx-version-min=10.7 -stdlib=libc++ 
 
-$(TARGET):
+ifdef DEBUG
+CFLAGS += -g -DDEBUG=$(DEBUG)
+endif
+
+$(TARGET): $(OBJECTS)
 	$(CC) $(CFLAGS) $(SRCDIR)/$(SOURCE) -o $(TARGET)
