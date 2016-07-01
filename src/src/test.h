@@ -30,7 +30,7 @@ using namespace std;
 #define SUBDOMAIN       (0x0004)
 #endif
 
-static double multiple_tree     = 2;
+static double multiple_tree     = 4;
 static double min_leaf  = 0.005; //0.0001;
 static double leaf_size_array []      = {0.015, 0.03, 0.06, 0.09, 0.1, 0.13, 0.15, 0.17, 0.19, 0.21};
 const size_t leaf_size_array_len      = 10;
@@ -86,10 +86,17 @@ public:
         stringstream dir;
         for (int i=1; i<=n; i++) {
             dir << base_dir_ << "/multi_kd_tree" << i << "_" << setprecision(2) << min_leaf_size;
-            MultiKDTree<Label, T> tree ((size_t)(min_leaf_size * (*trn_st_).size()), *trn_st_);
-            ofstream tree_out (dir.str());
-            tree.save(tree_out);
-            tree_out.close();
+            ifstream multi_tree_file (dir.str(), ios::binary);
+            if (multi_tree_file.good()) {
+                LOG_INFO("File multi_kd_tree%d found!!!\n", i);
+                multi_tree_file.clear();
+            }
+            else {
+                MultiKDTree<Label, T> tree ((size_t)(min_leaf_size * (*trn_st_).size()), *trn_st_);
+                ofstream tree_out (dir.str());
+                tree.save(tree_out);
+                tree_out.close();
+            }
             dir.str("");
         }
     }
