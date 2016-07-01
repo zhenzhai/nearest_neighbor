@@ -32,7 +32,7 @@ using namespace std;
 
 static double multiple_tree     = 2;
 static double min_leaf  = 0.005; //0.0001;
-static double leaf_size_array []      = {0.007, 0.015, 0.03, 0.045, 0.05, 0.06, 0.07, 0.08, 0.09, 0.1};//{0.015, 0.03, 0.06, 0.09, 0.1, 0.13, 0.15, 0.17, 0.19, 0.21};
+static double leaf_size_array []      = {0.015, 0.03, 0.06, 0.09, 0.1, 0.13, 0.15, 0.17, 0.19, 0.21};
 const size_t leaf_size_array_len      = 10;
 static double a_array []      = {0.05, 0.1};
 const size_t a_array_len      = 2;
@@ -84,7 +84,7 @@ public:
     
     void s_multi_kd_tree(double min_leaf_size, int n) {
         stringstream dir;
-        for (int i=5; i<=n; i++) {
+        for (int i=1; i<=n; i++) {
             dir << base_dir_ << "/multi_kd_tree" << i << "_" << setprecision(2) << min_leaf_size;
             MultiKDTree<Label, T> tree ((size_t)(min_leaf_size * (*trn_st_).size()), *trn_st_);
             ofstream tree_out (dir.str());
@@ -318,7 +318,7 @@ public:
     
     void generate_multi_kd_tree_data(string out_dir)
     {
-        ofstream dat_out (out_dir + "/4multi_kd_tree.dat");
+        ofstream dat_out (out_dir + "/" + to_string(int(multiple_tree)) + "multi_kd_tree.dat");
         dat_out <<  setw(COL_W) << "leaf";
         dat_out <<  setw(COL_W) << "error rate";
         dat_out <<  setw(COL_W) << "true nn";

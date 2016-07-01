@@ -123,11 +123,24 @@ def ran_kd():
 	kd_x, kd_y = read_file(3,2,'kd_tree.dat')
 	ran_x, ran_y = read_partial_file(3,2,0,3,1,'4multi_kd_tree.dat')
 	kd_line, = plt.plot(kd_x, kd_y, 'ro-', label='KD Tree', lw=3, ms=8)
-	ran_line, = plt.plot(ran_x, ran_y, 'bo-', label='RP Tree', lw=3, ms=8)
+	ran_line, = plt.plot(ran_x, ran_y, 'bo-', label='4 RP Trees', lw=3, ms=8)
 	plt.legend(handles=[kd_line,ran_line],loc=4)
 	figure = plt.gcf()
 	figure.set_size_inches(13, 10)
 	plt.savefig("cifar_ran4_kd.png")
+
+def ran8_kd():
+	plt.axis([0,7000,0.2, 0.9])
+	kd_x, kd_y = read_partial_file(3,2,1,10,1,'kd_tree.dat')
+	ran_x, ran_y = read_partial_file(3,2,0,3,1,'4multi_kd_tree.dat')
+	ran8_x, ran8_y = read_partial_file(3,2,0,5,1,'8multi_kd_tree.dat')
+	kd_line, = plt.plot(kd_x, kd_y, 'ro-', label='KD Tree', lw=3, ms=8)
+	ran_line, = plt.plot(ran_x, ran_y, 'bo-', label='4 RP Tree', lw=3, ms=8)
+	ran8_line, = plt.plot(ran8_x, ran8_y, 'mo-', label='8 RP Tree', lw=3, ms=8)
+	plt.legend(handles=[kd_line,ran_line, ran8_line],loc=4)
+	figure = plt.gcf()
+	figure.set_size_inches(13, 10)
+	plt.savefig("cifar_ran8_kd.png")
 
 def main():
 	font = {'size' : 25}
@@ -136,7 +149,7 @@ def main():
 	plt.xlabel('Number of Distance Computations', labelpad = 10)
 	plt.ylabel('Fraction Correct NN', labelpad = 10)
 
-	ran_kd()
+	ran8_kd()
 
 main()
 
