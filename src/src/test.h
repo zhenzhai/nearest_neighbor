@@ -282,25 +282,26 @@ public:
         size_t error_count = 0;
         size_t true_nn_count = 0;
         unsigned long long subdomain_count = 0;
-        for (size_t i = 0; i < (*tst_st_).size(); i++) {
+        vector<vector<size_t>> nn_domain;
+        for (int j=1; j<=n; j++) {
             stringstream dir;
-            vector<size_t> nn_domain;
-            for (int j=1; j<=n; j++) {
-                dir << base_dir_ << "/multi_kd_tree" << j << "_" << setprecision(2) << min_leaf;
-                string test = dir.str();
-                ifstream tree_in (dir.str());
-                MultiKDTree<Label, T> tree (tree_in, *trn_st_);
+            dir << base_dir_ << "/multi_kd_tree" << j << "_" << setprecision(2) << min_leaf;
+            ifstream tree_in (dir.str());
+            MultiKDTree<Label, T> tree (tree_in, *trn_st_);
+            for (size_t i = 0; i < (*tst_st_).size(); i++) {
                 DataSet<Label, T> subSet = (*trn_st_).subset(tree.subdomain((*tst_st_)[i], (size_t)((leaf_size / n) * (*trn_st_).size())));
-                if (nn_domain.size() == 0){
-                    nn_domain = subSet.get_domain();
+                if (nn_domain.size() < i+1){
+                    nn_domain.push_back(subSet.get_domain());
                 } else {
                     vector<size_t> d = subSet.get_domain();
-                    nn_domain.insert(nn_domain.end(), d.begin(), d.end());
+                    nn_domain[i].insert(nn_domain[i].end(), d.begin(), d.end());
                 }
                 subdomain_count += subSet.size();
-                dir.str("");
             }
-            vector<T> * nn = nearest_neighbor((*tst_st_)[i], (*trn_st_).subset(nn_domain));
+            dir.str("");
+        }
+        for (size_t i = 0; i < (*tst_st_).size(); i++) {
+            vector<T> * nn = nearest_neighbor((*tst_st_)[i], (*trn_st_).subset(nn_domain[i]));
             Label nn_lbl = (*trn_st_).get_label(nn);
             if (nn_lbl != (*tst_st_).get_label(i))
                 error_count++;
