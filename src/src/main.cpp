@@ -16,10 +16,10 @@ using namespace std;
 
 typedef unsigned char byte;
 
-//const string DIR = "/Users/janetzhai/Desktop/nn-xcode/nn-xcode";
-const string DIR = "/Users/zhenzhai/Desktop/nearest_neighbor/src";
+/* Please set the following variable before run */
+const string DIR = "nearest_neighbor/src/src";
 
-const string set_DIR = "/mnist";
+//const string set_DIR = "/mnist";
 //const string set_DIR = "/cifar";
 //const string set_DIR = "/personality";
 //const string set_DIR = "/songs";
