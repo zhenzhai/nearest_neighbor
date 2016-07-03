@@ -30,8 +30,9 @@ using namespace std;
 #define SUBDOMAIN       (0x0004)
 #endif
 
-static double multiple_tree     = 4;
-static double min_leaf  = 0.005; //0.0001;
+static double multiple_tree[]     = {2, 4, 8};
+static size_t multiple_tree_len   = 3;
+static double min_leaf  = 0.001; //0.005
 static double leaf_size_array []      = {0.015, 0.03, 0.06, 0.09, 0.1, 0.13, 0.15, 0.17, 0.19, 0.21};
 const size_t leaf_size_array_len      = 10;
 static double a_array []      = {0.05, 0.1};
@@ -102,7 +103,7 @@ public:
     }
     
     void generate_multi_kd_trees() {
-        s_multi_kd_tree(min_leaf, multiple_tree);
+        s_multi_kd_tree(min_leaf, multiple_tree[multiple_tree_len-1]);
     }
 
     void s_kd_spill_tree(double min_leaf_size, double a_value) {
@@ -326,22 +327,24 @@ public:
     
     void generate_multi_kd_tree_data(string out_dir)
     {
-        ofstream dat_out (out_dir + "/" + to_string(int(multiple_tree)) + "multi_kd_tree.dat");
-        dat_out <<  setw(COL_W) << "leaf";
-        dat_out <<  setw(COL_W) << "error rate";
-        dat_out <<  setw(COL_W) << "true nn";
-        dat_out <<  setw(COL_W) << "subdomain";
-        dat_out << endl;
-        thread t [leaf_size_array_len];
-        string r [leaf_size_array_len];
-        for (size_t i = 0; i < leaf_size_array_len; i++) {
-            t[i] = thread(&Test::s_multi_kd_tree_data, this, leaf_size_array[i], &(r[i]), multiple_tree);
+        for(int k=0; k<multiple_tree_len; k++) {
+            ofstream dat_out (out_dir + "/" + to_string(int(multiple_tree[k])) + "multi_kd_tree.dat");
+            dat_out <<  setw(COL_W) << "leaf";
+            dat_out <<  setw(COL_W) << "error rate";
+            dat_out <<  setw(COL_W) << "true nn";
+            dat_out <<  setw(COL_W) << "subdomain";
+            dat_out << endl;
+            thread t [leaf_size_array_len];
+            string r [leaf_size_array_len];
+            for (size_t i = 0; i < leaf_size_array_len; i++) {
+                t[i] = thread(&Test::s_multi_kd_tree_data, this, leaf_size_array[i], &(r[i]), multiple_tree[k]);
+            }
+            for (size_t i = 0; i < leaf_size_array_len; i++) {
+                t[i].join();
+                dat_out << r[i];
+            }
+            dat_out.close();
         }
-        for (size_t i = 0; i < leaf_size_array_len; i++) {
-            t[i].join();
-            dat_out << r[i];
-        }
-        dat_out.close();
     }
 
     void s_kd_spill_tree_data(double leaf_size, double a_value, string * result)
