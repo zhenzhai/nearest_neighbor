@@ -1,11 +1,11 @@
 //
-//  multi_kd_tree.h
+//  RP_tree.h
 //  Created by Zhen Zhai on 5/15/15.
 //  Copyright (c) 2015 Zhen Zhai. All rights reserved.
 //
 
-#ifndef MULTI_KD_TREE_H
-#define MULTI_KD_TREE_H
+#ifndef RP_TREE_H
+#define RP_TREE_H
 
 #include "kd_tree.h"
 
@@ -14,36 +14,36 @@ using namespace std;
 /* Class Prototypes */
 
 template<class Label, class T>
-class MultiKDTree;
+class RPTree;
 
 /*
- * Name             : MultiKDTree
+ * Name             : RPTree
  * Description      : Encapsulates the KDTreeNodes into multiple trees.
  * Data Field(s)    : None.
- * Function(s)      : MultiKDTree(DataSet<Label, T>)
+ * Function(s)      : RPTree(DataSet<Label, T>)
  *                          - Creates a tree of given data set
- *                    MultiKDTree(size_t, DataSet<Label, T>)
+ *                    RPTree(size_t, DataSet<Label, T>)
  *                          - Creates a tree of given min leaf size and
  *                            data set
- *                    MultiKDTree(ifstream &, DataSet<Label, T>)
+ *                    RPTree(ifstream &, DataSet<Label, T>)
  *                          - De-serialization
  */
 template<class Label, class T>
-class MultiKDTree : public KDTree<Label, T>
+class RPTree : public KDTree<Label, T>
 {
 private:
     static KDTreeNode<Label, T> * build_tree(size_t min_leaf_size,
                                              DataSet<Label, T> & st, vector<size_t> domain);
-    MultiKDTree(DataSet<Label, T> & st);
+    RPTree(DataSet<Label, T> & st);
 public:
-    MultiKDTree(size_t min_leaf_size, DataSet<Label, T> & st);
-    MultiKDTree(ifstream & in, DataSet<Label, T> & st);
+    RPTree(size_t min_leaf_size, DataSet<Label, T> & st);
+    RPTree(ifstream & in, DataSet<Label, T> & st);
 };
 
 /* Private Functions */
 
 template<class Label, class T>
-KDTreeNode<Label, T> * MultiKDTree<Label, T>::build_tree(size_t min_leaf_size,
+KDTreeNode<Label, T> * RPTree<Label, T>::build_tree(size_t min_leaf_size,
                                                     DataSet<Label, T> & st, vector<size_t> domain)
 {
     LOG_INFO("Enter build_tree\n");
@@ -117,29 +117,29 @@ KDTreeNode<Label, T> * MultiKDTree<Label, T>::build_tree(size_t min_leaf_size,
 }
 
 template<class Label, class T>
-MultiKDTree<Label, T>::MultiKDTree(DataSet<Label, T> & st) :
+RPTree<Label, T>::RPTree(DataSet<Label, T> & st) :
     KDTree<Label, T>(st)
 {
-    LOG_INFO("MultiKDTree Constructed\n");
+    LOG_INFO("RPTree Constructed\n");
     LOG_FINE("with default constructor\n");
 }
 
 /* Public Functions */
 
 template<class Label, class T>
-MultiKDTree<Label, T>::MultiKDTree(size_t min_leaf_size, DataSet<Label, T> & st) :
+RPTree<Label, T>::RPTree(size_t min_leaf_size, DataSet<Label, T> & st) :
     KDTree<Label, T>(st)
 {
-    LOG_INFO("MultiKDTree Constructed\n");
+    LOG_INFO("RPTree Constructed\n");
     LOG_FINE("with c = %ld", min_leaf_size);
     this->set_root(build_tree(min_leaf_size, st, st.get_domain()));
 }
 
 template<class Label, class T>
-MultiKDTree<Label, T>::MultiKDTree(ifstream & in, DataSet<Label, T> & st) :
+RPTree<Label, T>::RPTree(ifstream & in, DataSet<Label, T> & st) :
     KDTree<Label, T>(in, st)
 {
-    LOG_INFO("MultiKDTree Constructed\n");
+    LOG_INFO("RPTree Constructed\n");
     LOG_FINE("with input stream\n");
 }
 

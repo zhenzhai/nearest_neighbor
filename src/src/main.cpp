@@ -1,12 +1,5 @@
 #include <iostream>
 #include <cstdio>
-#include "vector_math.h"
-#include "nn.h"
-#include "kd_tree.h"
-#include "n_spill_tree.h"
-#include "kd_spill_tree.h"
-#include "kd_virtual_spill_tree.h"
-#include "data_set.h"
 #include "test.h"
 #include "mnist.h"
 #include "cifar.h"
@@ -33,19 +26,18 @@ int main()
     //cifar_generate();
     //personality_generate();
     //songs_generate();
-    //test_generate();
     
     Test<byte,float> mTest(DIR + set_DIR);
     
     /* Please uncomment the corresponding algorithm below.
      Make sure you set the DIR and set_DIR correctly before you generate data. */
-    
+
     //mTest.generate_kd_trees();
     //mTest.generate_kd_tree_data(DIR + set_DIR);
     //mTest.generate_n_spill_trees();
     //mTest.generate_n_spill_tree_data(DIR + set_DIR);
-    //mTest.generate_multi_kd_trees();
-    //mTest.generate_multi_kd_tree_data(DIR + set_DIR);
+    //mTest.generate_rp_trees();
+    //mTest.generate_rp_tree_data(DIR + set_DIR);
     //mTest.generate_kd_spill_trees();
     //mTest.generate_kd_spill_tree_data(DIR + set_DIR);
     //mTest.generate_pca_trees();

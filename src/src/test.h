@@ -15,11 +15,12 @@
 #include "data_set.h"
 #include "kd_tree.h"
 #include "n_spill_tree.h"
-#include "multi_kd_tree.h"
+#include "rp_tree.h"
 #include "kd_spill_tree.h"
 #include "kd_virtual_spill_tree.h"
 #include "pca_tree.h"
 #include "pca_spill_tree.h"
+#include "nn.h"
 using namespace std;
 
 #ifndef NN_DATA_TYPES_
@@ -30,8 +31,8 @@ using namespace std;
 #define SUBDOMAIN       (0x0004)
 #endif
 
-static double multiple_tree[]     = {2, 4, 8};
-static size_t multiple_tree_len   = 3;
+static double rp_tree[]     = {2, 4, 8};
+static size_t rp_tree_len   = 3;
 static double min_leaf  = 0.001; //0.005
 static double leaf_size_array []      = {0.015, 0.03, 0.06, 0.09, 0.1, 0.13, 0.15, 0.17, 0.19, 0.21};
 const size_t leaf_size_array_len      = 10;
@@ -83,17 +84,17 @@ public:
         }
     }
     
-    void s_multi_kd_tree(double min_leaf_size, int n) {
+    void s_rp_tree(double min_leaf_size, int n) {
         stringstream dir;
         for (int i=1; i<=n; i++) {
-            dir << base_dir_ << "/multi_kd_tree" << i << "_" << setprecision(2) << min_leaf_size;
-            ifstream multi_tree_file (dir.str(), ios::binary);
-            if (multi_tree_file.good()) {
-                LOG_INFO("File multi_kd_tree%d found!!!\n", i);
-                multi_tree_file.clear();
+            dir << base_dir_ << "/rp_tree" << i << "_" << setprecision(2) << min_leaf_size;
+            ifstream rp_tree_file (dir.str(), ios::binary);
+            if (rp_tree_file.good()) {
+                LOG_INFO("File rp_tree%d found!!!\n", i);
+                rp_tree_file.clear();
             }
             else {
-                MultiKDTree<Label, T> tree ((size_t)(min_leaf_size * (*trn_st_).size()), *trn_st_);
+                RPTree<Label, T> tree ((size_t)(min_leaf_size * (*trn_st_).size()), *trn_st_);
                 ofstream tree_out (dir.str());
                 tree.save(tree_out);
                 tree_out.close();
@@ -102,8 +103,8 @@ public:
         }
     }
     
-    void generate_multi_kd_trees() {
-        s_multi_kd_tree(min_leaf, multiple_tree[multiple_tree_len-1]);
+    void generate_rp_trees() {
+        s_rp_tree(min_leaf, rp_tree[rp_tree_len-1]);
     }
 
     void s_kd_spill_tree(double min_leaf_size, double a_value) {
@@ -285,7 +286,7 @@ public:
         dat_out.close();
     }
     
-    void s_multi_kd_tree_data(double leaf_size, string * result, int n)
+    void s_rp_tree_data(double leaf_size, string * result, int n)
     {
         size_t error_count = 0;
         size_t true_nn_count = 0;
@@ -293,9 +294,9 @@ public:
         vector<vector<size_t>> nn_domain;
         for (int j=1; j<=n; j++) {
             stringstream dir;
-            dir << base_dir_ << "/multi_kd_tree" << j << "_" << setprecision(2) << min_leaf;
+            dir << base_dir_ << "/rp_tree" << j << "_" << setprecision(2) << min_leaf;
             ifstream tree_in (dir.str());
-            MultiKDTree<Label, T> tree (tree_in, *trn_st_);
+            RPTree<Label, T> tree (tree_in, *trn_st_);
             for (size_t i = 0; i < (*tst_st_).size(); i++) {
                 DataSet<Label, T> subSet = (*trn_st_).subset(tree.subdomain((*tst_st_)[i], (size_t)((leaf_size / n) * (*trn_st_).size())));
                 if (nn_domain.size() < i+1){
@@ -325,10 +326,10 @@ public:
         *result = data.str();
     }
     
-    void generate_multi_kd_tree_data(string out_dir)
+    void generate_rp_tree_data(string out_dir)
     {
-        for(int k=0; k<multiple_tree_len; k++) {
-            ofstream dat_out (out_dir + "/" + to_string(int(multiple_tree[k])) + "multi_kd_tree.dat");
+        for(int k=0; k<rp_tree_len; k++) {
+            ofstream dat_out (out_dir + "/" + to_string(int(rp_tree[k])) + "rp_tree.dat");
             dat_out <<  setw(COL_W) << "leaf";
             dat_out <<  setw(COL_W) << "error rate";
             dat_out <<  setw(COL_W) << "true nn";
@@ -337,7 +338,7 @@ public:
             thread t [leaf_size_array_len];
             string r [leaf_size_array_len];
             for (size_t i = 0; i < leaf_size_array_len; i++) {
-                t[i] = thread(&Test::s_multi_kd_tree_data, this, leaf_size_array[i], &(r[i]), multiple_tree[k]);
+                t[i] = thread(&Test::s_rp_tree_data, this, leaf_size_array[i], &(r[i]), rp_tree[k]);
             }
             for (size_t i = 0; i < leaf_size_array_len; i++) {
                 t[i].join();
