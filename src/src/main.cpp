@@ -26,6 +26,9 @@ const string set_DIR = "/mnist";
 
 int main()
 {
+    /* The following functions are used to generate data
+     They only need to be run once for each data set*/
+    
     //mnist_generate();
     //cifar_generate();
     //personality_generate();
@@ -34,12 +37,15 @@ int main()
     
     Test<byte,float> mTest(DIR + set_DIR);
     
-    mTest.generate_kd_trees();
-    mTest.generate_kd_tree_data(DIR + set_DIR);
+    /* Please uncomment the corresponding algorithm below.
+     Make sure you set the DIR and set_DIR correctly before you generate data. */
+    
+    //mTest.generate_kd_trees();
+    //mTest.generate_kd_tree_data(DIR + set_DIR);
     //mTest.generate_n_spill_trees();
     //mTest.generate_n_spill_tree_data(DIR + set_DIR);
-    mTest.generate_multi_kd_trees();
-    mTest.generate_multi_kd_tree_data(DIR + set_DIR);
+    //mTest.generate_multi_kd_trees();
+    //mTest.generate_multi_kd_tree_data(DIR + set_DIR);
     //mTest.generate_kd_spill_trees();
     //mTest.generate_kd_spill_tree_data(DIR + set_DIR);
     //mTest.generate_pca_trees();
