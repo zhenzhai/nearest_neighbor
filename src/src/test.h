@@ -33,8 +33,8 @@ using namespace std;
 
 static double rp_tree[]     = {2, 4, 8};
 static size_t rp_tree_len   = 3;
-static double min_leaf  = 0.001; //0.005
-static double leaf_size_array []      = {0.015, 0.03, 0.06, 0.09, 0.1, 0.13, 0.15, 0.17, 0.19, 0.21};
+static double min_leaf  = 0.005; //0.001
+static double leaf_size_array []      = {0.05, 0.08, 0.1, 0.13, 0.15, 0.17, 0.19, 0.21, 0.23, 0.25};//{0.015, 0.03, 0.06, 0.09, 0.1, 0.13, 0.15, 0.17, 0.19, 0.21};
 const size_t leaf_size_array_len      = 10;
 static double a_array []      = {0.05, 0.1};
 const size_t a_array_len      = 2;
