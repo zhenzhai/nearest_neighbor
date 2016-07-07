@@ -43,7 +43,7 @@ public:
 /* Private Functions */
 
 template<class Label, class T>
-KDTreeNode<Label, T> * KDSpillTree<Label, T>::build_tree(size_t min_leaf_size, double a_value,
+KDTreeNode<Label, T> * KDSpillTree<Label, T>::build_tree(size_t min_leaf_size, double spill_factor,
         DataSet<Label, T> & st, vector<size_t> domain)
 {
     LOG_INFO("Enter build_tree\n");
@@ -54,97 +54,120 @@ KDTreeNode<Label, T> * KDSpillTree<Label, T>::build_tree(size_t min_leaf_size, d
         return new KDTreeNode<Label, T>(domain);
     }
     DataSet<Label, T> subst = st.subset(domain);
-    vector<double> vars = variances(subst);
-    size_t mx_var_index = max_variance_index(subst, vars);
+    size_t mx_var_index = max_variance_index(subst);
     vector<T> values;
     for (size_t i = 0; i < subst.size(); i++)
         values.push_back((*subst[i])[mx_var_index]);
+    
+    size_t spill_size_lim = (size_t)(values.size() * spill_factor * 2);
+    size_t child_size_lim = (size_t)(values.size() * (0.5 - spill_factor));
+
     double pivot = selector(values, (size_t)(values.size() * 0.5));
-    double pivot_l = selector(values, (size_t)(values.size() * (0.5 - a_value)));
-    double pivot_r = selector(values, (size_t)(values.size() * (0.5 + a_value)));
-    size_t subdomain_l_lim = (size_t)(values.size() * (0.5 + a_value));
-    size_t subdomain_r_lim = subdomain_l_lim;//(size_t)(values.size() * (1 + 2*a) - subdomain_l_lim);
+    double pivot_l = selector(values, child_size_lim);
+    double pivot_r = selector(values, child_size_lim + spill_size_lim);
+    size_t subdomain_l_lim = child_size_lim + spill_size_lim;
+    size_t subdomain_r_lim = subdomain_l_lim;
     LOG_FINE("> l_lim = %ld\n", subdomain_l_lim);
-    LOG_FINE("> r_lim = %ld\n", subdomain_l_lim);
+    LOG_FINE("> r_lim = %ld\n", subdomain_r_lim);
     vector<size_t> subdomain_l;
     vector<size_t> subdomain_r;
-    vector<size_t> pivot_pool; //may not need pivot pool
     vector<size_t> pivot_l_pool;
     vector<size_t> pivot_r_pool;
+    vector<size_t> spill;
     for (size_t i = 0; i < domain.size(); i++) {
-        if (pivot == values[i]) {
-            pivot_pool.push_back(domain[i]);
-        } else if (pivot_l == values[i]) {
+        if (values[i] < pivot_l) {
+            subdomain_l.push_back(domain[i]);
+        } else if (values[i] == pivot_l) {
             pivot_l_pool.push_back(domain[i]);
-        } else if (pivot_r == values[i]) {
+        } else if (pivot_l < values[i] && values[i] < pivot_r) {
+            spill.push_back(domain[i]);
+        } else if (values[i] == pivot_r) {
             pivot_r_pool.push_back(domain[i]);
         } else {
-            if (pivot_l < values[i] && values[i] < pivot_r) {
-                subdomain_l.push_back(domain[i]);
-                subdomain_r.push_back(domain[i]);
-            } else if (values[i] < pivot) {
-                subdomain_l.push_back(domain[i]);
-            } else {
-                subdomain_r.push_back(domain[i]);
-            }
+            subdomain_r.push_back(domain[i]);
         }
     }
     
     //Distribute values in pools
-    //TODO: tie breaking
-    size_t d_l = MIN(subdomain_l_lim - subdomain_l.size(), pivot_pool.size() + pivot_l_pool.size() + pivot_r_pool.size());
-    size_t d_r = MIN(subdomain_r_lim - subdomain_r.size(), pivot_pool.size() + pivot_l_pool.size() + pivot_r_pool.size());
-    size_t spill = d_l + d_r - (pivot_pool.size() + pivot_l_pool.size() + pivot_r_pool.size());
-    LOG_FINE("> dl = %ld\n", d_l);
-    LOG_FINE("> dr = %ld\n", d_r);
-    LOG_FINE("> spill = %ld\n", spill);
-    for (size_t i = 0; i < d_l - spill; i++) {
-        size_t curr;
-        if (!pivot_l_pool.empty()) {
-             curr = pivot_l_pool.back();
-             pivot_l_pool.pop_back();
-        } else if (!pivot_pool.empty()) {
-             curr = pivot_pool.back();
-             pivot_pool.pop_back();
-        } else {
-             curr = pivot_r_pool.back();
-             pivot_r_pool.pop_back();
-        }
-        subdomain_l.push_back(curr);
+    size_t dimension = (*subst[0]).size();
+    vector<double> tie_breaker = random_tie_breaker(dimension);
+    
+    
+    //extract the vectors from dataset
+    DataSet<Label, T> left_pool_vectors = st.subset(pivot_l_pool);
+    DataSet<Label, T> right_pool_vectors = st.subset(pivot_r_pool);
+    
+    //update left pool using randome tie breaker
+    vector<double> update_left_pool;
+    for (int j = 0; j < left_pool_vectors.size(); j++) {
+        double product = dot(*left_pool_vectors[j], tie_breaker);
+        update_left_pool.push_back(product);
     }
-    for (size_t i = 0; i < d_r - spill; i++) {
-        size_t curr;
-        if (!pivot_r_pool.empty()) {
-             curr = pivot_r_pool.back();
-             pivot_r_pool.pop_back();
-        } else if (!pivot_pool.empty()) {
-             curr = pivot_pool.back();
-             pivot_pool.pop_back();
-        } else {
-             curr = pivot_l_pool.back();
-             pivot_l_pool.pop_back();
-        }
-        subdomain_r.push_back(curr);
+    //update right pool using randome tie breaker
+    vector<double> update_right_pool;
+    for (int j = 0; j < right_pool_vectors.size(); j++) {
+        double product = dot(*right_pool_vectors[j], tie_breaker);
+        update_right_pool.push_back(product);
     }
-    for (size_t i = 0; i < spill; i++) {
-        size_t curr;
-        if (!pivot_pool.empty()) {
-             curr = pivot_pool.back();
-             pivot_pool.pop_back();
-        } else if (!pivot_l_pool.empty()) {
-             curr = pivot_l_pool.back();
-             pivot_l_pool.pop_back();
-        } else {
-             curr = pivot_r_pool.back();
-             pivot_r_pool.pop_back();
+    
+    double tie_pivot_l = selector(update_left_pool, child_size_lim - subdomain_l.size());
+    size_t left_pool_size = update_left_pool.size();
+    for (int i = 0; i < update_left_pool.size(); i++) {
+        if (update_left_pool[i] <= tie_pivot_l) {
+            subdomain_l.push_back(pivot_l_pool[i]);
+            left_pool_size--;
         }
-        subdomain_l.push_back(curr);
-        subdomain_r.push_back(curr);
     }
+    
+    size_t to_fill_spill = spill_size_lim - spill.size();
+    size_t filled_size = update_left_pool.size() - left_pool_size;
+    double tie_pivot_r;
+    if (to_fill_spill > left_pool_size) {
+        for (int i = 0; i < update_left_pool.size(); i++) {
+            if (update_left_pool[i] > tie_pivot_l) {
+                spill.push_back(pivot_l_pool[i]);
+                left_pool_size--;
+            }
+        }
+        //left_pool_size sould be 0 now
+        
+        to_fill_spill = spill_size_lim - spill.size();
+        if (to_fill_spill > 0) {
+            tie_pivot_r = selector(update_right_pool, to_fill_spill);
+            for (int i = 0; i < update_right_pool.size(); i++) {
+                if (update_right_pool[i] <= tie_pivot_r) {
+                    spill.push_back(pivot_r_pool[i]);
+                } else {
+                    subdomain_r.push_back(pivot_r_pool[i]);
+                }
+            }
+        }
+    } else { //spill_size_lim < left_pool_size, therefore left_pivot == right_pivot, no need to look at right_pivot pool because it will be exactly the same as left pivot pool.
+        tie_pivot_r = selector(update_left_pool, to_fill_spill + filled_size);
+        for (int i = 0; i < update_left_pool.size(); i++) {
+            if (tie_pivot_l < update_left_pool[i] && update_left_pool[i] <= tie_pivot_r) {
+                spill.push_back(pivot_l_pool[i]);
+                left_pool_size--;
+            } else if(update_left_pool[i] > tie_pivot_r) {
+                subdomain_r.push_back(pivot_l_pool[i]);
+            }
+        }
+    }
+    
+    //Distribute spill
+    for (int i=0; i<spill.size(); i++) {
+            subdomain_l.push_back(spill[i]);
+            subdomain_r.push_back(spill[i]);
+    }
+
+    
+    //Can use tie_pivot_l when search
+    //It doesn't matters where it goes when the tie range is smaller than the spill range, apply left tie won't hurt.
+    //If tie range is larger than the spill range, left tie alone can determine which leaf to go.
     KDTreeNode<Label, T> * result = new KDTreeNode<Label, T>
-            (mx_var_index, pivot, domain);
-    result->set_left(build_tree(min_leaf_size, a_value, st, subdomain_l));
-    result->set_right(build_tree(min_leaf_size, a_value, st, subdomain_r));
+            (mx_var_index, pivot, domain, dimension, tie_pivot_l, tie_breaker);
+    result->set_left(build_tree(min_leaf_size, spill_factor, st, subdomain_l));
+    result->set_right(build_tree(min_leaf_size, spill_factor, st, subdomain_r));
     LOG_FINE("> sdl = %ld\n", subdomain_l.size());
     LOG_FINE("> sdr = %ld\n", subdomain_r.size());
     LOG_INFO("Exit build_tree\n");

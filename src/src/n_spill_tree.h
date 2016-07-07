@@ -57,18 +57,15 @@ protected:
     size_t index_;
     size_t splits_;
     size_t dimension_;
-    vector<T> left_pivots_;
-    vector<T> right_pivots_;
+    vector<T> pivots_;
     vector<double> tie_breaker_;
     vector<double> tie_left_pivots_;
-    vector<double> tie_right_pivots_;
     vector<NSpillTreeNode *> children_;
     vector<size_t> domain_;
 public:
     NSpillTreeNode(const vector<size_t> domain);
-    NSpillTreeNode(size_t max_var_index, size_t splits, size_t dimension, vector<T> left_pivots,
-                   vector<T> right_pivots, vector<double> tie_breaker,
-                   vector<double> tie_left_pivots, vector<double> tie_right_pivots,
+    NSpillTreeNode(size_t max_var_index, size_t splits, size_t dimension,
+                   vector<T> pivots, vector<double> tie_breaker, vector<double> tie_left_pivots,
                    vector<NSpillTreeNode *> children, vector<size_t> domain);
     NSpillTreeNode(ifstream & in);
     ~NSpillTreeNode();
@@ -161,44 +158,47 @@ NSpillTreeNode<Label, T> * NSpillTree<Label, T>::build_tree(size_t leaf_size,
     }
     
     //create and calculate the split pivots
-    vector<T> left_pivots, right_pivots;
-    size_t child_size = (size_t)(values.size() / splits);
-    size_t spill_size = (size_t)(values.size() * spill_factor);
-    LOG_FINE("> lim = %ld\n", child_size);
+    vector<T> left_pivots, right_pivots, pivots;
+    size_t child_size = (size_t)(values.size()/splits - values.size()*spill_factor);
+    size_t full_child_size = (size_t)(values.size()/splits);
+    size_t half_spill_size = (size_t)(values.size() * spill_factor);
+    size_t spill_size = half_spill_size * 2;
+    LOG_FINE("> lim = %ld\n", full_child_size);
     for (int i=1; i<splits; i++) { // only (#_of_splits - 1) pivots
-        left_pivots.push_back(selector(values, child_size * i - spill_size));
-        right_pivots.push_back(selector(values, child_size * i + spill_size));
+        pivots.push_back(selector(values, full_child_size * i));
+        left_pivots.push_back(selector(values, full_child_size * i - half_spill_size));
+        right_pivots.push_back(selector(values, full_child_size * i + half_spill_size));
     }
     
     
     //split the values into groups
-    vector<vector<T>> left_pivot_pools(splits-1);
-    vector<vector<T>> right_pivot_pools(splits-1);
-    vector<vector<T>> children(splits);
+    vector<vector<size_t>> left_pivot_pools(splits-1);
+    vector<vector<size_t>> right_pivot_pools(splits-1);
+    vector<vector<size_t>> children(splits);
+    vector<vector<size_t>> spills(splits-1);
     for (int i=0; i<domain.size(); i++) {
-        bool not_pushed = true;
+        bool pushed = false;
         int j = 0;
-        while(not_pushed && j<splits-1) {
-            if (values[i] == left_pivots[j]) {
+        while(!pushed && j<splits-1) {
+            if (values[i] < left_pivots[j]) {
+                children[j].push_back(domain[i]);
+                pushed = true;
+            }
+            else if (values[i] == left_pivots[j]) {
                 left_pivot_pools[j].push_back(domain[i]);
-                not_pushed = false;
+                pushed = true;
+            }
+            else if (left_pivots[j] < values[i] && values[i] < right_pivots[j]) {
+                spills[j].push_back(domain[i]);
+                pushed = true;
             }
             else if (values[i] == right_pivots[j]) {
                 right_pivot_pools[j].push_back(domain[i]);
-                not_pushed = false;
-            }
-            else if (values[i] < left_pivots[j]) {
-                children[j].push_back(domain[i]);
-                not_pushed = false;
-            }
-            else if (left_pivots[j] < values[i] && values[i] < right_pivots[j]) {
-                children[j].push_back(domain[i]);
-                children[j+1].push_back(domain[i]);
-                not_pushed = false;
+                pushed = true;
             }
             j++;
         }
-        if (not_pushed) {
+        if (!pushed) {
             children[splits-1].push_back(domain[i]);
         }
     }
@@ -212,66 +212,167 @@ NSpillTreeNode<Label, T> * NSpillTree<Label, T>::build_tree(size_t leaf_size,
     //store tie breaker pivots in update_pool
     vector<double> tie_left_pivots(splits-1);
     vector<double> tie_right_pivots(splits-1);
-    /*for (int i = 0; i < left_pivot_pools.size(); i++) {
+    for (int i = 0; i < left_pivot_pools.size(); i++) {
         //extract the vectors from dataset
         DataSet<Label, T> left_pivot_vectors = st.subset(left_pivot_pools[i]);
-        DataSet<Label, T> right_pivot_vectors = st.subsest(right_pivot_pools[i]);
         
-        //update pool using randome tie breaker
+        //update pool using random tie breaker
         vector<double> updated_left_pool;
         for (int j = 0; j < left_pivot_vectors.size(); j++) {
             double product = dot(*left_pivot_vectors[j], tie_breaker);
             updated_left_pool.push_back(product);
         }
+        
+        //Begin to use left_pool until it is all used up
+        size_t left_pool_size = updated_left_pool.size();
+        size_t filled_size = 0;
+        bool use_right_pool = false;
+        double previous_tie_pivot = selector(updated_left_pool, 0);
+        double tie_pivot = previous_tie_pivot;
+        
+        //initial push to left children, because == is not dealt with in the while loop below
+        for (int j = 0; j < left_pivot_vectors.size(); j++) {
+            if (previous_tie_pivot == updated_left_pool[j]) {
+                children[i].push_back(left_pivot_pools[i][j]);
+                left_pool_size--;
+            }
+        }
+
+        while (left_pool_size > 0) {
+            //find the tie_pivots and distribute to the left child
+            size_t to_fill_left = child_size - children[i].size();
+            
+            // If left pool can't fill current node
+            if (left_pool_size < to_fill_left) {
+                tie_pivot = selector(updated_left_pool, updated_left_pool.size());
+            }
+            else {
+                filled_size = updated_left_pool.size()-left_pool_size;
+                tie_pivot = selector(updated_left_pool, to_fill_left + filled_size);
+                tie_left_pivots.push_back(tie_pivot); // this pivot is the left pivot when search
+            }
+            
+            for (int j = 0; j < left_pivot_vectors.size(); j++) {
+                if (previous_tie_pivot < updated_left_pool[j] && updated_left_pool[j] <= tie_pivot) {
+                    children[i].push_back(left_pivot_pools[i][j]);
+                    left_pool_size--;
+                }
+            }
+            previous_tie_pivot = tie_pivot;
+            
+            //Check whether left_pool_size is empty
+            if (left_pool_size == 0)
+                break;
+            
+            // find the tie_pivots and distribute to the spill node
+            size_t to_fill_spill = spill_size - spills[i].size();
+
+            // If left pool can't fill spill node, need to use right pool
+            if (left_pool_size < to_fill_spill) {
+                use_right_pool = true;
+                //Check whether left_pool_size is empty
+                if (left_pool_size == 0)
+                    break;
+                tie_pivot = selector(updated_left_pool, updated_left_pool.size());
+            }
+            else { //left pool can fill up the spill node, therefore left_pivot == right_pivot.
+                    //No need to look at right pivot pool because it will be the same as left pivot pool
+                filled_size = updated_left_pool.size()-left_pool_size;
+                tie_pivot = selector(updated_left_pool, to_fill_spill + filled_size);
+                tie_right_pivots.push_back(tie_pivot); // this pivot is the right pivot when search
+            }
+            
+            for (int j = 0; j < left_pivot_vectors.size(); j++) {
+                if (previous_tie_pivot < updated_left_pool[j] && updated_left_pool[j] <= tie_pivot) {
+                    spills[i].push_back(left_pivot_pools[i][j]);
+                    left_pool_size--;
+                }
+            }
+            previous_tie_pivot = tie_pivot;
+            
+            // increse i only when left pool is not empty
+            if (left_pool_size > 0)
+                i++;
+        }
+        
+        if (!use_right_pool)
+            continue;
+        
+        //extract the vectors from dataset
+        DataSet<Label, T> right_pivot_vectors = st.subset(right_pivot_pools[i]);
+        
+        //update pool using random tie breaker
         vector<double> updated_right_pool;
         for (int j = 0; j < right_pivot_vectors.size(); j++) {
             double product = dot(*right_pivot_vectors[j], tie_breaker);
             updated_right_pool.push_back(product);
         }
         
-        //find the tie_pivots and distribute tie vectors
-        tie_left_pivots.push_back(selector(values, child_size * i - spill_size));
+        //Begin to use right_pool until it is all used up
+        size_t right_pool_size = updated_right_pool.size();
+        previous_tie_pivot = selector(updated_right_pool, 0);
+        tie_pivot = previous_tie_pivot;
         
-        
-        int left_pool_size = updated_left_pool.size();
-        int right_pool_size = updated_right_pool.size();
-        int filled_size = 0;
-        int i_pivot_pool = i;
-        //i = i - 1;
-        while (left_pool_size > 0) {
-            int to_be_fill = child_size - children[i].size() + filled_size;
-            
-            //if current pivot pool size is less than the to-be-fill size
-            //throw all the points from pivot pool into the next child
-            if (pool_size < to_be_fill) {
-                for (int j = 0; j < pool_size; j++) {
-                    if (updated_pool[j] > tie_pivots[i-1]) {
-                        children[i].push_back(pivot_pools[pivot_pool_i][j]);
-                        filled_size++;
-                    }
-                }
-                continue;
+        for (int j = 0; j < right_pivot_vectors.size(); j++) {
+            if (previous_tie_pivot == updated_right_pool[j]) {
+                spills[i].push_back(right_pivot_pools[i][j]);
+                right_pool_size--;
             }
-            //current pivot pool will fill the child
-            tie_pivots[i] = selector(update_pool, k);
-            for (int j = 0; j < update_pool.size(); j++) {
-                if (i == 0 && update_pool[j] <= tie_pivots[i]) {
-                    children[i].push_back(pivot_pools[pivot_pool_i][j]);
-                    filled_size++;
-                }
-                else if (update_pool[j] <= tie_pivots[i] && update_pool[j] > tie_pivots[i-1]) {
-                    children[i].push_back(pivot_pools[pivot_pool_i][j]);
-                    filled_size++;
-                }
-                else if (i == tie_pivots.size() && update_pool[j] > tie_pivots[i-1]) {
-                    children[i].push_back(pivot_pools[pivot_pool_i][j]);
-                    filled_size++;
-                }
-            }
-            //children[i] should be full now
-            i += 1;
         }
-    } */
+    
+        while (right_pool_size > 0) {
+            size_t to_fill_spill = spill_size - spills[i].size();
+            if (right_pool_size <= to_fill_spill) {
+                tie_pivot = selector(updated_right_pool, updated_right_pool.size());
+            }
+            else {
+                filled_size = updated_right_pool.size()-right_pool_size;
+                tie_pivot = selector(updated_right_pool, to_fill_spill + filled_size);
+                tie_right_pivots.push_back(tie_pivot); // this pivot is the right pivot when search
+            }
+            
+            for (int j = 0; j < right_pivot_vectors.size(); j++) {
+                if (previous_tie_pivot < updated_right_pool[j] && updated_right_pool[j] <= tie_pivot) {
+                    spills[i].push_back(right_pivot_pools[i][j]);
+                    right_pool_size--;
+                }
+            }
+            previous_tie_pivot = tie_pivot;
+            
+            //Check whether right_pool_size is empty
+            if (right_pool_size == 0)
+                break;
+            
+            size_t to_fill_right = child_size - children[i+1].size();
+            if (right_pool_size < to_fill_right) {
+                tie_pivot = selector(updated_right_pool, updated_right_pool.size());
+            }
+            else {
+                filled_size = updated_right_pool.size()-right_pool_size;
+                tie_pivot = selector(updated_right_pool, to_fill_right + filled_size);
+                tie_left_pivots.push_back(tie_pivot); // this pivot is the left pivot when search
+            }
+            
+            for (int j = 0; j < right_pivot_vectors.size(); j++) {
+                if (previous_tie_pivot < updated_right_pool[j] && updated_right_pool[j] <= tie_pivot) {
+                    children[i+1].push_back(right_pivot_pools[i][j]);
+                    right_pool_size--;
+                }
+            }
+            
+            // increse i only when right pool is not empty
+            if (right_pool_size > 0)
+                i++;
+        }
+    }
+    
+    //distribute spill
+    for (int i=0; i<spills.size(); i++) {
+        for (int j=0; j<spills[i].size(); j++) {
+            children[i].push_back(spills[i][j]);
+            children[i+1].push_back(spills[i][j]);
+        }
+    }
 
     
     //call build tree recursively to build tree
@@ -281,7 +382,7 @@ NSpillTreeNode<Label, T> * NSpillTree<Label, T>::build_tree(size_t leaf_size,
         children_vector.push_back(node);
     }
     //return newly built tree
-    NSpillTreeNode<Label, T> * result = new NSpillTreeNode<Label, T>(mx_var_index, splits, dimension, left_pivots, right_pivots, tie_breaker, tie_left_pivots, tie_right_pivots,children_vector, domain);
+    NSpillTreeNode<Label, T> * result = new NSpillTreeNode<Label, T>(mx_var_index, splits, dimension, pivots, tie_breaker, tie_left_pivots, children_vector, domain);
     LOG_INFO("Exit build_tree\n");
     return result;
 }
@@ -293,11 +394,9 @@ NSpillTreeNode<Label, T>::NSpillTreeNode(const vector<size_t> domain) :
   index_ (0),
   splits_(0),
   dimension_ (0),
-  left_pivots_ (NULL),
-  right_pivots_(NULL),
+  pivots_ (NULL),
   tie_breaker_(NULL),
   tie_left_pivots_(NULL),
-  tie_right_pivots_(NULL),
   children_ (NULL),
   domain_ (domain)
 { 
@@ -310,27 +409,23 @@ NSpillTreeNode<Label, T>::NSpillTreeNode(
 		size_t index,
         size_t splits,
         size_t dimension,
-        vector<T> left_pivots,
-        vector<T> right_pivots,
+        vector<T> pivots,
         vector<double> tie_breaker,
         vector<double> tie_left_pivots,
-        vector<double> tie_right_pivots,
-		vector<NSpillTreeNode *> children, 
+		vector<NSpillTreeNode *> children,
 		vector<size_t> domain) :
   index_ (index),
   splits_ (splits),
   dimension_ (dimension),
-  left_pivots_ (left_pivots),
-  right_pivots_ (right_pivots),
+  pivots_ (pivots),
   tie_breaker_ (tie_breaker),
   tie_left_pivots_ (tie_left_pivots),
-  tie_right_pivots_ (tie_right_pivots),
   children_ (children),
   domain_ (domain)
 { 
     LOG_INFO("NSpillTreeNode Constructed\n");
-    LOG_FINE("with index = %ld, domain.size = %ld\n", index, 
-            domain.size());
+    LOG_FINE("with index = %ld, domain.size = %ld, children = %ld\n", index,
+            domain.size(), splits);
 }
 
 template<class Label, class T>
@@ -343,19 +438,12 @@ NSpillTreeNode<Label, T>::NSpillTreeNode(ifstream & in)
     size_t number_of_pivots = splits_ - 1;
     if (splits_ == 0) //make sure it doesn't become negative
         number_of_pivots = 0;
-    size_t number_left_pivots = number_of_pivots;
-    size_t number_right_pivots = number_of_pivots;
-    while (number_left_pivots--)
+    size_t pivots = number_of_pivots;
+    while (pivots--)
     {
         T pivot;
         in.read((char *)&pivot, sizeof(T));
-        left_pivots_.push_back(pivot);
-    }
-    while (number_right_pivots--)
-    {
-        T pivot;
-        in.read((char *)&pivot, sizeof(T));
-        right_pivots_.push_back(pivot);
+        pivots_.push_back(pivot);
     }
     size_t sz;
     in.read((char *)&sz, sizeof(size_t));
@@ -375,19 +463,12 @@ NSpillTreeNode<Label, T>::NSpillTreeNode(ifstream & in)
         in.read((char *)&v, sizeof(double));
         tie_breaker_.push_back(v);
     }
-    number_left_pivots = number_of_pivots;
-    number_right_pivots = number_of_pivots;
-    while (number_left_pivots--)
+    pivots = number_of_pivots;
+    while (pivots--)
     {
         double tie_pivot;
         in.read((char *)&tie_pivot, sizeof(double));
         tie_left_pivots_.push_back(tie_pivot);
-    }
-    while (number_right_pivots--)
-    {
-        double tie_pivot;
-        in.read((char *)&tie_pivot, sizeof(double));
-        tie_right_pivots_.push_back(tie_pivot);
     }
 }
 
@@ -398,19 +479,15 @@ void NSpillTreeNode<Label, T>::save(ofstream & out) const
     LOG_FINE("> domain.size = %ld\n", domain_.size());
     out.write((char *)&index_, sizeof(size_t));
     out.write((char *)&splits_, sizeof(size_t));
-    out.write((char *)&left_pivots_[0],
-              sizeof(T) * left_pivots_.size());
-    out.write((char *)&right_pivots_[0],
-              sizeof(T) * right_pivots_.size());
-    size_t sz = domain_.size();
+    out.write((char *)&pivots_[0],
+              sizeof(T) * pivots_.size());
+        size_t sz = domain_.size();
     out.write((char *)&sz, sizeof(size_t)); 
     out.write((char *)&domain_[0], sizeof(size_t) * sz);
     out.write((char *)&dimension_, sizeof(size_t));
     out.write((char *)&tie_breaker_[0], sizeof(double) * dimension_);
     out.write((char *)&tie_left_pivots_[0],
               sizeof(double) * tie_left_pivots_.size());
-    out.write((char *)&tie_right_pivots_[0],
-              sizeof(double) * tie_right_pivots_.size());
 }
 
 template<class Label, class T>
@@ -502,7 +579,7 @@ void NSpillTree<Label, T>::save(ofstream & out) const
     }
 }
 
-/*template<class Label, class T>
+template<class Label, class T>
 vector<size_t> NSpillTree<Label, T>::subdomain(vector<T> * query, size_t l_c)
 {
     LOG_INFO("Enter subdomain\n");
@@ -515,9 +592,8 @@ vector<size_t> NSpillTree<Label, T>::subdomain(vector<T> * query, size_t l_c)
         expl.pop();
         if (!cur->children_.empty() &&
             cur->domain_.size() >= l_c) {
-            bool pushed = false; //To indicate whether it is pushed to any child
             size_t splits = cur->splits_;
-            bool tie = false; //To indicate whether it equals to any pivots
+            bool pushed = false;
             for (int i = 0; i < splits-1; i++) {
                 if ((*query)[cur->index_] < cur->pivots_[i]) {
                     expl.push(cur->children_[i]);
@@ -525,31 +601,27 @@ vector<size_t> NSpillTree<Label, T>::subdomain(vector<T> * query, size_t l_c)
                     break;
                 }
                 else if ((*query)[cur->index_] == cur->pivots_[i]) {
-                    tie = true;
                     vector<double> tie_breaker = cur->tie_breaker_;
                     double product = dot(*query, tie_breaker);
-                    if (product <= cur->tie_pivots_[i]) {
+                    //Can use tie_left_pivot when search
+                    //It doesn't matters where it goes when the tie range is smaller than the spill range, apply left tie won't hurt.
+                    //If tie range is larger than the spill range, left tie alone can determine which leaf to go.
+                    if (product <= cur->tie_left_pivots_[i]) {
                         expl.push(cur->children_[i]);
                         pushed = true;
                         break;
                     }
                 }
-                //Push to the current child if it equals to the previous pivots
-                //but not pushed into the previous child
-                else if (tie) {
-                    expl.push(cur->children_[i]);
-                    pushed = true;
-                    break;
-                }
             }
-            if (!pushed)
+            if (!pushed) {
                 expl.push(cur->children_[splits-1]);
+            }
         }
         else
             return cur->domain_;
     }
     LOG_INFO("Exit subdomain\n");
     return vector<size_t>();
-}*/
+}
 
 #endif

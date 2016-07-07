@@ -146,7 +146,6 @@ KDTreeNode<Label, T> * KDTree<Label, T>::build_tree(size_t min_leaf_size,
         return new KDTreeNode<Label, T>(domain);
     }
     DataSet<Label, T> subst = st.subset(domain);
-    //vector<double> vars = variances(subst);
     size_t mx_var_index = max_variance_index(subst);
     vector<T> values;
     for (size_t i = 0; i < subst.size(); i++) {
