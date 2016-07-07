@@ -130,10 +130,10 @@ def ran2_kd():
 
 def ran8_kd():
 	plt.axis([0,8000,0.4,1])
-	kd_x, kd_y = read_partial_file(3,2,0,10,1,'kd_tree.dat')
-	ran_x, ran_y = read_partial_file(3,2,0,10,1,'2multi_kd_tree.dat')
-	ran4_x, ran4_y = read_partial_file(3,2,0,10,1,'4multi_kd_tree.dat')
-	ran8_x, ran8_y = read_partial_file(3,2,0,10,1,'8multi_kd_tree.dat')
+	kd_x, kd_y = read_file(3,2,'kd_tree.dat')
+	ran_x, ran_y = read_file(3,2,'2multi_kd_tree.dat')
+	ran4_x, ran4_y = read_file(3,2,'4multi_kd_tree.dat')
+	ran8_x, ran8_y = read_file(3,2,'8multi_kd_tree.dat')
 	kd_line, = plt.plot(kd_x, kd_y, 'ro-', label='KD Tree', lw=3, ms=8)
 	ran_line, = plt.plot(ran_x, ran_y, 'go-', label='2 RP Trees', lw=3, ms=8)
 	ran4_line, = plt.plot(ran4_x, ran4_y, 'bo-', label='4 RP Trees', lw=3, ms=8)
