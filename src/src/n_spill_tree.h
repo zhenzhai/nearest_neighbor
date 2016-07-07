@@ -344,7 +344,7 @@ NSpillTreeNode<Label, T> * NSpillTree<Label, T>::build_tree(size_t leaf_size,
                 break;
             
             size_t to_fill_right = child_size - children[i+1].size();
-            if (right_pool_size < to_fill_right) {
+            if (right_pool_size <= to_fill_right) {
                 tie_pivot = selector(updated_right_pool, updated_right_pool.size());
             }
             else {
