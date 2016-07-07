@@ -227,7 +227,7 @@ NSpillTreeNode<Label, T> * NSpillTree<Label, T>::build_tree(size_t leaf_size,
         size_t left_pool_size = updated_left_pool.size();
         size_t filled_size = 0;
         bool use_right_pool = false;
-        double previous_tie_pivot = selector(updated_left_pool, 0);
+        double previous_tie_pivot = selector(updated_left_pool, 1);
         double tie_pivot = previous_tie_pivot;
         
         //initial push to left children, because == is not dealt with in the while loop below
@@ -310,7 +310,7 @@ NSpillTreeNode<Label, T> * NSpillTree<Label, T>::build_tree(size_t leaf_size,
         
         //Begin to use right_pool until it is all used up
         size_t right_pool_size = updated_right_pool.size();
-        previous_tie_pivot = selector(updated_right_pool, 0);
+        previous_tie_pivot = selector(updated_right_pool, 1);
         tie_pivot = previous_tie_pivot;
         
         for (int j = 0; j < right_pivot_vectors.size(); j++) {
