@@ -210,8 +210,8 @@ NSpillTreeNode<Label, T> * NSpillTree<Label, T>::build_tree(size_t leaf_size,
     vector<double> tie_breaker = random_tie_breaker(dimension);
     
     //store tie breaker pivots in update_pool
-    vector<double> tie_left_pivots(splits-1);
-    vector<double> tie_right_pivots(splits-1);
+    vector<double> tie_left_pivots;
+    vector<double> tie_right_pivots;
     for (int i = 0; i < left_pivot_pools.size(); i++) {
         //extract the vectors from dataset
         DataSet<Label, T> left_pivot_vectors = st.subset(left_pivot_pools[i]);
@@ -275,8 +275,26 @@ NSpillTreeNode<Label, T> * NSpillTree<Label, T>::build_tree(size_t leaf_size,
                     break;
                 tie_pivot = selector(updated_left_pool, updated_left_pool.size());
             }
-            else { //left pool can fill up the spill node, therefore left_pivot == right_pivot.
-                    //No need to look at right pivot pool because it will be the same as left pivot pool
+            //left pool can fill up the spill node, therefore left_pivot == right_pivot.
+            //No need to look at right pivot pool because it will be the same as left pivot pool
+            else if (i == splits-2) { // if i+1 is the last node, all nodes should be filled with left_pivot_pool
+                filled_size = updated_left_pool.size()-left_pool_size;
+                tie_pivot = selector(updated_left_pool, to_fill_spill + filled_size);
+                tie_right_pivots.push_back(tie_pivot); // this pivot is the right pivot when search
+                
+                for (int j = 0; j < left_pivot_vectors.size(); j++) {
+                    if (previous_tie_pivot < updated_left_pool[j] && updated_left_pool[j] <= tie_pivot) {
+                        spills[i].push_back(left_pivot_pools[i][j]);
+                        left_pool_size--;
+                    }
+                    else if (updated_left_pool[j] > tie_pivot) {
+                        children[i+1].push_back(left_pivot_pools[i][j]);
+                        left_pool_size--;
+                    }
+                }
+                break;
+            }
+            else {
                 filled_size = updated_left_pool.size()-left_pool_size;
                 tie_pivot = selector(updated_left_pool, to_fill_spill + filled_size);
                 tie_right_pivots.push_back(tie_pivot); // this pivot is the right pivot when search
@@ -288,6 +306,7 @@ NSpillTreeNode<Label, T> * NSpillTree<Label, T>::build_tree(size_t leaf_size,
                     left_pool_size--;
                 }
             }
+            
             previous_tie_pivot = tie_pivot;
             
             // increse i only when left pool is not empty
@@ -344,7 +363,7 @@ NSpillTreeNode<Label, T> * NSpillTree<Label, T>::build_tree(size_t leaf_size,
                 break;
             
             size_t to_fill_right = child_size - children[i+1].size();
-            if (right_pool_size <= to_fill_right) {
+            if (right_pool_size <= to_fill_right or i == splits-2) {
                 tie_pivot = selector(updated_right_pool, updated_right_pool.size());
             }
             else {
