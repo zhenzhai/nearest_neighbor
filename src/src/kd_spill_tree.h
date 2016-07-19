@@ -54,7 +54,11 @@ KDTreeNode<Label, T> * KDSpillTree<Label, T>::build_tree(size_t min_leaf_size, d
         return new KDTreeNode<Label, T>(domain);
     }
     DataSet<Label, T> subst = st.subset(domain);
+    
+    //find max variance index
     size_t mx_var_index = max_variance_index(subst);
+    
+    //get all the values at the max variance index
     vector<T> values;
     for (size_t i = 0; i < subst.size(); i++)
         values.push_back((*subst[i])[mx_var_index]);
@@ -65,10 +69,12 @@ KDTreeNode<Label, T> * KDSpillTree<Label, T>::build_tree(size_t min_leaf_size, d
     double pivot = selector(values, (size_t)(values.size() * 0.5));
     double pivot_l = selector(values, child_size_lim);
     double pivot_r = selector(values, child_size_lim + spill_size_lim);
+    
     size_t subdomain_l_lim = child_size_lim + spill_size_lim;
     size_t subdomain_r_lim = subdomain_l_lim;
     LOG_FINE("> l_lim = %ld\n", subdomain_l_lim);
     LOG_FINE("> r_lim = %ld\n", subdomain_r_lim);
+    
     vector<size_t> subdomain_l;
     vector<size_t> subdomain_r;
     vector<size_t> pivot_l_pool;
@@ -91,7 +97,6 @@ KDTreeNode<Label, T> * KDSpillTree<Label, T>::build_tree(size_t min_leaf_size, d
     //Distribute values in pools
     size_t dimension = (*subst[0]).size();
     vector<double> tie_breaker = random_tie_breaker(dimension);
-    
     
     //extract the vectors from dataset
     DataSet<Label, T> left_pool_vectors = st.subset(pivot_l_pool);

@@ -18,7 +18,7 @@ static const char TRN_LBL_PATH [] = "/trn_lbl";
 static const char TST_VTR_PATH [] = "/tst_vtr";
 static const char TST_LBL_PATH [] = "/tst_lbl";
 
-static const size_t TRAIN_MAX = 835000;
+static const size_t TRAIN_MAX = 646558;
 static const size_t TEST_MAX = 165000;
 static const size_t WIDTH = 600;
 
