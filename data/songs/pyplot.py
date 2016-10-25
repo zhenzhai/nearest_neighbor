@@ -34,7 +34,7 @@ def label_points(x_index, y_index, x_off, y_off, labels):
 					 connectionstyle="arc,rad=10"))
 
 def kd():
-	plt.axis([0,110000,0,0.6])
+	plt.axis([0,14000,0,0.6])
 	kd_x, kd_y = read_file(3,2,'kd_tree.dat')
 	kd_line, = plt.plot(kd_x, kd_y, 'ro-', label='KD Tree', lw=3, ms=8)
 	plt.legend(handles=[kd_line],loc=4)
@@ -43,7 +43,7 @@ def kd():
 	plt.savefig("songs_kd")
 
 def kd_pca():
-	plt.axis([0,120000,0,0.8])
+	plt.axis([0,15000,0,0.8])
 	kd_x, kd_y = read_file(3,2,'kd_tree.dat')
 	pca_x, pca_y = read_file(3,2,'pca_tree.dat')
 	kd_line, = plt.plot(kd_x, kd_y, 'ro-', label='KD Tree', lw=3, ms=8)
@@ -114,16 +114,48 @@ def ran_spill_vspill():
 	plt.savefig("song_multi_spill_vspill.png")
 
 
-def ran_kd():
-	plt.axis([0,6000,0,0.4])
+def ran2_kd():
+	plt.axis([0,14000,0,0.6])
 	kd_x, kd_y = read_file(3,2,'kd_tree.dat')
-	ran_x, ran_y = read_partial_file(3,2,0,8,1,'4multi_kd_tree.dat')
+	ran_x, ran_y = read_file(3,2,'2rp_tree.dat')
 	kd_line, = plt.plot(kd_x, kd_y, 'ro-', label='KD Tree', lw=3, ms=8)
-	ran_line, = plt.plot(ran_x, ran_y, 'bo-', label='RP Tree', lw=3, ms=8)
+	ran_line, = plt.plot(ran_x, ran_y, 'bo-', label='2 RKD Tree', lw=3, ms=8)
 	plt.legend(handles=[kd_line,ran_line],loc=4)
 	figure = plt.gcf()
 	figure.set_size_inches(13, 10)
-	plt.savefig("song_ran4_kd.png")
+	plt.savefig("song_ran2_kd.png")
+
+def ran8_kd():
+	plt.axis([0,14000,0,0.7])
+	kd_x, kd_y = read_file(3,2,'kd_tree.dat')
+	ran_x, ran_y = read_file(3,2,'2rp_tree.dat')
+	ran4_x, ran4_y = read_file(3,2,'4rp_tree.dat')
+	ran8_x, ran8_y = read_file(3,2,'8rp_tree.dat')
+	kd_line, = plt.plot(kd_x, kd_y, 'ro-', label='KD Tree', lw=3, ms=8)
+	ran_line, = plt.plot(ran_x, ran_y, 'go-', label='2 RKD Trees', lw=3, ms=8)
+	ran4_line, = plt.plot(ran4_x, ran4_y, 'bo-', label='4 RKD Trees', lw=3, ms=8)
+	ran8_line, = plt.plot(ran8_x, ran8_y, 'mo-', label='8 RKD Trees', lw=3, ms=8)
+	plt.legend(handles=[kd_line,ran_line,ran4_line,ran8_line],loc=4)
+	figure = plt.gcf()
+	figure.set_size_inches(13, 10)
+	plt.savefig("song_ran8_kd.png")
+
+def kd_pca_ran():
+	plt.axis([0,14000,0,0.8])
+	kd_x, kd_y = read_file(3,2,'kd_tree.dat')
+	pca_x, pca_y = read_file(3,2,'pca_tree.dat')
+	ran_x, ran_y = read_file(3,2,'2rp_tree.dat')
+	ran4_x, ran4_y = read_file(3,2,'4rp_tree.dat')
+	ran8_x, ran8_y = read_file(3,2,'8rp_tree.dat')
+	kd_line, = plt.plot(kd_x, kd_y, 'ro-', label='KD Tree', lw=3, ms=8)
+	pca_line, = plt.plot(pca_x, pca_y, 'bo-', label='PCA Tree', lw=3, ms=8)
+	ran_line, = plt.plot(ran_x, ran_y, 'go-', label='2 RKD Trees', lw=3, ms=8)
+	ran4_line, = plt.plot(ran4_x, ran4_y, 'co-', label='4 RKD Trees', lw=3, ms=8)
+	ran8_line, = plt.plot(ran8_x, ran8_y, 'mo-', label='8 RKD Trees', lw=3, ms=8)
+	plt.legend(handles=[kd_line,pca_line, ran_line,ran4_line,ran8_line],loc=4)
+	figure = plt.gcf()
+	figure.set_size_inches(13, 10)
+	plt.savefig("song_kd_pca_ran8.png")
 
 def main():
 	font = {'size' : 25}
@@ -132,7 +164,9 @@ def main():
 	plt.xlabel('Number of Distance Computations', labelpad = 10)
 	plt.ylabel('Fraction Correct NN', labelpad = 10)
 
-	ran_kd()
+	#ran2_kd()
+	#ran8_kd()
+	kd_pca()
 	#ran_spill_vspill()
 
 main()

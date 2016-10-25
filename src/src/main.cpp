@@ -5,6 +5,7 @@
 #include "cifar.h"
 #include "personality.h"
 #include "songs.h"
+#include "big5.h"
 using namespace std;
 
 typedef unsigned char byte;
@@ -12,10 +13,12 @@ typedef unsigned char byte;
 /* Please set the following variable before run */
 const string DIR = "nearest_neighbor/src/src";
 
-//const string set_DIR = "/mnist";
+const string set_DIR = "/mnist";
 //const string set_DIR = "/cifar";
 //const string set_DIR = "/personality";
 //const string set_DIR = "/songs";
+//const string set_DIR = "/big5";
+
 
 int main()
 {
@@ -26,7 +29,9 @@ int main()
     //cifar_generate();
     //personality_generate();
     //songs_generate();
+    //big5_generate();
     
+    //Test<byte,float> mTest(DIR + set_DIR, 1.4);
     Test<byte,float> mTest(DIR + set_DIR);
     
     /* Please uncomment the corresponding algorithm below.
@@ -34,12 +39,14 @@ int main()
 
     //mTest.generate_kd_trees();
     //mTest.generate_kd_tree_data(DIR + set_DIR);
+    //mTest.generate_rkd_trees();
+    //mTest.generate_rkd_tree_data(DIR + set_DIR);
+    //mTest.generate_kd_spill_trees();
+    //mTest.generate_kd_spill_tree_data(DIR + set_DIR);
     //mTest.generate_n_spill_trees();
     //mTest.generate_n_spill_tree_data(DIR + set_DIR);
     //mTest.generate_rp_trees();
-    //mTest.generate_rp_tree_data(DIR + set_DIR);
-    //mTest.generate_kd_spill_trees();
-    //mTest.generate_kd_spill_tree_data(DIR + set_DIR);
+    mTest.generate_rp_tree_data(DIR + set_DIR);
     //mTest.generate_pca_trees();
     //mTest.generate_pca_tree_data(DIR + set_DIR);
     //mTest.generate_pca_spill_trees();

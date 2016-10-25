@@ -1,13 +1,13 @@
 //
-//  songs.cpp
+//  w2v.cpp
 //  nn-xcode
 //
 
-#include "songs.h"
+#include "w2v.h"
 
 typedef unsigned char byte;
 
-static const char BASE_PATH [] = "/Users/janetzhai/Desktop/NN_data/songs";
+static const char BASE_PATH [] = "/Users/janetzhai/Desktop/NN_data/word2vec";
 static const char TRAIN_VECTOR_PATH [] = "/train_vectors";
 static const char TRAIN_LABEL_PATH []  = "/train_labels";
 static const char TEST_VECTOR_PATH [] = "/test_vectors";
@@ -18,9 +18,9 @@ static const char TRN_LBL_PATH [] = "/trn_lbl";
 static const char TST_VTR_PATH [] = "/tst_vtr";
 static const char TST_LBL_PATH [] = "/tst_lbl";
 
-static const size_t TRAIN_MAX = 300000;
+static const size_t TRAIN_MAX = 100000;
 static const size_t TEST_MAX = 10000;
-static const size_t WIDTH = 600;
+static const size_t WIDTH = 300;
 
 static float databuf [TRAIN_MAX][WIDTH];
 static unsigned int labelbuf [TRAIN_MAX];
@@ -30,14 +30,14 @@ static byte res;
 static int datah, dataw;
 static size_t labelh;
 
-void songs_generate() {
+void big5_generate() {
     FILE * fin, * fout1, * fout2;
     char filepath [TRAIN_MAX], * relpath;
     strcpy(filepath, BASE_PATH);
     relpath = filepath + strlen(filepath);
-    /* WRITE TRAIN DATA AND LABEL*/
     
-    fprintf(stderr, "> converting songs data\n");
+    /* WRITE TRAIN DATA AND LABEL*/
+    fprintf(stderr, "> converting big5 data\n");
     fprintf(stderr, "  > populating data buffer for train data\n");
     strcpy(relpath, TRAIN_VECTOR_PATH);
     fin = fopen(filepath, "rb");
@@ -86,8 +86,7 @@ void songs_generate() {
     fclose(fout2);
     
     /* TEST DATA */
-    
-    fprintf(stderr, "> converting songs data\n");
+    fprintf(stderr, "> converting big5 data\n");
     fprintf(stderr, "  > populating data buffer for test data\n");
     strcpy(relpath, TEST_VECTOR_PATH);
     fin = fopen(filepath, "rb");
