@@ -18,7 +18,7 @@ static const char TRN_LBL_PATH [] = "/trn_lbl";
 static const char TST_VTR_PATH [] = "/tst_vtr";
 static const char TST_LBL_PATH [] = "/tst_lbl";
 
-static const size_t TRAIN_MAX = 300000;
+static const size_t TRAIN_MAX = 100000;//646558;
 static const size_t TEST_MAX = 10000;
 static const size_t WIDTH = 600;
 
@@ -31,12 +31,11 @@ static int datah, dataw;
 static size_t labelh;
 
 void songs_generate() {
-    FILE * fin, * fout1, * fout2;
+    /* WRITE TRAIN DATA AND LABEL*/
     char filepath [TRAIN_MAX], * relpath;
+    FILE * fin, * fout1, * fout2;
     strcpy(filepath, BASE_PATH);
     relpath = filepath + strlen(filepath);
-    /* WRITE TRAIN DATA AND LABEL*/
-    
     fprintf(stderr, "> converting songs data\n");
     fprintf(stderr, "  > populating data buffer for train data\n");
     strcpy(relpath, TRAIN_VECTOR_PATH);
@@ -55,7 +54,7 @@ void songs_generate() {
     }
     fclose(fin);
     fprintf(stderr, "  > dimensions w: %d, h: %d\n", dataw, datah);
-    // TODO: Normalizing
+    /* TODO: Normalizing */
     strcpy(relpath, TRAIN_LABEL_PATH);
     fin = fopen(filepath, "rb");
     strcpy(relpath, TRN_VTR_PATH);
@@ -86,7 +85,6 @@ void songs_generate() {
     fclose(fout2);
     
     /* TEST DATA */
-    
     fprintf(stderr, "> converting songs data\n");
     fprintf(stderr, "  > populating data buffer for test data\n");
     strcpy(relpath, TEST_VECTOR_PATH);
