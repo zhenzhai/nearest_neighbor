@@ -130,7 +130,7 @@ def ran2_kd():
 	plt.savefig(data_set + "_ran2_kd.png")
 
 def ran8_kd():
-	plt.axis([0,15000,0,0.7])
+	plt.axis([0,15000,0,0.6])
 	kd_x, kd_y = read_file(3,2,'kd_tree.dat')
 	ran_x, ran_y = read_file(3,2,'2rkd_tree.dat')
 	ran4_x, ran4_y = read_file(3,2,'4rkd_tree.dat')
@@ -193,8 +193,8 @@ def main():
 	plt.ylabel('Fraction Correct NN', labelpad = 10)
 
 	global data_set
-	data_set = 'big5'
-	kd()
+	data_set = 'w2v'
+	ran8_kd()
 
 main()
 
