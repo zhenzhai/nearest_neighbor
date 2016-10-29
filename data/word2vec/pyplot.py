@@ -188,13 +188,13 @@ def kd_pca_ran_rp():
 def main():
 	font = {'size' : 25}
 	plt.rc('font', **font)
-	plt.title('BIG5 True NN Percentage', y=1.02)
+	plt.title('Google News Word2vec True NN Percentage', y=1.02)
 	plt.xlabel('Number of Distance Computations', labelpad = 10)
 	plt.ylabel('Fraction Correct NN', labelpad = 10)
 
 	global data_set
 	data_set = 'w2v'
-	ran8_kd()
+	kd()
 
 main()
 
