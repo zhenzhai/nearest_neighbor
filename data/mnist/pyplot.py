@@ -45,7 +45,7 @@ def kd():
 	plt.savefig("mnist_kd.png")
 
 def kd_pca():
-	plt.axis([0,8000,0.3,0.8])
+	plt.axis([0,8000,0.3,0.9])
 	kd_x, kd_y = read_file(3,2,'kd_tree.dat')
 	pca_x, pca_y = read_file(3,2,'pca_tree.dat')
 	kd_line, = plt.plot(kd_x, kd_y, 'ro-', label='KD Tree', lw=3, ms=8)
@@ -160,45 +160,47 @@ def kd_pca_ran():
 	figure.set_size_inches(13, 10)
 	plt.savefig("mnist_kd_pca_ran8.png")
 
-def kd_pca_rp():
-	plt.axis([0,8000,0.2,1])
+def rp2_kd():
+	plt.axis([0,8000,0.3,0.8])
 	kd_x, kd_y = read_file(3,2,'kd_tree.dat')
-	pca_x, pca_y = read_file(3,2,'pca_tree.dat')
+	ran_x, ran_y = read_file(3,2,'2rp_tree.dat')
+	kd_line, = plt.plot(kd_x, kd_y, 'ro-', label='KD Tree', lw=3, ms=8)
+	ran_line, = plt.plot(ran_x, ran_y, 'bo-', label='2 RP Trees', lw=3, ms=8)
+	plt.legend(handles=[kd_line,ran_line],loc=4)
+	figure = plt.gcf()
+	figure.set_size_inches(13, 10)
+	plt.savefig(data_set + "_rp2_kd.png")
+
+def rp8_kd():
+	plt.axis([0,8000,0.3,0.9])
+	kd_x, kd_y = read_file(3,2,'kd_tree.dat')
 	ran_x, ran_y = read_file(3,2,'2rp_tree.dat')
 	ran4_x, ran4_y = read_file(3,2,'4rp_tree.dat')
 	ran8_x, ran8_y = read_file(3,2,'8rp_tree.dat')
 	kd_line, = plt.plot(kd_x, kd_y, 'ro-', label='KD Tree', lw=3, ms=8)
-	pca_line, = plt.plot(pca_x, pca_y, 'bo-', label='PCA Tree', lw=3, ms=8)
 	ran_line, = plt.plot(ran_x, ran_y, 'go-', label='2 RP Trees', lw=3, ms=8)
-	ran4_line, = plt.plot(ran4_x, ran4_y, 'co-', label='4 RP Trees', lw=3, ms=8)
+	ran4_line, = plt.plot(ran4_x, ran4_y, 'bo-', label='4 RP Trees', lw=3, ms=8)
 	ran8_line, = plt.plot(ran8_x, ran8_y, 'mo-', label='8 RP Trees', lw=3, ms=8)
-	plt.legend(handles=[kd_line,pca_line, ran_line,ran4_line,ran8_line],loc=4)
+	plt.legend(handles=[kd_line,ran_line,ran4_line,ran8_line],loc=4)
 	figure = plt.gcf()
 	figure.set_size_inches(13, 10)
-	plt.savefig("mnist_kd_pca_rp8.png")
+	plt.savefig(data_set + "_rp8_kd.png")
 
-def kd_pca_rp_ran():
-	plt.axis([0,8000,0,1])
+def kd_pca_ran_rp():
+	plt.axis([0,8000,0.3,1])
 	kd_x, kd_y = read_file(3,2,'kd_tree.dat')
 	pca_x, pca_y = read_file(3,2,'pca_tree.dat')
-	rp_x, rp_y = read_file(3,2,'2rp_tree.dat')
-	rp4_x, rp4_y = read_file(3,2,'4rp_tree.dat')
 	rp8_x, rp8_y = read_file(3,2,'8rp_tree.dat')
+	ran8_x, ran8_y = read_file(3,2,'8rkd_tree.dat')
 	kd_line, = plt.plot(kd_x, kd_y, 'ro-', label='KD Tree', lw=3, ms=8)
 	pca_line, = plt.plot(pca_x, pca_y, 'bo-', label='PCA Tree', lw=3, ms=8)
-	rp_line, = plt.plot(rp_x, rp_y, 'yo-', label='2 RP Trees', lw=3, ms=8)
-	rp4_line, = plt.plot(rp4_x, rp4_y, 'yo-', label='4 RP Trees', lw=3, ms=8)
-	rp8_line, = plt.plot(rp8_x, rp8_y, 'yo-', label='8 RP Trees', lw=3, ms=8)
-	ran_x, ran_y = read_file(3,2,'2rkd_tree.dat')
-	ran4_x, ran4_y = read_file(3,2,'4rkd_tree.dat')
-	ran8_x, ran8_y = read_file(3,2,'8rkd_tree.dat')
-	ran_line, = plt.plot(ran_x, ran_y, 'ko-', label='2 RKD Trees', lw=3, ms=8)
-	ran4_line, = plt.plot(ran4_x, ran4_y, 'ko-', label='4 RKD Trees', lw=3, ms=8)
-	ran8_line, = plt.plot(ran8_x, ran8_y, 'ko-', label='8 RKD Trees', lw=3, ms=8)
-	plt.legend(handles=[kd_line,pca_line, rp_line, ran_line],loc=4)
+	rp8_line, = plt.plot(rp8_x, rp8_y, 'co-', label='8 RP Trees', lw=3, ms=8)
+	ran8_line, = plt.plot(ran8_x, ran8_y, 'mo-', label='8 RKD Trees', lw=3, ms=8)
+	plt.legend(handles=[kd_line, pca_line, rp8_line, ran8_line],loc=4)
 	figure = plt.gcf()
 	figure.set_size_inches(13, 10)
-	plt.savefig("mnist_kd_pca_rp8_ran8.png")
+	plt.savefig(data_set + "_kd_pca_ran8_rp8.png")
+
 
 def main():
 	font = {'size' : 25}
@@ -210,9 +212,13 @@ def main():
 	plt.xlabel('Number of Distance Computations', labelpad = 10)
 	plt.ylabel('Fraction Correct NN', labelpad = 10)
 
+	global data_set
+	data_set = 'mnist'
+
 	#kd_pca_ran()
-	kd_pca_rp_ran()
-	#ran8_kd()
+	#kd_pca_rp_ran()
+	kd_pca_ran_rp()
+	#rp8_kd()
 
 main()
 
