@@ -36,17 +36,17 @@ def label_points(x_index, y_index, x_off, y_off, labels):
 
 
 def kd():
-	plt.axis([0,7000,0.3,0.75])
+	plt.axis([0,15000,0,0.45])
 	kd_x, kd_y = read_file(3,2,'kd_tree.dat')
 	kd_line, = plt.plot(kd_x, kd_y, 'ro-', label='KD Tree', lw=3, ms=8)
 	plt.legend(handles=[kd_line],loc=4)
 	figure = plt.gcf()
 	figure.set_size_inches(13, 10)
-	plt.savefig("cifar_kd.png")
+	plt.savefig(data_set + "_kd.png")
 
 
 def kd_pca():
-	plt.axis([0,7000,0.3,0.75])
+	plt.axis([0,15000,0,0.6])
 	kd_x, kd_y = read_file(3,2,'kd_tree.dat')
 	pca_x, pca_y = read_file(3,2,'pca_tree.dat')
 	kd_line, = plt.plot(kd_x, kd_y, 'ro-', label='KD Tree', lw=3, ms=8)
@@ -54,7 +54,7 @@ def kd_pca():
 	plt.legend(handles=[kd_line,pca_line],loc=4)
 	figure = plt.gcf()
 	figure.set_size_inches(13, 10)
-	plt.savefig("cifar_kd_pca.png")
+	plt.savefig(data_set + "_kd_pca.png")
 
 def kd_spill():
 	plt.axis([0,9000,0.3,0.9])
@@ -69,7 +69,7 @@ def kd_spill():
 	plt.legend(handles=[kd_line, spill05_line, spill1_line],loc=4)
 	figure = plt.gcf()
 	figure.set_size_inches(13, 10)
-	plt.savefig("cifar_kd_spill.png")
+	plt.savefig(data_set + "_kd_spill.png")
 
 def pca_spill():
 	plt.axis([0,9000,0.3,0.9])
@@ -84,7 +84,7 @@ def pca_spill():
 	plt.legend(handles=[pca_line, spill05_line, spill1_line],loc=4)
 	figure = plt.gcf()
 	figure.set_size_inches(13, 10)
-	plt.savefig("cifar_pca_spill.png")
+	plt.savefig(data_set + "_pca_spill.png")
 
 def spill_vspill():
 	plt.axis([0,8000,0.25,0.85])
@@ -97,7 +97,7 @@ def spill_vspill():
 	plt.legend(handles=[spill_line,vspill_line],loc=4)
 	figure = plt.gcf()
 	figure.set_size_inches(13, 10)
-	plt.savefig("cifar_1spill_vspill.png")
+	plt.savefig(data_set + "_1spill_vspill.png")
 
 def ran_spill_vspill():
 	plt.axis([0,10000,0.35,0.85])
@@ -116,10 +116,10 @@ def ran_spill_vspill():
 	plt.legend(handles=[spill_line,vspill_line,ran_line, ran4_line, ran8_line],loc=4)
 	figure = plt.gcf()
 	figure.set_size_inches(13, 10)
-	plt.savefig("cifar_multi_spill_vspill.png")
+	plt.savefig(data_set + "_multi_spill_vspill.png")
 
 def ran2_kd():
-	plt.axis([0,7000,0.3,0.8])
+	plt.axis([0,15000,0,0.6])
 	kd_x, kd_y = read_file(3,2,'kd_tree.dat')
 	ran_x, ran_y = read_file(3,2,'2rkd_tree.dat')
 	kd_line, = plt.plot(kd_x, kd_y, 'ro-', label='KD Tree', lw=3, ms=8)
@@ -127,10 +127,10 @@ def ran2_kd():
 	plt.legend(handles=[kd_line,ran_line],loc=4)
 	figure = plt.gcf()
 	figure.set_size_inches(13, 10)
-	plt.savefig("cifar_ran2_kd.png")
+	plt.savefig(data_set + "_ran2_kd.png")
 
 def ran8_kd():
-	plt.axis([0,7000,0.3, 0.8])
+	plt.axis([0,15000,0,0.6])
 	kd_x, kd_y = read_file(3,2,'kd_tree.dat')
 	ran_x, ran_y = read_file(3,2,'2rkd_tree.dat')
 	ran4_x, ran4_y = read_file(3,2,'4rkd_tree.dat')
@@ -142,10 +142,10 @@ def ran8_kd():
 	plt.legend(handles=[kd_line,ran_line,ran4_line,ran8_line],loc=4)
 	figure = plt.gcf()
 	figure.set_size_inches(13, 10)
-	plt.savefig("cifar_ran8_kd.png")
+	plt.savefig(data_set + "_ran8_kd.png")
 
 def kd_pca_ran():
-	plt.axis([0,7000,0.3,0.8])
+	plt.axis([0,15000,0,0.6])
 	kd_x, kd_y = read_file(3,2,'kd_tree.dat')
 	pca_x, pca_y = read_file(3,2,'pca_tree.dat')
 	ran_x, ran_y = read_file(3,2,'2rkd_tree.dat')
@@ -156,13 +156,13 @@ def kd_pca_ran():
 	ran_line, = plt.plot(ran_x, ran_y, 'go-', label='2 RKD Trees', lw=3, ms=8)
 	ran4_line, = plt.plot(ran4_x, ran4_y, 'co-', label='4 RKD Trees', lw=3, ms=8)
 	ran8_line, = plt.plot(ran8_x, ran8_y, 'mo-', label='8 RKD Trees', lw=3, ms=8)
-	plt.legend(handles=[kd_line,pca_line, ran_line,ran4_line,ran8_line],loc=4)
+	plt.legend(handles=[kd_line, pca_line, ran_line, ran4_line, ran8_line],loc=4)
 	figure = plt.gcf()
 	figure.set_size_inches(13, 10)
-	plt.savefig("cifar_kd_pca_ran8.png")
+	plt.savefig(data_set + "_kd_pca_ran8.png")
 
 def rp2_kd():
-	plt.axis([0,7000,0.1,0.8])
+	plt.axis([0,15000,0,0.6])
 	kd_x, kd_y = read_file(3,2,'kd_tree.dat')
 	ran_x, ran_y = read_file(3,2,'2rp_tree.dat')
 	kd_line, = plt.plot(kd_x, kd_y, 'ro-', label='KD Tree', lw=3, ms=8)
@@ -173,7 +173,7 @@ def rp2_kd():
 	plt.savefig(data_set + "_rp2_kd.png")
 
 def rp8_kd():
-	plt.axis([0,7000,0.1,0.8])
+	plt.axis([0,15000,0,0.6])
 	kd_x, kd_y = read_file(3,2,'kd_tree.dat')
 	ran_x, ran_y = read_file(3,2,'2rp_tree.dat')
 	ran4_x, ran4_y = read_file(3,2,'4rp_tree.dat')
@@ -188,7 +188,7 @@ def rp8_kd():
 	plt.savefig(data_set + "_rp8_kd.png")
 
 def kd_pca_ran_rp():
-	plt.axis([0,7000,0.2,0.8])
+	plt.axis([0,15000,0,0.6])
 	kd_x, kd_y = read_file(3,2,'kd_tree.dat')
 	pca_x, pca_y = read_file(3,2,'pca_tree.dat')
 	rp8_x, rp8_y = read_file(3,2,'8rp_tree.dat')
@@ -202,17 +202,18 @@ def kd_pca_ran_rp():
 	figure.set_size_inches(13, 10)
 	plt.savefig(data_set + "_kd_pca_ran8_rp8.png")
 
+
 def main():
 	font = {'size' : 25}
 	plt.rc('font', **font)
-	plt.title('CIFAR True NN Percentage', y=1.02)
+	plt.title('Google News Word2vec True NN Percentage', y=1.02)
 	plt.xlabel('Number of Distance Computations', labelpad = 10)
 	plt.ylabel('Fraction Correct NN', labelpad = 10)
 
 	global data_set
-	data_set = 'cifar'
-
-	kd_pca_ran_rp()
+	data_set = 'w2v'
+	#kd_pca_ran_rp()
+	rp8_kd()
 
 main()
 

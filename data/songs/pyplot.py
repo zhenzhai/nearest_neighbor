@@ -157,6 +157,48 @@ def kd_pca_ran():
 	figure.set_size_inches(13, 10)
 	plt.savefig("song_kd_pca_ran8.png")
 
+def rp2_kd():
+	plt.axis([0,15000,0,0.6])
+	kd_x, kd_y = read_file(3,2,'kd_tree.dat')
+	ran_x, ran_y = read_file(3,2,'2rp_tree.dat')
+	kd_line, = plt.plot(kd_x, kd_y, 'ro-', label='KD Tree', lw=3, ms=8)
+	ran_line, = plt.plot(ran_x, ran_y, 'bo-', label='2 RP Trees', lw=3, ms=8)
+	plt.legend(handles=[kd_line,ran_line],loc=4)
+	figure = plt.gcf()
+	figure.set_size_inches(13, 10)
+	plt.savefig(data_set + "_rp2_kd.png")
+
+def rp8_kd():
+	plt.axis([0,15000,0,0.6])
+	kd_x, kd_y = read_file(3,2,'kd_tree.dat')
+	ran_x, ran_y = read_file(3,2,'2rp_tree.dat')
+	ran4_x, ran4_y = read_file(3,2,'4rp_tree.dat')
+	ran8_x, ran8_y = read_file(3,2,'8rp_tree.dat')
+	kd_line, = plt.plot(kd_x, kd_y, 'ro-', label='KD Tree', lw=3, ms=8)
+	ran_line, = plt.plot(ran_x, ran_y, 'go-', label='2 RP Trees', lw=3, ms=8)
+	ran4_line, = plt.plot(ran4_x, ran4_y, 'bo-', label='4 RP Trees', lw=3, ms=8)
+	ran8_line, = plt.plot(ran8_x, ran8_y, 'mo-', label='8 RP Trees', lw=3, ms=8)
+	plt.legend(handles=[kd_line,ran_line,ran4_line,ran8_line],loc=4)
+	figure = plt.gcf()
+	figure.set_size_inches(13, 10)
+	plt.savefig(data_set + "_rp8_kd.png")
+
+def kd_pca_ran_rp():
+	plt.axis([0,14000,0,0.8])
+	kd_x, kd_y = read_file(3,2,'kd_tree.dat')
+	pca_x, pca_y = read_file(3,2,'pca_tree.dat')
+	rp8_x, rp8_y = read_file(3,2,'8rp_tree.dat')
+	ran8_x, ran8_y = read_file(3,2,'8rkd_tree.dat')
+	kd_line, = plt.plot(kd_x, kd_y, 'ro-', label='KD Tree', lw=3, ms=8)
+	pca_line, = plt.plot(pca_x, pca_y, 'bo-', label='PCA Tree', lw=3, ms=8)
+	rp8_line, = plt.plot(rp8_x, rp8_y, 'co-', label='8 RP Trees', lw=3, ms=8)
+	ran8_line, = plt.plot(ran8_x, ran8_y, 'mo-', label='8 RKD Trees', lw=3, ms=8)
+	plt.legend(handles=[kd_line, pca_line, rp8_line, ran8_line],loc=4)
+	figure = plt.gcf()
+	figure.set_size_inches(13, 10)
+	plt.savefig(data_set + "_kd_pca_ran8_rp8.png")
+
+
 def main():
 	font = {'size' : 25}
 	plt.rc('font', **font)
@@ -164,9 +206,11 @@ def main():
 	plt.xlabel('Number of Distance Computations', labelpad = 10)
 	plt.ylabel('Fraction Correct NN', labelpad = 10)
 
+	global data_set
+	data_set = 'songs'
 	#ran2_kd()
 	#ran8_kd()
-	kd_pca()
+	kd_pca_ran_rp()
 	#ran_spill_vspill()
 
 main()
