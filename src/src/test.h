@@ -36,8 +36,8 @@ static double rkd_tree[]     = {2, 4, 8};
 static size_t rkd_tree_len   = 3;
 static double rp_tree[]     = {2, 4, 8};
 static size_t rp_tree_len   = 3;
-static double min_leaf  = 0.005; //0.0001
-static double leaf_size_array []      = {0.015, 0.03, 0.06, 0.09, 0.1, 0.13, 0.15, 0.17, 0.19, 0.21};//{0.001, 0.002, 0.004, 0.006, 0.008, 0.01, 0.013, 0.015, 0.018, 0.02};//{0.05, 0.08, 0.1, 0.13, 0.15, 0.17, 0.19, 0.21, 0.23, 0.25};
+static double min_leaf  = 0.001; //0.0001
+static double leaf_size_array []      = {0.015, 0.03, 0.06, 0.09, 0.1, 0.13, 0.15, 0.17, 0.19, 0.21};//{0.005, 0.01, 0.015, 0.02, 0.03, 0.05, 0.08, 0.1, 0.13, 0.15};//{0.01, 0.013, 0.015, 0.02, 0.03, 0.05, 0.08, 0.1, 0.13, 0.15};
 const size_t leaf_size_array_len      = 10;
 static double a_array []      = {0.05, 0.1};
 const size_t a_array_len      = 2;
@@ -346,16 +346,16 @@ public:
             if (nn_lbl != (*tst_st_).get_label(i))
                 error_count++;
             // NN accuracy
-            //if (nn == (*trn_st_)[nn_mp_[(*tst_st_)[i]][0]])
-            //    true_nn_count++;
+            if (nn_vtr == (*trn_st_)[nn_mp_[(*tst_st_)[i]][0]])
+                true_nn_count++;
             
             // kNN accuracy
-            for (int k = 0; k < nn_mp_[(*tst_st_)[i]].size(); k++) {
+            /*for (int k = 0; k < nn_mp_[(*tst_st_)[i]].size(); k++) {
                 if (nn_vtr == (*trn_st_)[nn_mp_[(*tst_st_)[i]][k]]) {
                     true_nn_count++;
                     break;
                 }
-            }
+            }*/
         }
         stringstream data;
         data <<  setw(COL_W) << leaf_size;
@@ -539,7 +539,7 @@ public:
             ifstream tree_in (dir.str());
             RPTree<Label, T> tree (tree_in, *trn_st_);
             for (size_t i = 0; i < (*tst_st_).size(); i++) {
-                DataSet<Label, T> subSet = (*trn_st_).subset(tree.subdomain((*tst_st_)[i], (size_t)(leaf_size * (*trn_st_).size())));
+                DataSet<Label, T> subSet = (*trn_st_).subset(tree.subdomain((*tst_st_)[i], (size_t)((leaf_size / n) * (*trn_st_).size())));
                 if (nn_domain.size() < i+1) {
                     nn_domain.push_back(subSet.get_domain());
                 } else {
@@ -581,7 +581,7 @@ public:
             thread t [leaf_size_array_len];
             string r [leaf_size_array_len];
             for (size_t i = 0; i < leaf_size_array_len; i++) {
-                t[i] = thread(&Test::s_rp_tree_data, this, leaf_size_array[i], &(r[i]));
+                t[i] = thread(&Test::s_rp_tree_data, this, leaf_size_array[i], &(r[i]), rp_tree[k]);
             }
             for (size_t i = 0; i < leaf_size_array_len; i++) {
                 t[i].join();
