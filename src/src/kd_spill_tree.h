@@ -95,6 +95,7 @@ KDTreeNode<Label, T> * KDSpillTree<Label, T>::build_tree(size_t min_leaf_size, d
     }
     
     //Distribute values in pools
+    //dot a random vector then do split again
     size_t dimension = (*subst[0]).size();
     vector<double> tie_breaker = random_tie_breaker(dimension);
     
@@ -170,7 +171,7 @@ KDTreeNode<Label, T> * KDSpillTree<Label, T>::build_tree(size_t min_leaf_size, d
     //It doesn't matters where it goes when the tie range is smaller than the spill range, apply left tie won't hurt.
     //If tie range is larger than the spill range, left tie alone can determine which leaf to go.
     KDTreeNode<Label, T> * result = new KDTreeNode<Label, T>
-            (mx_var_index, pivot, domain, dimension, tie_pivot_l, tie_breaker);
+            (mx_var_index, pivot_l, domain, dimension, tie_pivot_l, tie_breaker);
     result->set_left(build_tree(min_leaf_size, spill_factor, st, subdomain_l));
     result->set_right(build_tree(min_leaf_size, spill_factor, st, subdomain_r));
     LOG_FINE("> sdl = %ld\n", subdomain_l.size());
