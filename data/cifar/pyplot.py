@@ -42,7 +42,7 @@ def kd():
 	plt.legend(handles=[kd_line],loc=4)
 	figure = plt.gcf()
 	figure.set_size_inches(13, 10)
-	plt.savefig("cifar_kd.png")
+	plt.savefig(data_set + "_kd.png")
 
 
 def kd_pca():
@@ -54,7 +54,7 @@ def kd_pca():
 	plt.legend(handles=[kd_line,pca_line],loc=4)
 	figure = plt.gcf()
 	figure.set_size_inches(13, 10)
-	plt.savefig("cifar_kd_pca.png")
+	plt.savefig(data_set + "_kd_pca.png")
 
 def kd_spill():
 	plt.axis([0,9000,0.3,0.9])
@@ -69,7 +69,7 @@ def kd_spill():
 	plt.legend(handles=[kd_line, spill05_line, spill1_line],loc=4)
 	figure = plt.gcf()
 	figure.set_size_inches(13, 10)
-	plt.savefig("cifar_kd_spill.png")
+	plt.savefig(data_set + "_kd_spill.png")
 
 def pca_spill():
 	plt.axis([0,9000,0.3,0.9])
@@ -79,12 +79,12 @@ def pca_spill():
 	pca_line, = plt.plot(pca_x, pca_y, 'ro-', label='PCA Tree', lw=3, ms=8)
 	spill05_line, = plt.plot(spill05_x, spill05_y, 'mo-', label='PCA Spill $\\alpha=0.05$', lw=3, ms=8)
 	spill1_line, = plt.plot(spill1_x, spill1_y, 'go-', label='PCA Spill $\\alpha=0.1$', lw=3, ms=8)
-	label_points(spill05_x, spill05_y, -30, -60, spill05_label)
-	label_points(spill1_x, spill1_y, -30, 40, spill1_label)
+	#label_points(spill05_x, spill05_y, -30, -60, spill05_label)
+	#label_points(spill1_x, spill1_y, -30, 40, spill1_label)
 	plt.legend(handles=[pca_line, spill05_line, spill1_line],loc=4)
 	figure = plt.gcf()
 	figure.set_size_inches(13, 10)
-	plt.savefig("cifar_pca_spill.png")
+	plt.savefig(data_set + "_pca_spill.png")
 
 def spill_vspill():
 	plt.axis([0,8000,0.25,0.85])
@@ -97,7 +97,7 @@ def spill_vspill():
 	plt.legend(handles=[spill_line,vspill_line],loc=4)
 	figure = plt.gcf()
 	figure.set_size_inches(13, 10)
-	plt.savefig("cifar_1spill_vspill.png")
+	plt.savefig(data_set + "_1spill_vspill.png")
 
 def ran_spill_vspill():
 	plt.axis([0,10000,0.35,0.85])
@@ -116,7 +116,7 @@ def ran_spill_vspill():
 	plt.legend(handles=[spill_line,vspill_line,ran_line, ran4_line, ran8_line],loc=4)
 	figure = plt.gcf()
 	figure.set_size_inches(13, 10)
-	plt.savefig("cifar_multi_spill_vspill.png")
+	plt.savefig(data_set + "_multi_spill_vspill.png")
 
 def ran2_kd():
 	plt.axis([0,7000,0.3,0.8])
@@ -127,7 +127,7 @@ def ran2_kd():
 	plt.legend(handles=[kd_line,ran_line],loc=4)
 	figure = plt.gcf()
 	figure.set_size_inches(13, 10)
-	plt.savefig("cifar_ran2_kd.png")
+	plt.savefig(data_set + "_ran2_kd.png")
 
 def ran8_kd():
 	plt.axis([0,7000,0.3, 0.8])
@@ -142,7 +142,7 @@ def ran8_kd():
 	plt.legend(handles=[kd_line,ran_line,ran4_line,ran8_line],loc=4)
 	figure = plt.gcf()
 	figure.set_size_inches(13, 10)
-	plt.savefig("cifar_ran8_kd.png")
+	plt.savefig(data_set + "_ran8_kd.png")
 
 def kd_pca_ran():
 	plt.axis([0,7000,0.3,0.8])
@@ -159,7 +159,7 @@ def kd_pca_ran():
 	plt.legend(handles=[kd_line,pca_line, ran_line,ran4_line,ran8_line],loc=4)
 	figure = plt.gcf()
 	figure.set_size_inches(13, 10)
-	plt.savefig("cifar_kd_pca_ran8.png")
+	plt.savefig(data_set + "_kd_pca_ran8.png")
 
 def rp2_kd():
 	plt.axis([0,7000,0.1,0.8])
@@ -212,7 +212,7 @@ def main():
 	global data_set
 	data_set = 'cifar'
 
-	kd_pca_ran_rp()
+	pca_spill()
 
 main()
 

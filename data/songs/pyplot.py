@@ -40,7 +40,7 @@ def kd():
 	plt.legend(handles=[kd_line],loc=4)
 	figure = plt.gcf()
 	figure.set_size_inches(13, 10)
-	plt.savefig("songs_kd")
+	plt.savefig(data_set + "_kd.png")
 
 def kd_pca():
 	plt.axis([0,15000,0,0.8])
@@ -51,37 +51,37 @@ def kd_pca():
 	plt.legend(handles=[kd_line,pca_line],loc=4)
 	figure = plt.gcf()
 	figure.set_size_inches(13, 10)
-	plt.savefig("songs_kd_pca.png")
+	plt.savefig(data_set + "_kd_pca.png")
 
 def kd_spill():
-	plt.axis([0,140000,0,0.8])
+	plt.axis([0,15000,0,0.6])
 	kd_x, kd_y = read_file(3,2,'kd_tree.dat')
-	spill05_x, spill05_y, spill05_label = read_partial_file_w_label(4,3,5,0,19,2,'kd_spill_tree.dat')
-	spill1_x, spill1_y, spill1_label = read_partial_file_w_label(4,3,5,1,19,2,'kd_spill_tree.dat')
+	spill05_x, spill05_y, spill05_label = read_partial_file_w_label(4,3,5,0,25,2,'kd_spill_tree.dat')
+	spill1_x, spill1_y, spill1_label = read_partial_file_w_label(4,3,5,1,25,2,'kd_spill_tree.dat')
 	kd_line, = plt.plot(kd_x, kd_y, 'ro-', label='KD Tree', lw=3, ms=8)
 	spill05_line, = plt.plot(spill05_x, spill05_y, 'mo-', label="KD Spill $\\alpha=0.05$", lw=3, ms=8)
 	spill1_line, = plt.plot(spill1_x, spill1_y, 'go-', label='KD Spill $\\alpha=0.1$', lw=3, ms=8)
-	label_points(spill05_x, spill05_y, -30, -60, spill05_label)
-	label_points(spill1_x, spill1_y, -50, 50, spill1_label)
+	#label_points(spill05_x, spill05_y, -30, -60, spill05_label)
+	#label_points(spill1_x, spill1_y, -50, 50, spill1_label)
 	plt.legend(handles=[kd_line, spill05_line, spill1_line],loc=4)
 	figure = plt.gcf()
 	figure.set_size_inches(13, 10)
-	plt.savefig("songs_kd_spill.png")
+	plt.savefig(data_set + "_kd_spill.png")
 
 def pca_spill():
-	plt.axis([0,8000,0,0.7])
+	plt.axis([0,15000,0.2,0.9])
 	pca_x, pca_y = read_file(3,2,'pca_tree.dat')
-	spill05_x, spill05_y, spill05_label = read_partial_file_w_label(4,3,5,0,21,2,'pca_spill_tree.dat')
-	spill1_x, spill1_y, spill1_label = read_partial_file_w_label(4,3,5,1,21,2,'pca_spill_tree.dat')
+	spill05_x, spill05_y, spill05_label = read_partial_file_w_label(4,3,5,0,25,2,'pca_spill_tree.dat')
+	spill1_x, spill1_y, spill1_label = read_partial_file_w_label(4,3,5,1,25,2,'pca_spill_tree.dat')
 	pca_line, = plt.plot(pca_x, pca_y, 'ro-', label='PCA Tree', lw=3, ms=8)
 	spill05_line, = plt.plot(spill05_x, spill05_y, 'mo-', label='PCA Spill $\\alpha=0.05$', lw=3, ms=8)
 	spill1_line, = plt.plot(spill1_x, spill1_y, 'go-', label='PCA Spill $\\alpha=0.1$', lw=3, ms=8)
-	label_points(spill05_x, spill05_y, 10, -60, spill05_label)
-	label_points(spill1_x, spill1_y, -30, 40, spill1_label)
+	#label_points(spill05_x, spill05_y, 10, -60, spill05_label)
+	#label_points(spill1_x, spill1_y, -30, 40, spill1_label)
 	plt.legend(handles=[pca_line, spill05_line, spill1_line],loc=4)
 	figure = plt.gcf()
 	figure.set_size_inches(13, 10)
-	plt.savefig("song_pca_spill.png")
+	plt.savefig(data_set + "_pca_spill.png")
 
 def spill_vspill():
 	plt.axis([0,8000,0,0.4])
@@ -94,7 +94,7 @@ def spill_vspill():
 	plt.legend(handles=[spill_line,vspill_line],loc=4)
 	figure = plt.gcf()
 	figure.set_size_inches(13, 10)
-	plt.savefig("song_05spill_vspill.png")
+	plt.savefig(data_set + "_05spill_vspill.png")
 
 def ran_spill_vspill():
 	plt.axis([0,7000,0,0.4])
@@ -111,7 +111,7 @@ def ran_spill_vspill():
 	plt.legend(handles=[spill_line,vspill_line,ran_line,ran4_line],loc=4)
 	figure = plt.gcf()
 	figure.set_size_inches(13, 10)
-	plt.savefig("song_multi_spill_vspill.png")
+	plt.savefig(data_set + "_multi_spill_vspill.png")
 
 
 def ran2_kd():
@@ -123,7 +123,7 @@ def ran2_kd():
 	plt.legend(handles=[kd_line,ran_line],loc=4)
 	figure = plt.gcf()
 	figure.set_size_inches(13, 10)
-	plt.savefig("song_ran2_kd.png")
+	plt.savefig(data_set + "_ran2_kd.png")
 
 def ran8_kd():
 	plt.axis([0,14000,0,0.7])
@@ -138,7 +138,7 @@ def ran8_kd():
 	plt.legend(handles=[kd_line,ran_line,ran4_line,ran8_line],loc=4)
 	figure = plt.gcf()
 	figure.set_size_inches(13, 10)
-	plt.savefig("song_ran8_kd.png")
+	plt.savefig(data_set + "_ran8_kd.png")
 
 def kd_pca_ran():
 	plt.axis([0,14000,0,0.8])
@@ -155,7 +155,7 @@ def kd_pca_ran():
 	plt.legend(handles=[kd_line,pca_line, ran_line,ran4_line,ran8_line],loc=4)
 	figure = plt.gcf()
 	figure.set_size_inches(13, 10)
-	plt.savefig("song_kd_pca_ran8.png")
+	plt.savefig(data_set + "_kd_pca_ran8.png")
 
 def rp2_kd():
 	plt.axis([0,15000,0,0.6])
@@ -208,10 +208,7 @@ def main():
 
 	global data_set
 	data_set = 'songs'
-	#ran2_kd()
-	#ran8_kd()
-	kd_pca_ran_rp()
-	#ran_spill_vspill()
+	kd_spill()
 
 main()
 
