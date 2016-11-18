@@ -7,7 +7,7 @@
 
 typedef unsigned char byte;
 
-static const char BASE_PATH [] = "/Users/janetzhai/Desktop/NN_data/word2vec";
+static const char BASE_PATH [] = "/Users/zhenzhai/Desktop/nn-xcode/nn-xcode/word2vec";
 static const char TRAIN_VECTOR_PATH [] = "/train_vectors";
 static const char TRAIN_LABEL_PATH []  = "/train_labels";
 static const char TEST_VECTOR_PATH [] = "/test_vectors";
@@ -30,14 +30,14 @@ static byte res;
 static int datah, dataw;
 static size_t labelh;
 
-void big5_generate() {
+void w2v_generate() {
     FILE * fin, * fout1, * fout2;
     char filepath [TRAIN_MAX], * relpath;
     strcpy(filepath, BASE_PATH);
     relpath = filepath + strlen(filepath);
     
     /* WRITE TRAIN DATA AND LABEL*/
-    fprintf(stderr, "> converting big5 data\n");
+    fprintf(stderr, "> converting work2vec data\n");
     fprintf(stderr, "  > populating data buffer for train data\n");
     strcpy(relpath, TRAIN_VECTOR_PATH);
     fin = fopen(filepath, "rb");
@@ -65,7 +65,7 @@ void big5_generate() {
     
     labelh = 0;
     while (fscanf(fin, "%d\n", &labelbuf[labelh]) != EOF) {
-        //fprintf(stderr, "    > %ld:    %d\n", labelh, labelbuf[labelh]);
+        fprintf(stderr, "    > %ld:    %d\n", labelh, labelbuf[labelh]);
         labelh++;
     }
     
@@ -86,7 +86,7 @@ void big5_generate() {
     fclose(fout2);
     
     /* TEST DATA */
-    fprintf(stderr, "> converting big5 data\n");
+    fprintf(stderr, "> converting work2vec data\n");
     fprintf(stderr, "  > populating data buffer for test data\n");
     strcpy(relpath, TEST_VECTOR_PATH);
     fin = fopen(filepath, "rb");

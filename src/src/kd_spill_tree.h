@@ -65,8 +65,9 @@ KDTreeNode<Label, T> * KDSpillTree<Label, T>::build_tree(size_t min_leaf_size, d
     
     size_t spill_size_lim = (size_t)(values.size() * spill_factor * 2);
     size_t child_size_lim = (size_t)(values.size() * (0.5 - spill_factor));
+    size_t half_size_lim = (size_t)(values.size() * 0.5);
 
-    double pivot = selector(values, (size_t)(values.size() * 0.5));
+    double pivot = selector(values, half_size_lim);
     double pivot_l = selector(values, child_size_lim);
     double pivot_r = selector(values, child_size_lim + spill_size_lim);
     
@@ -79,6 +80,9 @@ KDTreeNode<Label, T> * KDSpillTree<Label, T>::build_tree(size_t min_leaf_size, d
     vector<size_t> subdomain_r;
     vector<size_t> pivot_l_pool;
     vector<size_t> pivot_r_pool;
+    vector<size_t> pivot_pool;
+    vector<size_t> simple_l;
+    vector<size_t> simple_r;
     vector<size_t> spill;
     for (size_t i = 0; i < domain.size(); i++) {
         if (values[i] < pivot_l) {
@@ -92,6 +96,13 @@ KDTreeNode<Label, T> * KDSpillTree<Label, T>::build_tree(size_t min_leaf_size, d
         } else {
             subdomain_r.push_back(domain[i]);
         }
+        if (values[i] < pivot) {
+            simple_l.push_back(domain[i]);
+        } else if (values[i] == pivot) {
+            pivot_pool.push_back(domain[i]);
+        } else {
+            simple_r.push_back(domain[i]);
+        }
     }
     
     //Distribute values in pools
@@ -102,6 +113,7 @@ KDTreeNode<Label, T> * KDSpillTree<Label, T>::build_tree(size_t min_leaf_size, d
     //extract the vectors from dataset
     DataSet<Label, T> left_pool_vectors = st.subset(pivot_l_pool);
     DataSet<Label, T> right_pool_vectors = st.subset(pivot_r_pool);
+    DataSet<Label, T> pivot_pool_vectors = st.subset(pivot_pool);
     
     //update left pool using randome tie breaker
     vector<double> update_left_pool;
@@ -115,6 +127,16 @@ KDTreeNode<Label, T> * KDSpillTree<Label, T>::build_tree(size_t min_leaf_size, d
         double product = dot(*right_pool_vectors[j], tie_breaker);
         update_right_pool.push_back(product);
     }
+    
+    //update pivot pool using randome tie breaker
+    vector<double> update_pivot_pool;
+    for (int j = 0; j < pivot_pool_vectors.size(); j++) {
+        double product = dot(*pivot_pool_vectors[j], tie_breaker);
+        update_pivot_pool.push_back(product);
+    }
+    
+    
+    double tie_pivot = selector(update_pivot_pool, half_size_lim - simple_l.size());
     
     double tie_pivot_l = selector(update_left_pool, child_size_lim - subdomain_l.size());
     size_t left_pool_size = update_left_pool.size();
@@ -149,6 +171,9 @@ KDTreeNode<Label, T> * KDSpillTree<Label, T>::build_tree(size_t min_leaf_size, d
             }
         }
     } else { //spill_size_lim < left_pool_size, therefore left_pivot == right_pivot, no need to look at right_pivot pool because it will be exactly the same as left pivot pool.
+        if (pivot_l != pivot_r) {
+            bool wrong = true;
+        }
         tie_pivot_r = selector(update_left_pool, to_fill_spill + filled_size);
         for (int i = 0; i < update_left_pool.size(); i++) {
             if (tie_pivot_l < update_left_pool[i] && update_left_pool[i] <= tie_pivot_r) {
@@ -171,7 +196,7 @@ KDTreeNode<Label, T> * KDSpillTree<Label, T>::build_tree(size_t min_leaf_size, d
     //It doesn't matters where it goes when the tie range is smaller than the spill range, apply left tie won't hurt.
     //If tie range is larger than the spill range, left tie alone can determine which leaf to go.
     KDTreeNode<Label, T> * result = new KDTreeNode<Label, T>
-            (mx_var_index, pivot_l, domain, dimension, tie_pivot_l, tie_breaker);
+            (mx_var_index, pivot, domain, dimension, tie_pivot, tie_breaker);
     result->set_left(build_tree(min_leaf_size, spill_factor, st, subdomain_l));
     result->set_right(build_tree(min_leaf_size, spill_factor, st, subdomain_r));
     LOG_FINE("> sdl = %ld\n", subdomain_l.size());

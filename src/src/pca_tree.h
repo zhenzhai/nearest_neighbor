@@ -56,9 +56,9 @@ template<class Label, class T>
 class PCATreeNode
 {
 protected:
+    PCATreeNode * left_, * right_;
     vector<double> dir_;
     double pivot_;
-    PCATreeNode * left_, * right_;
     vector<size_t> domain_;
 public:
     PCATreeNode(const vector<size_t> domain);

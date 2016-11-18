@@ -65,7 +65,8 @@ T selector(vector<T> st, size_t k)
 /* Generate a random tie breaker vector */
 vector<double> random_tie_breaker(size_t dimension)
 {
-    default_random_engine generator;
+    random_device rd;
+    default_random_engine generator(rd());
     normal_distribution<double> distribution(0.0,1.0);
     vector<double> tie_breaker(dimension);
     for (int i=0; i<dimension; i++)

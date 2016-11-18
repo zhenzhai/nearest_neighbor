@@ -7,7 +7,7 @@
 
 typedef unsigned char byte;
 
-static const char BASE_PATH [] = "/Users/janetzhai/Desktop/NN_data/big5";
+static const char BASE_PATH [] = "/Users/zhenzhai/Desktop/nn-xcode/nn-xcode/big5";
 static const char TRAIN_VECTOR_PATH [] = "/train_vectors";
 static const char TRAIN_LABEL_PATH []  = "/train_labels";
 static const char TEST_VECTOR_PATH [] = "/test_vectors";
@@ -86,7 +86,6 @@ void big5_generate() {
     fclose(fout2);
     
     /* TEST DATA */
-    /*
     fprintf(stderr, "> converting big5 data\n");
     fprintf(stderr, "  > populating data buffer for test data\n");
     strcpy(relpath, TEST_VECTOR_PATH);
@@ -134,5 +133,5 @@ void big5_generate() {
     }
     fclose(fin);
     fclose(fout1);
-    fclose(fout2);*/
+    fclose(fout2);
 }
