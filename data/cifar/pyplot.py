@@ -57,15 +57,15 @@ def kd_pca():
 	plt.savefig(data_set + "_kd_pca.png")
 
 def kd_spill():
-	plt.axis([0,9000,0.3,0.9])
+	plt.axis([0,9000,0.2,0.9])
 	kd_x, kd_y = read_file(3,2,'kd_tree.dat')
 	spill05_x, spill05_y, spill05_label = read_partial_file_w_label(4,3,5,0,19,2,'kd_spill_tree.dat')
 	spill1_x, spill1_y, spill1_label = read_partial_file_w_label(4,3,5,1,19,2,'kd_spill_tree.dat')
 	kd_line, = plt.plot(kd_x, kd_y, 'ro-', label='KD Tree', lw=3, ms=8)
 	spill05_line, = plt.plot(spill05_x, spill05_y, 'mo-', label='KD Spill $\\alpha=0.05$', lw=3, ms=8)
 	spill1_line, = plt.plot(spill1_x, spill1_y, 'go-', label='KD Spill $\\alpha=0.1$', lw=3, ms=8)
-	label_points(spill05_x, spill05_y, -30, -60, spill05_label)
-	label_points(spill1_x, spill1_y, -30, 40, spill1_label)
+	#label_points(spill05_x, spill05_y, -30, -60, spill05_label)
+	#label_points(spill1_x, spill1_y, -30, 40, spill1_label)
 	plt.legend(handles=[kd_line, spill05_line, spill1_line],loc=4)
 	figure = plt.gcf()
 	figure.set_size_inches(13, 10)
@@ -212,7 +212,7 @@ def main():
 	global data_set
 	data_set = 'cifar'
 
-	pca_spill()
+	kd_spill()
 
 main()
 
