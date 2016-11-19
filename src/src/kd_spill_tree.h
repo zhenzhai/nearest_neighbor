@@ -172,7 +172,7 @@ KDTreeNode<Label, T> * KDSpillTree<Label, T>::build_tree(size_t min_leaf_size, d
         }
     } else { //spill_size_lim < left_pool_size, therefore left_pivot == right_pivot, no need to look at right_pivot pool because it will be exactly the same as left pivot pool.
         if (pivot_l != pivot_r) {
-            bool wrong = true;
+            LOG_ERROR("left pivot not equal to right pivot!\n");
         }
         tie_pivot_r = selector(update_left_pool, to_fill_spill + filled_size);
         for (int i = 0; i < update_left_pool.size(); i++) {
