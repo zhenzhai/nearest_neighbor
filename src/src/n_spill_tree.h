@@ -59,7 +59,7 @@ protected:
     size_t dimension_;
     vector<T> pivots_;
     vector<double> tie_breaker_;
-    vector<double> tie_left_pivots_;
+    vector<double> tie_pivots_;
     vector<NSpillTreeNode *> children_;
     vector<size_t> domain_;
 public:
@@ -243,6 +243,9 @@ NSpillTreeNode<Label, T> * NSpillTree<Label, T>::build_tree(size_t leaf_size,
         //extract the vectors from dataset
         DataSet<Label, T> left_pivot_vectors = st.subset(left_pivot_pools[i]);
         
+        if (left_pivot_vectors.size() == 0)
+            continue;
+        
         //update pool using random tie breaker
         vector<double> updated_left_pool;
         for (int j = 0; j < left_pivot_vectors.size(); j++) {
@@ -387,6 +390,9 @@ NSpillTreeNode<Label, T> * NSpillTree<Label, T>::build_tree(size_t leaf_size,
         //extract the vectors from dataset
         DataSet<Label, T> right_pivot_vectors = st.subset(right_pivot_pools[i]);
         
+        if (right_pivot_vectors.size() == 0)
+            continue;
+        
         //update pool using random tie breaker
         vector<double> updated_right_pool;
         for (int j = 0; j < right_pivot_vectors.size(); j++) {
@@ -494,6 +500,8 @@ NSpillTreeNode<Label, T> * NSpillTree<Label, T>::build_tree(size_t leaf_size,
         }
         
         to_fill += full_child_size - simple_children[i].size();
+        if (to_fill <= 0)
+            continue;
         tie_pivots.push_back(selector(updated_pivot_pool, to_fill));
         int to_fill_right = pivot_pools[i].size() - to_fill;
         to_fill = 0 - to_fill_right;
@@ -521,7 +529,7 @@ NSpillTreeNode<Label, T>::NSpillTreeNode(const vector<size_t> domain) :
   dimension_ (0),
   pivots_ (NULL),
   tie_breaker_(NULL),
-  tie_left_pivots_(NULL),
+  tie_pivots_(NULL),
   children_ (NULL),
   domain_ (domain)
 { 
@@ -536,7 +544,7 @@ NSpillTreeNode<Label, T>::NSpillTreeNode(
         size_t dimension,
         vector<T> pivots,
         vector<double> tie_breaker,
-        vector<double> tie_left_pivots,
+        vector<double> tie_pivots,
 		vector<NSpillTreeNode *> children,
 		vector<size_t> domain) :
   index_ (index),
@@ -544,7 +552,7 @@ NSpillTreeNode<Label, T>::NSpillTreeNode(
   dimension_ (dimension),
   pivots_ (pivots),
   tie_breaker_ (tie_breaker),
-  tie_left_pivots_ (tie_left_pivots),
+  tie_pivots_ (tie_pivots),
   children_ (children),
   domain_ (domain)
 { 
@@ -593,7 +601,7 @@ NSpillTreeNode<Label, T>::NSpillTreeNode(ifstream & in)
     {
         double tie_pivot;
         in.read((char *)&tie_pivot, sizeof(double));
-        tie_left_pivots_.push_back(tie_pivot);
+        tie_pivots_.push_back(tie_pivot);
     }
 }
 
@@ -611,8 +619,8 @@ void NSpillTreeNode<Label, T>::save(ofstream & out) const
     out.write((char *)&domain_[0], sizeof(size_t) * sz);
     out.write((char *)&dimension_, sizeof(size_t));
     out.write((char *)&tie_breaker_[0], sizeof(double) * dimension_);
-    out.write((char *)&tie_left_pivots_[0],
-              sizeof(double) * tie_left_pivots_.size());
+    out.write((char *)&tie_pivots_[0],
+              sizeof(double) * tie_pivots_.size());
 }
 
 template<class Label, class T>
@@ -732,7 +740,7 @@ vector<size_t> NSpillTree<Label, T>::subdomain(vector<T> * query, size_t l_c)
                     //Can use tie_left_pivot when search
                     //It doesn't matters where it goes when the tie range is smaller than the spill range, apply left tie won't hurt.
                     //If tie range is larger than the spill range, left tie alone can determine which leaf to go.
-                    if (product <= cur->tie_left_pivots_[i]) {
+                    if (product <= cur->tie_pivots_[i]) {
                         expl.push(cur->children_[i]);
                         pushed = true;
                         break;
