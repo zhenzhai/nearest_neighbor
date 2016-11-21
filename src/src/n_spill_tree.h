@@ -241,10 +241,8 @@ NSpillTreeNode<Label, T> * NSpillTree<Label, T>::build_tree(size_t leaf_size,
         }
             
         //extract the vectors from dataset
+        LOG_INFO("Getting left pivot vector set.\n");
         DataSet<Label, T> left_pivot_vectors = st.subset(left_pivot_pools[i]);
-        
-        if (left_pivot_vectors.size() == 0)
-            continue;
         
         //update pool using random tie breaker
         vector<double> updated_left_pool;
@@ -254,13 +252,13 @@ NSpillTreeNode<Label, T> * NSpillTree<Label, T>::build_tree(size_t leaf_size,
         }
         
         //begin to use left_pool until it is all used up
-        size_t left_pool_size = updated_left_pool.size();
-        size_t filled_size = 0;
+        int left_pool_size = updated_left_pool.size();
+        int filled_size = 0;
         bool use_right_pool = true;
         double tie_pivot;
         double previous_tie_pivot;
         
-        if (tie_left_pivots.size() == i+1) {
+        if (tie_left_pivots.size() == i+1 or updated_left_pool.size() == 0) {
             tie_pivot = tie_left_pivots[i];
         }
         else {
@@ -279,7 +277,7 @@ NSpillTreeNode<Label, T> * NSpillTree<Label, T>::build_tree(size_t leaf_size,
             
             //if the fill size is 0 or 1, left child already filled
             //push tie_pivot to tie_left_pivot
-            size_t to_fill_left = child_size_lim - children[i].size();
+            int to_fill_left = child_size_lim - children[i].size();
             if (left_pool_size == 0 or to_fill_left == 0) {
                 tie_left_pivots.push_back(tie_pivot);
             }
@@ -292,7 +290,7 @@ NSpillTreeNode<Label, T> * NSpillTree<Label, T>::build_tree(size_t leaf_size,
             use_right_pool = true;
             //find the tie_pivots and distribute to the left child
             
-            size_t to_fill_left = child_size_lim - children[i].size();
+            int to_fill_left = child_size_lim - children[i].size();
             if (to_fill_left > 0) {
                 // If left pool can't fill current node
                 if (left_pool_size < to_fill_left) {
@@ -318,7 +316,7 @@ NSpillTreeNode<Label, T> * NSpillTree<Label, T>::build_tree(size_t leaf_size,
                 break;
             
             // find the tie_pivots and distribute to the spill node
-            size_t to_fill_spill = spill_size_lim - spills[i].size();
+            int to_fill_spill = spill_size_lim - spills[i].size();
 
             if (to_fill_spill > 0) {
                 // If left pool can't fill spill node, need to use right pool
@@ -346,7 +344,7 @@ NSpillTreeNode<Label, T> * NSpillTree<Label, T>::build_tree(size_t leaf_size,
                     break;
                 }
                 else {
-                    if (left_pool_size > to_fill_spill) {
+                    if (left_pool_size >= to_fill_spill) {
                         use_right_pool = false;
                     }
                     filled_size = updated_left_pool.size()-left_pool_size;
@@ -388,10 +386,8 @@ NSpillTreeNode<Label, T> * NSpillTree<Label, T>::build_tree(size_t leaf_size,
             continue;
         
         //extract the vectors from dataset
+        LOG_INFO("Getting right pivot vector set.\n");
         DataSet<Label, T> right_pivot_vectors = st.subset(right_pivot_pools[i]);
-        
-        if (right_pivot_vectors.size() == 0)
-            continue;
         
         //update pool using random tie breaker
         vector<double> updated_right_pool;
@@ -401,8 +397,8 @@ NSpillTreeNode<Label, T> * NSpillTree<Label, T>::build_tree(size_t leaf_size,
         }
         
         //Begin to use right_pool until it is all used up
-        size_t right_pool_size = updated_right_pool.size();
-        size_t to_fill_spill = spill_size_lim - spills[i].size();
+        int right_pool_size = updated_right_pool.size();
+        int to_fill_spill = spill_size_lim - spills[i].size();
         
         if (tie_right_pivots.size() == i+1) {
             previous_tie_pivot = tie_right_pivots[i];
@@ -423,12 +419,16 @@ NSpillTreeNode<Label, T> * NSpillTree<Label, T>::build_tree(size_t leaf_size,
         }
     
         int right_pool_index = i;
+        bool increment = false;
+        bool revert = false;
         while (right_pool_size > 0) {
-            size_t to_fill_spill = spill_size_lim - spills[i].size();
+            int to_fill_spill = spill_size_lim - spills[i].size();
             
             if (to_fill_spill > 0) {
                 if (right_pool_size < to_fill_spill) {
                     tie_pivot = selector(updated_right_pool, updated_right_pool.size());
+                    if (increment)
+                        revert = true;
                 }
                 else {
                     filled_size = updated_right_pool.size()-right_pool_size;
@@ -443,14 +443,23 @@ NSpillTreeNode<Label, T> * NSpillTree<Label, T>::build_tree(size_t leaf_size,
                     }
                 }
                 previous_tie_pivot = tie_pivot;
+                if (revert)
+                    i--;
             }
             
             //Check whether right_pool_size is empty
             if (right_pool_size == 0)
                 break;
             
-            size_t to_fill_right = child_size_lim - children[i+1].size();
+            if (i+1 == splits-1) {
+                child_size_lim = end_child_size_lim;
+            } else {
+                child_size_lim = mid_child_size_lim;
+            }
             
+            int to_fill_right = child_size_lim - children[i+1].size();
+            
+            //fill the right node or throw the rest to the last child node
             if (to_fill_right > 0 or i == splits-2) {
                 if (right_pool_size < to_fill_right or i == splits-2) {
                     tie_pivot = selector(updated_right_pool, updated_right_pool.size());
@@ -471,8 +480,10 @@ NSpillTreeNode<Label, T> * NSpillTree<Label, T>::build_tree(size_t leaf_size,
             }
             
             // increse i only when right pool is not empty
-            if (right_pool_size > 0)
+            if (right_pool_size > 0) {
+                increment = true;
                 i++;
+            }
         }
     }
     
@@ -490,6 +501,7 @@ NSpillTreeNode<Label, T> * NSpillTree<Label, T>::build_tree(size_t leaf_size,
     for (int i=0; i<pivot_pools.size(); i++) {
         
         //extract the vectors from dataset
+        LOG_INFO("Getting pivot vector set.\n");
         DataSet<Label, T> pivot_vectors = st.subset(pivot_pools[i]);
         
         //update pool using random tie breaker
@@ -503,9 +515,33 @@ NSpillTreeNode<Label, T> * NSpillTree<Label, T>::build_tree(size_t leaf_size,
         if (to_fill <= 0)
             continue;
         tie_pivots.push_back(selector(updated_pivot_pool, to_fill));
-        int to_fill_right = pivot_pools[i].size() - to_fill;
-        to_fill = 0 - to_fill_right;
+        int left_in_pivot = int(pivot_pools[i].size() - to_fill);
+        int to_fill_right = int(full_child_size - simple_children[i+1].size());
+        
+        //The last child could possible have size larger than full_child_size
+        if (to_fill_right < 0)
+            continue;
+        
+        int children_index = i;
+        while (left_in_pivot >= to_fill_right && to_fill_right > 0 && children_index < splits-2) {
+            tie_pivots.push_back(selector(updated_pivot_pool, to_fill+to_fill_right));
+            children_index = children_index + 1;
+            to_fill = to_fill+to_fill_right;
+            left_in_pivot = int(pivot_pools[i].size() - to_fill);
+            to_fill_right = int(full_child_size - simple_children[children_index+1].size());
+        }
+        to_fill = 0 - left_in_pivot;
+        i = children_index;
     }
+    
+    /*//check to make sure there are enough left_pivot and right_pivot
+    bool check = true;
+    if (left_pivots.size() != splits-1 or right_pivots.size() != splits-1 or pivots.size() != splits-1) {
+        check = false;
+    }
+    if (tie_left_pivots.size() != splits-1 or tie_right_pivots.size() != splits-1 or tie_pivots.size() != splits-1) {
+        check = false;
+    }*/
 
     
     //call build tree recursively to build tree
@@ -515,6 +551,10 @@ NSpillTreeNode<Label, T> * NSpillTree<Label, T>::build_tree(size_t leaf_size,
         children_vector.push_back(node);
     }
     //return newly built tree
+    LOG_INFO("Built tree with %zu children, with size:", splits);
+    for (int i=0; i<children_vector.size(); i++) {
+        LOG_INFO(" > %lu", children_vector[i]->get_domain().size());
+    }
     NSpillTreeNode<Label, T> * result = new NSpillTreeNode<Label, T>(mx_var_index, splits, dimension, pivots, tie_breaker, tie_pivots, children_vector, domain);
     LOG_INFO("Exit build_tree\n");
     return result;
