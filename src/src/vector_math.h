@@ -75,4 +75,15 @@ vector<double> random_tie_breaker(size_t dimension)
 }
 
 
+
+/* Generate a vector by taking difference between two random points*/
+template<class T>
+vector<double> random_diff(size_t dimension, vector<T> vector_i, vector<T> vector_j)
+{
+    vector<double> tie_breaker(dimension);
+    for (int i=0; i<dimension; i++)
+        tie_breaker[i] = vector_i[i] - vector_j[i];
+    return tie_breaker;
+}
+
 #endif

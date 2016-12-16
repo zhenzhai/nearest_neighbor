@@ -2,45 +2,45 @@
  * File             : rp_tree.h
  * Summary          : Infrastructure to hold a binary space partition tree.
  */
-#ifndef RP_TREE_H_
-#define RP_TREE_H_
+#ifndef RP_SELECT_TREE_H_
+#define RP_SELECT_TREE_H_
 
 #include "vector_math.h"
-#include "pca_tree.h"
+#include "rp_tree.h"
 using namespace std;
 
 template<class Label, class T>
-class RPTree;
+class RPSelectTree;
 
 /* Class Definitions */
 /*
- * Name             : RPTree
+ * Name             : RPSelectTree
  * Description      : Encapsulates the RPTreeNodes into tree.
- * Data Field(s)    : root_ - Holds the root node of tree
- *                    st_   - Holds the data set associated with tree
- * Function(s)      : RPTree(DataSet<Label, T>)
+ *                    Effectively acts as identically to RPTree with different projection direction
+ * Function(s)      : RPSelectTree(DataSet<Label, T>)
  *                          - Creates a tree of given data set
- *                    RPTree(size_t, DataSet<Label, T>)
+ *                    RPSelectTree(size_t, DataSet<Label, T>)
  *                          - Creates a tree of given min leaf size and
  *                            data set
- *                    RPTree(ifstream &, DataSet<Label, T>)
- *                          - De-serialization 
+ *                    RPSelectTree(ifstream &, DataSet<Label, T>)
+ *                          - De-serialization
  */
 template<class Label, class T>
-class RPTree : public PCATree<Label, T>
+class RPSelectTree : public RPTree<Label, T>
 {
 private:
     static PCATreeNode<Label, T> * build_tree(size_t c,
             DataSet<Label, T> & st, vector<size_t> domain);
 
+    
 public:
-    RPTree(DataSet<Label, T> & st);
-    RPTree(size_t min_leaf_size, DataSet<Label, T> & st);
-    RPTree(ifstream & in, DataSet<Label, T> & st);
+    RPSelectTree(DataSet<Label, T> & st);
+    RPSelectTree(size_t min_leaf_size, DataSet<Label, T> & st);
+    RPSelectTree(ifstream & in, DataSet<Label, T> & st);
 };
 
 template<class Label, class T>
-PCATreeNode<Label, T> * RPTree<Label, T>::build_tree(size_t min_leaf_size,
+PCATreeNode<Label, T> * RPSelectTree<Label, T>::build_tree(size_t min_leaf_size,
         DataSet<Label, T> & st, vector<size_t> domain)
 {
     LOG_INFO("Enter build_tree\n");
@@ -51,10 +51,20 @@ PCATreeNode<Label, T> * RPTree<Label, T>::build_tree(size_t min_leaf_size,
         return new PCATreeNode<Label, T>(domain);
     }
     DataSet<Label, T> subst = st.subset(domain);
-
+    
     //Find a random vector
-    size_t dimension = (*subst[0]).size();
-    vector<double> split_dir = random_tie_breaker(dimension);
+    size_t dimension = mx_var_index.size();
+    random_device rd;
+    default_random_engine generator(rd());
+    uniform_int_distribution<int> distribution(0, domain.size()-1);
+    size_t index_i = distribution(generator);
+    size_t index_j = distribution(generator);
+    while (index_i == index_j) {
+        index_j = distribution(generator);
+    }
+    vector<T> vector_i = *subst[index_i];
+    vector<T> vector_j = *subst[index_j];
+    vector<double> split_dir = random_diff(dimension, vector_i, vector_j);
     
     vector<double> values;
     for (size_t i = 0; i < subst.size(); i++) {
@@ -89,7 +99,7 @@ PCATreeNode<Label, T> * RPTree<Label, T>::build_tree(size_t min_leaf_size,
         pivot_pool.pop_back();
         subdomain_r.push_back(curr);
     }
-    PCATreeNode<Label, T> * result = new PCATreeNode<Label, T>(split_dir, 
+    PCATreeNode<Label, T> * result = new PCATreeNode<Label, T>(split_dir, mx_var_index,
             pivot, domain);
     result->set_left(build_tree(min_leaf_size, st, subdomain_l));
     result->set_right(build_tree(min_leaf_size, st, subdomain_r));
@@ -99,28 +109,30 @@ PCATreeNode<Label, T> * RPTree<Label, T>::build_tree(size_t min_leaf_size,
     return result;
 }
 
+
 template<class Label, class T>
-RPTree<Label, T>::RPTree(DataSet<Label, T> & st) :
-    PCATree<Label, T>(st)
+RPSelectTree<Label, T>::RPSelectTree(DataSet<Label, T> & st) :
+    RPTree<Label, T>(st)
 {
-    LOG_INFO("RPTree Constructed\n");
+    LOG_INFO("RPSelectTree Constructed\n");
     LOG_FINE("with default constructor\n");
 }
 
-template<class Label, class T>
-RPTree<Label, T>::RPTree(size_t min_leaf_size, DataSet<Label, T> & st) :
-    PCATree<Label, T>(st)
-{
-    LOG_INFO("RPTree Constructed\n");
-    LOG_FINE("with min_leaf_size = %ld", min_leaf_size);
-    this->set_root(build_tree(min_leaf_size, st, st.get_domain()));
-}
 
 template<class Label, class T>
-RPTree<Label, T>::RPTree(ifstream & in, DataSet<Label, T> & st) :
-    PCATree<Label, T>(in, st)
+RPSelectTree<Label, T>::RPSelectTree(size_t min_leaf_size, DataSet<Label, T> & st) :
+    RPTree<Label, T>(st)
 {
-    LOG_INFO("RPTree Constructed\n");
+    LOG_INFO("RPSelectTree Constructed\n");
+    LOG_FINE("with min_leaf_size = %ld", min_leaf_size);
+}
+
+
+template<class Label, class T>
+RPSelectTree<Label, T>::RPSelectTree(ifstream & in, DataSet<Label, T> & st) :
+    RPTree<Label, T>(in, st)
+{
+    LOG_INFO("RPSelectTree Constructed\n");
     LOG_FINE("with input stream\n");
 }
 

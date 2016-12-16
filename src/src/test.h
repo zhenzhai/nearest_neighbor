@@ -21,6 +21,7 @@
 #include "pca_tree.h"
 #include "rp_tree.h"
 #include "pca_spill_tree.h"
+#include "rp_select_tree.h"
 #include "nn.h"
 using namespace std;
 
@@ -34,6 +35,8 @@ using namespace std;
 
 static double rkd_tree[]     = {2, 4, 8};
 static size_t rkd_tree_len   = 3;
+static double rp_select_tree[]     = {2, 4, 8};
+static size_t rp_select_tree_len   = 3;
 static double rp_tree[]     = {2, 4, 8};
 static size_t rp_tree_len   = 3;
 static double min_leaf  = 0.001; //0.0001
@@ -41,7 +44,7 @@ static double leaf_size_array []      = {0.015, 0.03, 0.06, 0.09, 0.1, 0.13, 0.1
 const size_t leaf_size_array_len      = 10;
 static double a_array []      = {0.05, 0.1};
 const size_t a_array_len      = 2;
-const size_t splits     = 4;
+const size_t splits     = 3;
 
 template<class Label, class T>
 class Test
@@ -109,6 +112,29 @@ public:
     
     void generate_rkd_trees() {
         s_rkd_tree(min_leaf, rkd_tree[rkd_tree_len-1]);
+    }
+    
+    void s_rp_select_tree(double min_leaf_size, int n) {
+        stringstream dir;
+        for (int i=1; i<=n; i++) {
+            dir << base_dir_ << "/rp_select_tree" << i << "_" << setprecision(2) << min_leaf_size;
+            ifstream rp_select_tree_file (dir.str(), ios::binary);
+            if (rp_select_tree_file.good()) {
+                LOG_INFO("File rp_select_tree%d found!!!\n", i);
+                rp_select_tree_file.clear();
+            }
+            else {
+                RPSelectTree<Label, T> tree ((size_t)(min_leaf_size * (*trn_st_).size()), *trn_st_);
+                ofstream tree_out (dir.str());
+                tree.save(tree_out);
+                tree_out.close();
+            }
+            dir.str("");
+        }
+    }
+    
+    void generate_rp_select_trees() {
+        s_rp_select_tree(min_leaf, rp_select_tree[rp_select_tree_len-1]);
     }
 
     void s_kd_spill_tree(double min_leaf_size, double a_value) {
@@ -303,6 +329,7 @@ public:
         dat_out << endl;
         thread t [leaf_size_array_len][a_array_len];
         string r [leaf_size_array_len][a_array_len];
+        //s_n_spill_tree_data(leaf_size_array[0], a_array[0], splits, &(r[0][0]));
         for (size_t i = 0; i < leaf_size_array_len; i++) {
             for (size_t j = 0; j < a_array_len; j++) {
                 t[i][j] = thread(&Test<Label, T>::s_n_spill_tree_data, this, leaf_size_array[i], a_array[j], splits, &(r[i][j]));
@@ -379,6 +406,87 @@ public:
             string r [leaf_size_array_len];
             for (size_t i = 0; i < leaf_size_array_len; i++) {
                 t[i] = thread(&Test::s_rkd_tree_data, this, leaf_size_array[i], &(r[i]), rkd_tree[k]);
+            }
+            for (size_t i = 0; i < leaf_size_array_len; i++) {
+                t[i].join();
+                dat_out << r[i];
+            }
+            dat_out.close();
+        }
+    }
+    
+    void s_rp_select_tree_data(double leaf_size, string * result, int n)
+    {
+        size_t error_count = 0;
+        size_t true_nn_count = 0;
+        unsigned long long subdomain_count = 0;
+        vector<vector<size_t>> nn_domain;
+        for (int j=1; j<=n; j++) {
+            stringstream dir;
+            dir << base_dir_ << "/rp_select_tree" << j << "_" << setprecision(2) << min_leaf;
+            ifstream tree_in (dir.str());
+            RPSelectTree<Label, T> tree (tree_in, *trn_st_);
+            for (size_t i = 0; i < (*tst_st_).size(); i++) {
+                DataSet<Label, T> subSet = (*trn_st_).subset(tree.subdomain((*tst_st_)[i], (size_t)((leaf_size / n) * (*trn_st_).size())));
+                if (nn_domain.size() < i+1){
+                    nn_domain.push_back(subSet.get_domain());
+                } else {
+                    vector<size_t> d = subSet.get_domain();
+                    nn_domain[i].insert(nn_domain[i].end(), d.begin(), d.end());
+                }
+                subdomain_count += subSet.size();
+                
+                //add number of projection while traversing the tree in the time calculation
+                double leaf = (leaf_size / n) * (*trn_st_).size();
+                int depth = 0;
+                double current_node_size = (*trn_st_).size();
+                while (current_node_size >= leaf) {
+                    current_node_size = current_node_size/2;
+                    depth++;
+                }
+                //subdomain_count += depth;
+            }
+            dir.str("");
+        }
+        for (size_t i = 0; i < (*tst_st_).size(); i++) {
+            vector<T> * nn_vtr = nearest_neighbor((*tst_st_)[i], (*trn_st_).subset(nn_domain[i]));
+            Label nn_lbl = (*trn_st_).get_label(nn_vtr);
+            if (nn_lbl != (*tst_st_).get_label(i))
+                error_count++;
+            // NN accuracy
+            if (nn_vtr == (*trn_st_)[nn_mp_[(*tst_st_)[i]][0]])
+                true_nn_count++;
+            
+            // kNN accuracy
+            /*for (int k = 0; k < nn_mp_[(*tst_st_)[i]].size(); k++) {
+             if (nn_vtr == (*trn_st_)[nn_mp_[(*tst_st_)[i]][k]]) {
+             true_nn_count++;
+             break;
+             }
+             }*/
+        }
+        stringstream data;
+        data <<  setw(COL_W) << leaf_size;
+        data <<  setw(COL_W) << (error_count * 1. / (*tst_st_).size());
+        data <<  setw(COL_W) << (true_nn_count * 1. / (*tst_st_).size());
+        data <<  setw(COL_W) << (subdomain_count * 1. / (*tst_st_).size());
+        data << endl;
+        *result = data.str();
+    }
+    
+    void generate_rp_select_tree_data(string out_dir)
+    {
+        for(int k=0; k<rp_select_tree_len; k++) {
+            ofstream dat_out (out_dir + "/" + to_string(int(rp_select_tree[k])) + "rp_select_tree.dat");
+            dat_out <<  setw(COL_W) << "leaf";
+            dat_out <<  setw(COL_W) << "error rate";
+            dat_out <<  setw(COL_W) << "true nn";
+            dat_out <<  setw(COL_W) << "subdomain";
+            dat_out << endl;
+            thread t [leaf_size_array_len];
+            string r [leaf_size_array_len];
+            for (size_t i = 0; i < leaf_size_array_len; i++) {
+                t[i] = thread(&Test::s_rp_select_tree_data, this, leaf_size_array[i], &(r[i]), rp_select_tree[k]);
             }
             for (size_t i = 0; i < leaf_size_array_len; i++) {
                 t[i].join();
@@ -547,6 +655,16 @@ public:
                     nn_domain[i].insert(nn_domain[i].end(), d.begin(), d.end());
                 }
                 subdomain_count += subSet.size();
+                
+                //add number of projection while traversing the tree in the time calculation
+                double leaf = (leaf_size / n) * (*trn_st_).size();
+                int depth = 0;
+                double current_node_size = (*trn_st_).size();
+                while (current_node_size >= leaf) {
+                    current_node_size = current_node_size/2;
+                    depth++;
+                }
+                //subdomain_count += depth;
             }
             dir.str("");
         }
@@ -556,8 +674,19 @@ public:
             Label nn_lbl = (*trn_st_).get_label(nn_vtr);
             if (nn_lbl != (*tst_st_).get_label(i))
                 error_count++;
+            
+            // True NN accuracy
             if (nn_vtr == (*trn_st_)[nn_mp_[(*tst_st_)[i]][0]])
                 true_nn_count++;
+            
+            
+            // kNN accuracy
+            /*for (int k = 0; k < nn_mp_[(*tst_st_)[i]].size(); k++) {
+                if (nn_vtr == (*trn_st_)[nn_mp_[(*tst_st_)[i]][k]]) {
+                    true_nn_count++;
+                    break;
+                }
+            }*/
         }
         
         stringstream data;
