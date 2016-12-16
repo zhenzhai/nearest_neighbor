@@ -119,11 +119,12 @@ RPSelectTree<Label, T>::RPSelectTree(DataSet<Label, T> & st) :
 
 
 template<class Label, class T>
-RPSelectTree<Label, T>::RPSelectTree(size_t min_leaf_size, DataSet<Label, T> & st) :
+RPSelectTree<Label, T>::RPSelectTree(size_t min_leaf_size, DataSet<Label, T> & st):
     RPTree<Label, T>(st)
 {
     LOG_INFO("RPSelectTree Constructed\n");
     LOG_FINE("with min_leaf_size = %ld", min_leaf_size);
+    this->set_root(build_tree(min_leaf_size, st, st.get_domain()));
 }
 
 
