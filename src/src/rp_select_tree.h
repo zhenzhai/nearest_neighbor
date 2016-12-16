@@ -99,8 +99,7 @@ PCATreeNode<Label, T> * RPSelectTree<Label, T>::build_tree(size_t min_leaf_size,
         pivot_pool.pop_back();
         subdomain_r.push_back(curr);
     }
-    PCATreeNode<Label, T> * result = new PCATreeNode<Label, T>(split_dir, mx_var_index,
-            pivot, domain);
+    PCATreeNode<Label, T> * result = new PCATreeNode<Label, T>(split_dir, pivot, domain);
     result->set_left(build_tree(min_leaf_size, st, subdomain_l));
     result->set_right(build_tree(min_leaf_size, st, subdomain_r));
     LOG_FINE("> sdl = %ld\n", subdomain_l.size());
