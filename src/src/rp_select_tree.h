@@ -53,7 +53,7 @@ PCATreeNode<Label, T> * RPSelectTree<Label, T>::build_tree(size_t min_leaf_size,
     DataSet<Label, T> subst = st.subset(domain);
     
     //Find a random vector
-    size_t dimension = mx_var_index.size();
+    size_t dimension = (*subst[0]).size();
     random_device rd;
     default_random_engine generator(rd());
     uniform_int_distribution<int> distribution(0, domain.size()-1);
