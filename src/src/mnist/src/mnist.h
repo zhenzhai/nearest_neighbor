@@ -1,5 +1,5 @@
 //
-//  cifar.h
+//  mnist.h
 //  nn-xcode
 //
 //  Created by Zhen Zhai on 7/28/14.

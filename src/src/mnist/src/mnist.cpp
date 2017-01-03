@@ -10,16 +10,15 @@
 
 typedef unsigned char byte;
 
-static const char BASE_PATH [] = "/Users/janetzhai/Desktop/nn-xcode/nn-xcode/mnist";
-static const char TRAIN_VECTOR_PATH [] = "/train_vectors";
-static const char TRAIN_LABEL_PATH []  = "/train_labels";
-static const char TEST_VECTOR_PATH [] = "/test_vectors";
-static const char TEST_LABEL_PATH []  = "/test_labels";
+static const char TRAIN_VECTOR_PATH [] = "train_vectors";
+static const char TRAIN_LABEL_PATH []  = "train_labels";
+static const char TEST_VECTOR_PATH [] = "test_vectors";
+static const char TEST_LABEL_PATH []  = "test_labels";
 
-static const char TRN_VTR_PATH [] = "/trn_vtr";
-static const char TRN_LBL_PATH [] = "/trn_lbl";
-static const char TST_VTR_PATH [] = "/tst_vtr";
-static const char TST_LBL_PATH [] = "/tst_lbl";
+static const char TRN_VTR_PATH [] = "trn_vtr";
+static const char TRN_LBL_PATH [] = "trn_lbl";
+static const char TST_VTR_PATH [] = "tst_vtr";
+static const char TST_LBL_PATH [] = "tst_lbl";
 
 static const size_t TRAIN_MAX = 60000;
 static const size_t TEST_MAX = 10000;
@@ -35,10 +34,8 @@ static size_t labelh;
 
 void mnist_generate() {
     /* WRITE TRAIN DATA AND LABEL*/
-    char filepath [TRAIN_MAX], * relpath;
+    char relpath [TRAIN_MAX], * relpath;
     FILE * fin, * fout1, * fout2;
-    strcpy(filepath, BASE_PATH);
-    relpath = filepath + strlen(filepath);
     fprintf(stderr, "> converting mnist train data\n");
     fprintf(stderr, "  > populating data buffer for train data\n");
     strcpy(relpath, TRAIN_VECTOR_PATH);
