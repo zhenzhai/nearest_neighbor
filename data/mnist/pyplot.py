@@ -186,24 +186,45 @@ def rp8_kd():
 	figure.set_size_inches(13, 10)
 	plt.savefig(data_set + "_rp8_kd.png")
 
-def kd_pca_ran_rp():
-	plt.axis([0,8000,0.3,1])
+def rp_rps():
+	plt.axis([0,9000,0.2,1])
+	ran_x, ran_y = read_file(3,2,'2rp_tree.dat')
+	ran4_x, ran4_y = read_file(3,2,'4rp_tree.dat')
+	ran8_x, ran8_y = read_file(3,2,'8rp_tree.dat')
+	rps_x, rps_y = read_file(3,2,'2rp_select_tree.dat')
+	rps4_x, rps4_y = read_file(3,2,'4rp_select_tree.dat')
+	rps8_x, rps8_y = read_file(3,2,'8rp_select_tree.dat')
+	ran_line, = plt.plot(ran_x, ran_y, 'bo-', label='2 RP Trees', lw=3, ms=8)
+	ran4_line, = plt.plot(ran4_x, ran4_y, 'go-', label='4 RP Trees', lw=3, ms=8)
+	ran8_line, = plt.plot(ran8_x, ran8_y, 'ro-', label='8 RP Trees', lw=3, ms=8)
+	rps_line, = plt.plot(rps_x, rps_y, 'co-', label='2 RP Select Trees', lw=3, ms=8)
+	rps4_line, = plt.plot(rps4_x, rps4_y, 'mo-', label='4 RP Select Trees', lw=3, ms=8)
+	rps8_line, = plt.plot(rps8_x, rps8_y, 'ko-', label='8 RP Select Trees', lw=3, ms=8)
+	plt.legend(handles=[ran_line,ran4_line,ran8_line,rps_line,rps4_line,rps8_line],loc=4)
+	figure = plt.gcf()
+	figure.set_size_inches(13, 10)
+	plt.savefig(data_set + "_rp_rps.png")
+
+def kd_pca_ran_rp_rps():
+	plt.axis([0,8000,0.35,1])
 	kd_x, kd_y = read_file(3,2,'kd_tree.dat')
 	pca_x, pca_y = read_file(3,2,'pca_tree.dat')
 	rp8_x, rp8_y = read_file(3,2,'8rp_tree.dat')
 	ran8_x, ran8_y = read_file(3,2,'8rkd_tree.dat')
+	rs8_x, rs8_y = read_file(3,2,'8rp_select_tree.dat')
 	kd_line, = plt.plot(kd_x, kd_y, 'ro-', label='KD Tree', lw=3, ms=8)
 	pca_line, = plt.plot(pca_x, pca_y, 'bo-', label='PCA Tree', lw=3, ms=8)
 	rp8_line, = plt.plot(rp8_x, rp8_y, 'co-', label='8 RP Trees', lw=3, ms=8)
 	ran8_line, = plt.plot(ran8_x, ran8_y, 'mo-', label='8 RKD Trees', lw=3, ms=8)
-	plt.legend(handles=[kd_line, pca_line, rp8_line, ran8_line],loc=4)
+	rs8_line, = plt.plot(rs8_x, rs8_y, 'go-', label='8 RP Select Trees', lw=3, ms=8)
+	plt.legend(handles=[kd_line, pca_line, rp8_line, ran8_line, rs8_line],loc=4)
 	figure = plt.gcf()
 	figure.set_size_inches(13, 10)
-	plt.savefig(data_set + "_kd_pca_ran8_rp8.png")
+	plt.savefig(data_set + "_kd_pca_ran8_rp8_rs8.png")
 
 
 def main():
-	font = {'size' : 25}
+	font = {'size' : 20}
 	plt.rc('font', **font)
 	x = np.linspace(0,12000,1000)
 	y = np.linspace(0.2,0.8,0.05)
@@ -215,7 +236,7 @@ def main():
 	global data_set
 	data_set = 'mnist'
 
-	kd_spill()
+	rp_rps()
 
 main()
 
