@@ -12,6 +12,7 @@
 #include <sstream>
 #include <fstream>
 #include <vector>
+
 using namespace std;
 
 void mnist_generate();

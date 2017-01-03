@@ -8,4 +8,3 @@ int main()
 {
     mnist_generate();
 }
-
