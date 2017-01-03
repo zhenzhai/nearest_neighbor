@@ -13,4 +13,4 @@ CFLAGS += -g -DDEBUG=$(DEBUG)
 endif
 
 $(TARGET): $(OBJECTS)
-	$(CC) $(CFLAGS) $(SRCDIR)/$(SOURCE) -o $(TARGET)
+	$(CC) $(CFLAGS) $(SOURCE) -o $(TARGET)
