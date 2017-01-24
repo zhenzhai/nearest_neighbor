@@ -2,7 +2,7 @@
 
 * All source files are located in 'src' folder.
 
-* Before running the 'src/main.cpp', please take a look at each of the dataset folders. We have [MNIST], [CIFAR], [Word2Vec], [BIG5], and [Million Songs].
+* Before running the 'src/main.cpp', please take a look at each of the dataset folders. We have [MNIST](https://github.com/zhenzhai/nearest_neighbor/tree/master/cpp/src/mnist), [CIFAR](https://github.com/zhenzhai/nearest_neighbor/tree/master/cpp/src/cifar), [Word2Vec](https://github.com/zhenzhai/nearest_neighbor/tree/master/cpp/src/w2v), [BIG5](https://github.com/zhenzhai/nearest_neighbor/tree/master/cpp/src/big5), and [Million Songs](https://github.com/zhenzhai/nearest_neighbor/tree/master/cpp/src/songs).
 
 * You will first need to download the corresponding dataset and convert the raw data. Please see README in each of the dataset folders to find instructions.
 
