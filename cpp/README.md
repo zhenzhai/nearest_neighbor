@@ -8,6 +8,6 @@
 
 * Then you can edit the 'src/main.cpp' file to include the dataset that you want to run. You can only run one dataset at a time.
 
-* We explored 7 different data structures, they are k-d trees, randomized k-d trees, PCA trees, RP trees, virtual RP trees, spill trees, and RP select trees.
+* We explored 7 different data structures, they are k-d trees, randomized k-d trees, RP trees, RP select trees, PCA trees, spill trees, and virtual spill trees.
 
 * Please edit the 'src/main.cpp' correspondingly and choose the data structures you want to run.
