@@ -4,21 +4,21 @@ import matplotlib
 import matplotlib.pyplot as plt
 
 def read_file(x_index, y_index, file):
-	with open(file) as f:
+	with open('../true_nn_accuracy/'+file) as f:
 		file_lines = [[i for i in line.split()] for line in f][1:]
 		x = [float(i[x_index]) for i in file_lines]
 		y = [float(i[y_index]) for i in file_lines]
 	return x, y
 
 def read_partial_file(x_index, y_index, start, end, skip, file):
-	with open(file) as f:
+	with open('../true_nn_accuracy/'+file) as f:
 		file_lines = [[i for i in line.split()] for line in f][1:]
 		x = [float(i[x_index]) for i in file_lines[start:end:skip]]
 		y = [float(i[y_index]) for i in file_lines[start:end:skip]]
 	return x, y
 
 def read_partial_file_w_label(x_index, y_index, label_index, start, end, skip, file):
-	with open(file) as f:
+	with open('../true_nn_accuracy/'+file) as f:
 		file_lines = [[i for i in line.split()] for line in f][1:]
 		x = [float(i[x_index]) for i in file_lines[start:end:skip]]
 		y = [float(i[y_index]) for i in file_lines[start:end:skip]]
@@ -222,17 +222,17 @@ def kd_pca_ran_rp():
 	plt.savefig(data_set + "_kd_pca_ran8_rp8.png")
 
 def kd_pca_ran_rp_rs():
-	plt.axis([0,14000,0,0.8])
+	plt.axis([0,14000,0,1])
 	kd_x, kd_y = read_file(3,2,'kd_tree.dat')
 	pca_x, pca_y = read_file(3,2,'pca_tree.dat')
 	rp8_x, rp8_y = read_file(3,2,'8rp_tree.dat')
 	ran8_x, ran8_y = read_file(3,2,'8rkd_tree.dat')
 	rs8_x, rs8_y = read_file(3,2,'8rp_select_tree.dat')
-	kd_line, = plt.plot(kd_x, kd_y, 'ro-', label='KD Tree', lw=3, ms=8)
+	kd_line, = plt.plot(kd_x, kd_y, 'ro-', label='K-D Tree', lw=3, ms=8)
 	pca_line, = plt.plot(pca_x, pca_y, 'bo-', label='PCA Tree', lw=3, ms=8)
 	rp8_line, = plt.plot(rp8_x, rp8_y, 'co-', label='8 RP Trees', lw=3, ms=8)
-	ran8_line, = plt.plot(ran8_x, ran8_y, 'mo-', label='8 RKD Trees', lw=3, ms=8)
-	rs8_line, = plt.plot(rs8_x, rs8_y, 'go-', label='8 RP Select Trees', lw=3, ms=8)
+	ran8_line, = plt.plot(ran8_x, ran8_y, 'mo-', label='8 R-K-D Trees', lw=3, ms=8)
+	rs8_line, = plt.plot(rs8_x, rs8_y, 'go-', label='8 $V^2$ Trees', lw=3, ms=8)
 	plt.legend(handles=[kd_line, pca_line, rp8_line, ran8_line, rs8_line],loc=4)
 	figure = plt.gcf()
 	figure.set_size_inches(13, 10)
@@ -248,7 +248,7 @@ def main():
 
 	global data_set
 	data_set = 'big5'
-	rp_rps()
+	kd_pca_ran_rp_rs()
 
 main()
 
