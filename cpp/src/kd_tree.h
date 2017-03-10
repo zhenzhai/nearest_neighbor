@@ -226,7 +226,7 @@ KDTreeNode<Label, T>::KDTreeNode(const vector<size_t> domain) :
   pivot_ (0),
   tie_pivot_(0),
   dimension_(0),
-  tie_breaker_(NULL),
+  tie_breaker_(0),
   left_ (NULL),
   right_ (NULL),
   domain_ (domain)

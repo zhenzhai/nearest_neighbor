@@ -84,19 +84,19 @@ def sampling_data(train_size, test_size):
     print "test vec of size: ", len(test_vec)
 
     print "Writing to files"
-    train_vec = open("convert_data/train_vectors", "w")
+    train_vec = open("raw_data/train_vectors", "w")
     for b in train_vec:
         train_vec.write(','.join(b) + '\n')
     print "writing train vector"
-    train_lab = open("convert_data/train_labels", "w")
+    train_lab = open("raw_data/train_labels", "w")
     for b in train_lab:
         train_lab.write(b + '\n')
     print "writing train label"
-    test_vec = open("convert_data/test_vectors", "w")
+    test_vec = open("raw_data/test_vectors", "w")
     for b in test_vec:
         test_vec.write(','.join(b) + '\n')
     print "writing test vector"
-    test_lab = open("convert_data/test_labels", "w")
+    test_lab = open("raw_data/test_labels", "w")
     for b in test_lab:
         test_lab.write(b + '\n')
     print "writing test label"

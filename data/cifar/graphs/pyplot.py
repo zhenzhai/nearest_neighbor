@@ -187,7 +187,7 @@ def rp8_kd():
 	figure.set_size_inches(13, 10)
 	plt.savefig(data_set + "_rp8_kd.png")
 
-def rp_rps():
+def rp_v2():
 	plt.axis([0,8000,0,1])
 	ran_x, ran_y = read_file(3,2,'2rp_tree.dat')
 	ran4_x, ran4_y = read_file(3,2,'4rp_tree.dat')
@@ -198,13 +198,13 @@ def rp_rps():
 	ran_line, = plt.plot(ran_x, ran_y, 'bo-', label='2 RP Trees', lw=3, ms=8)
 	ran4_line, = plt.plot(ran4_x, ran4_y, 'go-', label='4 RP Trees', lw=3, ms=8)
 	ran8_line, = plt.plot(ran8_x, ran8_y, 'ro-', label='8 RP Trees', lw=3, ms=8)
-	rps_line, = plt.plot(rps_x, rps_y, 'co-', label='2 RP Select Trees', lw=3, ms=8)
-	rps4_line, = plt.plot(rps4_x, rps4_y, 'mo-', label='4 RP Select Trees', lw=3, ms=8)
-	rps8_line, = plt.plot(rps8_x, rps8_y, 'ko-', label='8 RP Select Trees', lw=3, ms=8)
+	rps_line, = plt.plot(rps_x, rps_y, 'co-', label='2 $V^2$ Trees', lw=3, ms=8)
+	rps4_line, = plt.plot(rps4_x, rps4_y, 'mo-', label='4 $V^2$ Trees', lw=3, ms=8)
+	rps8_line, = plt.plot(rps8_x, rps8_y, 'ko-', label='8 $V^2$ Trees', lw=3, ms=8)
 	plt.legend(handles=[ran_line,ran4_line,ran8_line,rps_line,rps4_line,rps8_line],loc=4)
 	figure = plt.gcf()
 	figure.set_size_inches(13, 10)
-	plt.savefig(data_set + "_rp_rps.png")
+	plt.savefig(data_set + "_rp_v2.png")
 
 def kd_pca_ran_rp():
 	plt.axis([0,7000,0.2,0.8])
@@ -248,7 +248,7 @@ def main():
 	global data_set
 	data_set = 'cifar'
 
-	kd_pca_ran_rp_rs()
+	rp_v2()
 
 main()
 

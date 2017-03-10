@@ -186,7 +186,7 @@ def rp8_kd():
 	figure.set_size_inches(13, 10)
 	plt.savefig(data_set + "_rp8_kd.png")
 
-def rp_rps():
+def rp_v2():
 	plt.axis([0,9000,0.2,1])
 	ran_x, ran_y = read_file(3,2,'2rp_tree.dat')
 	ran4_x, ran4_y = read_file(3,2,'4rp_tree.dat')
@@ -203,7 +203,7 @@ def rp_rps():
 	plt.legend(handles=[ran_line,ran4_line,ran8_line,rps_line,rps4_line,rps8_line],loc=4)
 	figure = plt.gcf()
 	figure.set_size_inches(13, 10)
-	plt.savefig(data_set + "_rp_rps.png")
+	plt.savefig(data_set + "_rp_v2.png")
 
 def kd_pca_ran_rp_rps():
 	plt.axis([0,8000,0,1])
@@ -236,7 +236,7 @@ def main():
 	global data_set
 	data_set = 'mnist'
 
-	kd_pca_ran_rp_rps()
+	rp_v2()
 
 main()
 

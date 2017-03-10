@@ -8,12 +8,12 @@ Detail about the dataset 'ANN_SIFT1M' is [here](http://corpus-texmex.irisa.fr/).
 
 		python preprocess.py
 
-* The python script will write train and test feature vectors into files "train_vectors" and "test_vectors" correspondingly, each feature seperated with ",". Also, it will write train and test labels into files "train_labels" and "test_labels", each line with only one label. Output files will be saved in "convert_data" directory.
+* The python script will write train and test feature vectors into files "train_vectors" and "test_vectors" correspondingly, each feature seperated with ",". Also, it will write train and test labels into files "train_labels" and "test_labels", each line with only one label. Output files will be saved in "raw_data" directory.
 
-* Run to convert data
+* You can now run main.cpp in the src directory
 
-		cd convert_data
+		cd ..
 		make
-		./main.o
+		./main.o sift convert 100000 10000 100
 
 * Converted data will be saved in current directory.

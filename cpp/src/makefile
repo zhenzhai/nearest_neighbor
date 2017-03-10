@@ -3,8 +3,8 @@ SRCDIR := src
 TARGET := main
  
 SRCEXT := cpp
-SOURCES := main.cpp
-OBJECTS := main.o
+SOURCES := *.cpp
+OBJECTS := $(patsubst .cpp, .o, $(SOURCES))
 
 CFLAGS := -std=c++11 -pthread
 
@@ -15,7 +15,7 @@ endif
 $(TARGET): $(OBJECTS)
 	$(CC) $(CFLAGS) $(OBJECTS) -o $(TARGET)
 
-$(OBJECTS): $(SOURCES)
+$(OBJECTS):
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 clean:

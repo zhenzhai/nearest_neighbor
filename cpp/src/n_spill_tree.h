@@ -568,8 +568,8 @@ NSpillTreeNode<Label, T>::NSpillTreeNode(const vector<size_t> domain) :
   splits_(0),
   dimension_ (0),
   pivots_ (NULL),
-  tie_breaker_(NULL),
-  tie_pivots_(NULL),
+  tie_breaker_(0),
+  tie_pivots_(0),
   children_ (NULL),
   domain_ (domain)
 { 

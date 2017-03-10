@@ -42,14 +42,14 @@ def main():
 	# Split files into train and test
 	random.seed(1)
 	random.shuffle(timbre)
-	with open('../convert_data/test_vectors', 'w') as test:
+	with open('../raw_data/test_vectors', 'w') as test:
 		test.writelines(','.join(str(j) for j in i) + '\n' for i in timbre[:165000])
-	with open('../convert_data/train_vectors', 'w') as train:
+	with open('../raw_data/train_vectors', 'w') as train:
 		train.writelines(','.join(str(j) for j in i) + '\n' for i in timbre[165000:])
 
 	test_labels = np.zeros(shape=(165000,), dtype=np.int)
 	train_labels = np.zeros(shape=(835000,), dtype=np.int)
-	np.savetxt('../convert_data/test_labels', test_labels, fmt='%d')
-	np.savetxt('../convert_data/train_labels', train_labels, fmt='%d')
+	np.savetxt('../raw_data/test_labels', test_labels, fmt='%d')
+	np.savetxt('../raw_data/train_labels', train_labels, fmt='%d')
 
 main()
