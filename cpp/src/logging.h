@@ -18,7 +18,8 @@
 #define LOG_INFO(...) 
 #define LOG_FINE(...) 
 
-#ifdef DEBUG
+#ifndef DEBUG
+#define DEBUG		(200)
 
 #if ERROR >= DEBUG
 #undef  LOG_ERROR

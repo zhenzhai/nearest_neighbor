@@ -3,6 +3,7 @@
 #include <cstdio>
 #include "test.h"
 #include "data_convert.h"
+
 using namespace std;
 
 typedef unsigned char byte;
@@ -17,7 +18,7 @@ typedef unsigned char byte;
 
 int main(int argc, char* argv[])
 {
-    if (argc < 2 || (argc > 2 && argc < 6)) {
+    if (argc != 2 && argc != 3 && argc != 6) {
         cerr << "Usage: " << endl;
         cerr << "   1. Convert Data "<< argv[0] << " DataName(mnist/cifar/songs/big5/w2v/sift) convert train_size test_size width" << endl;
         cerr << "   2. Run Trees " << argv[0] << " DataName(mnist, cifar, songs, big5, w2v, sift)" << endl;
@@ -27,8 +28,8 @@ int main(int argc, char* argv[])
     string set_DIR = argv[1];
     if (argc == 6) {
         size_t train_size = atoi(argv[3]);
-        size_t test_size = atoi(argv[4]);
-        size_t width = atoi(argv[5]);
+		size_t test_size = atoi(argv[4]);
+		size_t width = atoi(argv[5]);
         cout << "Start to convert data " << set_DIR << endl;
         data_generate(set_DIR, train_size, test_size, width);
     } else if (argc == 3) {
@@ -94,5 +95,6 @@ int main(int argc, char* argv[])
         mTest.generate_kd_v_spill_trees();
         mTest.generate_kd_v_spill_tree_data(set_DIR);
     }
+	cin.get();
 }
 

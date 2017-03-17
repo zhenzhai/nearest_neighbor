@@ -371,7 +371,7 @@ DataSet<Label, T>::DataSet(ifstream & in) :
     for (size_t i = 0; i < n; i++)
     {
         vector<T> * vtr = new vector<T>;
-        T buffer [m];
+        T * buffer = new T[m];
         in.read((char *)buffer, sizeof(T) * m);
         vtr->assign(buffer, buffer + m);
         domain_.push_back(domain_.size());
@@ -428,7 +428,7 @@ void DataSet<Label, T>::label(ifstream & in)
     LOG_INFO("Enter label\n");
     size_t n;
     in.read((char *)&n, sizeof(size_t));
-    Label buffer [n];
+    Label * buffer = new Label[n];
     in.read((char *)buffer, sizeof(Label) * n);
     for (size_t i = 0; i < n; i++)
     {

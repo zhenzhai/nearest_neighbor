@@ -9,6 +9,7 @@
 #include <map>
 #include "logging.h"
 #include "data_set.h"
+#include <errno.h>
 using namespace std;
 
 /* Class Prototypes */
@@ -226,7 +227,7 @@ KDTreeNode<Label, T>::KDTreeNode(const vector<size_t> domain) :
   pivot_ (0),
   tie_pivot_(0),
   dimension_(0),
-  tie_breaker_(0),
+  tie_breaker_(NULL),
   left_ (NULL),
   right_ (NULL),
   domain_ (domain)
@@ -266,7 +267,7 @@ KDTreeNode<Label, T>::KDTreeNode(ifstream & in)
     LOG_FINE("> dimension = %ld\n", dimen);
     while (dimen--)
     {
-        double v;
+        double v = 0;
         in.read((char *)&v, sizeof(double));
         tie_breaker_.push_back(v);
     }
@@ -304,7 +305,11 @@ void KDTreeNode<Label, T>::save(ofstream & out) const
     out.write((char *)&pivot_, sizeof(T));
     out.write((char *)&tie_pivot_,sizeof(double));
     out.write((char *)&dimension_, sizeof(size_t));
-    out.write((char *)&tie_breaker_[0], sizeof(double) * dimension_);
+	if (tie_breaker_.empty()){
+		out.write((char *)&tie_breaker_, sizeof(double) * dimension_);
+	} else {
+		out.write((char *)&tie_breaker_[0], sizeof(double) * dimension_);
+	}
     size_t sz = domain_.size();
     out.write((char *)&sz, sizeof(size_t)); 
     out.write((char *)&domain_[0], 

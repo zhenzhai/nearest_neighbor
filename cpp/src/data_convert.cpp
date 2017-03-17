@@ -1,9 +1,9 @@
 //
 //  data_convert.cpp
 //
-
 #include "data_convert.h"
 #include <errno.h>
+#include <Windows.h>
 
 typedef unsigned char byte;
 
@@ -18,10 +18,14 @@ static const string TST_VTR_PATH = "/tst_vtr";
 static const string TST_LBL_PATH = "/tst_lbl";
 
 void data_generate(const string& data_name, size_t TRAIN_MAX, size_t TEST_MAX, size_t WIDTH) {
-    float databuf [TRAIN_MAX][WIDTH];
-    unsigned int labelbuf [TRAIN_MAX];
+	float ** databuf = new float*[TRAIN_MAX];
+	for (int i = 0; i < TRAIN_MAX; ++i) {
+		databuf[i] = new float[WIDTH];
+	}
+	unsigned int * labelbuf = new unsigned int[TRAIN_MAX];
     
-    char strbuf [TRAIN_MAX], * tok;
+	char * strbuf = new char[TRAIN_MAX];
+	char * tok;
     byte res;
     int datah, dataw;
     size_t labelh;
@@ -33,6 +37,7 @@ void data_generate(const string& data_name, size_t TRAIN_MAX, size_t TEST_MAX, s
     /* WRITE TRAIN DATA AND LABEL*/
     fprintf(stderr, "> converting data\n");
     fprintf(stderr, "  > populating data buffer for train data\n");
+
     string filepath = data_name + TRAIN_VECTOR_PATH;
     fin = fopen(filepath.c_str(), "rb");
     if (fin == NULL)
@@ -43,13 +48,10 @@ void data_generate(const string& data_name, size_t TRAIN_MAX, size_t TEST_MAX, s
     
     //height is the number of vectors
     datah = 0;
-    cout << "reading" << endl;
     while (fgets(strbuf, TRAIN_MAX, fin)) {
-        cout << "in" << endl;
         tok = strtok(strbuf, ",");
         dataw = 0;
         while (tok) {
-            cout << "read" << endl;
             databuf[datah][dataw] = atof(tok);
             tok = strtok(NULL, ",");
             dataw++;
@@ -81,7 +83,7 @@ void data_generate(const string& data_name, size_t TRAIN_MAX, size_t TEST_MAX, s
     for (int i = 0; i < TRAIN_MAX; i++) {
         res = (byte)labelbuf[i];
         fwrite((const char *)&res, sizeof(byte), 1, fout2); //write in label data
-        fwrite((const char *)&databuf[i], sizeof(float), WIDTH, fout1);
+        fwrite((const char *)databuf[i], sizeof(float), WIDTH, fout1);
     }
     fclose(fin);
     fclose(fout1);
@@ -135,9 +137,14 @@ void data_generate(const string& data_name, size_t TRAIN_MAX, size_t TEST_MAX, s
     for (int i = 0; i < TEST_MAX; i++) {
         res = (byte)labelbuf[i];
         fwrite((const char *)&res, sizeof(byte), 1, fout2); //write in label data
-        fwrite((const char *)&databuf[i], sizeof(float), WIDTH, fout1);
+        fwrite((const char *)databuf[i], sizeof(float), WIDTH, fout1);
     }
     fclose(fin);
     fclose(fout1);
     fclose(fout2);
+
+	// De-Allocate memory to prevent memory leak
+	for (int i = 0; i < TRAIN_MAX; ++i)
+		delete[] databuf[i];
+	delete[] databuf;
 }

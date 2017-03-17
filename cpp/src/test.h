@@ -40,8 +40,11 @@ static size_t rp_select_tree_len   = 3;
 static double rp_tree[]     = {2, 4, 8};
 static size_t rp_tree_len   = 3;
 static double min_leaf  = 0.001; //0.0001
-static double leaf_size_array []      = {0.015, 0.03, 0.06, 0.09, 0.1, 0.13, 0.15, 0.17, 0.19, 0.21};//{0.005, 0.01, 0.015, 0.02, 0.03, 0.05, 0.08, 0.1, 0.13, 0.15};//{0.01, 0.013, 0.015, 0.02, 0.03, 0.05, 0.08, 0.1, 0.13, 0.15};
-const size_t leaf_size_array_len      = 10;
+static double leaf_size_array[] = {0.04, 0.05, 0.08, 0.1, 0.15};
+//{0.015, 0.03, 0.06, 0.09, 0.1, 0.13, 0.15, 0.17, 0.19, 0.21};
+//{0.005, 0.01, 0.015, 0.02, 0.03, 0.05, 0.08, 0.1, 0.13, 0.15};
+//{0.01, 0.013, 0.015, 0.02, 0.03, 0.05, 0.08, 0.1, 0.13, 0.15};
+const size_t leaf_size_array_len = 5;//10;
 static double a_array []      = {0.05, 0.1};
 const size_t a_array_len      = 2;
 const size_t splits     = 3;
@@ -63,7 +66,7 @@ public:
         stringstream dir; 
         dir << base_dir_ << "/kd_tree_" << setprecision(2) << min_leaf_size;
         KDTree<Label, T> tree ((size_t)(min_leaf_size * (*trn_st_).size()), *trn_st_);
-        ofstream tree_out (dir.str());
+        ofstream tree_out (dir.str(), ios::binary);
         tree.save(tree_out);
         tree_out.close();
     }
@@ -76,7 +79,7 @@ public:
         stringstream dir;
         dir << base_dir_ << "/" << num_splits << "_spill_tree_" << setprecision(2) << a_value << "_" << min_leaf_size;
         NSpillTree<Label, T> tree ((size_t)(min_leaf_size * (*trn_st_).size()), num_splits, a_value, *trn_st_);
-        ofstream tree_out (dir.str());
+        ofstream tree_out (dir.str(), ios::binary);
         tree.save(tree_out);
         tree_out.close();
     }
@@ -102,7 +105,7 @@ public:
             }
             else {
                 RKDTree<Label, T> tree ((size_t)(min_leaf_size * (*trn_st_).size()), *trn_st_);
-                ofstream tree_out (dir.str());
+                ofstream tree_out (dir.str(), ios::binary);
                 tree.save(tree_out);
                 tree_out.close();
             }
@@ -125,7 +128,7 @@ public:
             }
             else {
                 RPSelectTree<Label, T> tree ((size_t)(min_leaf_size * (*trn_st_).size()), *trn_st_);
-                ofstream tree_out (dir.str());
+                ofstream tree_out (dir.str(), ios::binary);
                 tree.save(tree_out);
                 tree_out.close();
             }
@@ -141,7 +144,7 @@ public:
         stringstream dir; 
         dir << base_dir_ << "/kd_spill_tree_" << setprecision(3) << a_value << "_" << min_leaf_size;
         KDSpillTree<Label, T> tree ((size_t)(min_leaf_size * (*trn_st_).size()), a_value, *trn_st_);
-        ofstream tree_out (dir.str());
+        ofstream tree_out (dir.str(), ios::binary);
         tree.save(tree_out);
         tree_out.close();
     }
@@ -161,7 +164,7 @@ public:
         stringstream dir; 
         dir << base_dir_ << "/kd_v_spill_tree_" << setprecision(2) << a_value << "_" << min_leaf_size;
         KDVirtualSpillTree<Label, T> tree ((size_t)(min_leaf_size * (*trn_st_).size()), a_value, *trn_st_);
-        ofstream tree_out (dir.str());
+        ofstream tree_out (dir.str(), ios::binary);
         tree.save(tree_out);
         tree_out.close();
     }
@@ -189,7 +192,7 @@ public:
             }
             else {
                 RPTree<Label, T> tree ((size_t)(min_leaf_size * (*trn_st_).size()), *trn_st_);
-                ofstream tree_out (dir.str());
+                ofstream tree_out (dir.str(), ios::binary);
                 tree.save(tree_out);
                 tree_out.close();
             }
@@ -209,7 +212,7 @@ public:
         stringstream dir; 
         dir << base_dir_ << "/pca_tree_" << setprecision(2) << min_leaf_size;
         PCATree<Label, T> tree ((size_t)(min_leaf_size * (*trn_st_).size()), *trn_st_);
-        ofstream tree_out (dir.str());
+        ofstream tree_out (dir.str(), ios::binary);
         tree.save(tree_out);
         tree_out.close();
     }
@@ -224,7 +227,7 @@ public:
         stringstream dir; 
         dir << base_dir_ << "/pca_spill_tree_" << setprecision(2) << a_value << "_" << min_leaf_size;
         PCASpillTree<Label, T> tree ((size_t)(min_leaf_size * (*trn_st_).size()), a_value, *trn_st_);
-        ofstream tree_out (dir.str());
+        ofstream tree_out (dir.str(), ios::binary);
         tree.save(tree_out);
         tree_out.close();
     }
@@ -244,7 +247,7 @@ public:
     {
         stringstream dir; 
         dir << base_dir_ << "/kd_tree_" << setprecision(2) << min_leaf;
-        ifstream tree_in (dir.str());
+        ifstream tree_in (dir.str(), ios::binary);
         KDTree<Label, T> tree (tree_in, *trn_st_);
         size_t error_count = 0;
         size_t true_nn_count = 0;
@@ -292,7 +295,7 @@ public:
     {
         stringstream dir;
         dir << base_dir_ << "/" << num_splits << "_spill_tree_" << setprecision(2) << a_value << "_" << min_leaf;
-        ifstream tree_in (dir.str());
+        ifstream tree_in (dir.str(), ios::binary);
         NSpillTree<Label, T> tree (tree_in, num_splits, *trn_st_);
         size_t error_count = 0;
         size_t true_nn_count = 0;
@@ -353,7 +356,7 @@ public:
         for (int j=1; j<=n; j++) {
             stringstream dir;
             dir << base_dir_ << "/rkd_tree" << j << "_" << setprecision(2) << min_leaf;
-            ifstream tree_in (dir.str());
+            ifstream tree_in (dir.str(), ios::binary);
             RKDTree<Label, T> tree (tree_in, *trn_st_);
             for (size_t i = 0; i < (*tst_st_).size(); i++) {
                 DataSet<Label, T> subSet = (*trn_st_).subset(tree.subdomain((*tst_st_)[i], (size_t)((leaf_size / n) * (*trn_st_).size())));
@@ -424,7 +427,7 @@ public:
         for (int j=1; j<=n; j++) {
             stringstream dir;
             dir << base_dir_ << "/rp_select_tree" << j << "_" << setprecision(2) << min_leaf;
-            ifstream tree_in (dir.str());
+            ifstream tree_in (dir.str(), ios::binary);
             RPSelectTree<Label, T> tree (tree_in, *trn_st_);
             for (size_t i = 0; i < (*tst_st_).size(); i++) {
                 DataSet<Label, T> subSet = (*trn_st_).subset(tree.subdomain((*tst_st_)[i], (size_t)((leaf_size / n) * (*trn_st_).size())));
@@ -500,7 +503,7 @@ public:
     {
         stringstream dir; 
         dir << base_dir_ << "/kd_spill_tree_" << setprecision(2) << a_value << "_" << min_leaf;
-        ifstream tree_in (dir.str());
+        ifstream tree_in (dir.str(), ios::binary);
         KDSpillTree<Label, T> tree (tree_in, *trn_st_);
         size_t error_count = 0;
         size_t true_nn_count = 0;
@@ -582,7 +585,7 @@ public:
     {
         stringstream dir; 
         dir << base_dir_ << "/kd_v_spill_tree_" << setprecision(2) << a_value << "_" << min_leaf;
-        ifstream tree_in (dir.str());
+        ifstream tree_in (dir.str(), ios::binary);
         KDVirtualSpillTree<Label, T> tree (tree_in, *trn_st_);
         size_t error_count = 0;
         size_t true_nn_count = 0;
@@ -644,7 +647,7 @@ public:
         for (int j=1; j<=n; j++) {
             stringstream dir;
             dir << base_dir_ << "/rp_tree_" << j << "_" << setprecision(2) << min_leaf;
-            ifstream tree_in (dir.str());
+            ifstream tree_in (dir.str(), ios::binary);
             RPTree<Label, T> tree (tree_in, *trn_st_);
             for (size_t i = 0; i < (*tst_st_).size(); i++) {
                 DataSet<Label, T> subSet = (*trn_st_).subset(tree.subdomain((*tst_st_)[i], (size_t)((leaf_size / n) * (*trn_st_).size())));
@@ -725,7 +728,7 @@ public:
     {
         stringstream dir;
         dir << base_dir_ << "/pca_tree_" << setprecision(2) << min_leaf;
-        ifstream tree_in (dir.str());
+        ifstream tree_in (dir.str(), ios::binary);
         PCATree<Label, T> tree (tree_in, *trn_st_);
         size_t error_count = 0;
         size_t true_nn_count = 0;
@@ -773,7 +776,7 @@ public:
     {
         stringstream dir; 
         dir << base_dir_ << "/pca_spill_tree_" << setprecision(2) << a_value << "_" << min_leaf;
-        ifstream tree_in (dir.str());
+        ifstream tree_in (dir.str(), ios::binary);
         PCASpillTree<Label, T> tree (tree_in, *trn_st_);
         size_t error_count = 0;
         size_t true_nn_count = 0;
