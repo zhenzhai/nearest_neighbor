@@ -8,14 +8,6 @@ using namespace std;
 
 typedef unsigned char byte;
 
-/* Please select the dataset you want to run */
-//const string set_DIR = "mnist";
-//const string set_DIR = "cifar";
-//const string set_DIR = "songs";
-//const string set_DIR = "big5";
-//const string set_DIR = "w2v";
-
-
 int main(int argc, char* argv[])
 {
     if (argc != 2 && argc != 3 && argc != 6) {
@@ -80,8 +72,8 @@ int main(int argc, char* argv[])
         mTest.generate_rp_trees();
         mTest.generate_rp_tree_data(set_DIR);
     
-        mTest.generate_rp_select_trees();
-        mTest.generate_rp_select_tree_data(set_DIR);
+        mTest.generate_v2_trees();
+        mTest.generate_v2_tree_data(set_DIR);
     
         mTest.generate_pca_trees();
         mTest.generate_pca_tree_data(set_DIR);
