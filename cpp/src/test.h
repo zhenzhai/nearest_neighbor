@@ -21,7 +21,7 @@
 #include "pca_tree.h"
 #include "rp_tree.h"
 #include "pca_spill_tree.h"
-#include "rp_select_tree.h"
+#include "v2_tree.h"
 #include "nn.h"
 using namespace std;
 
@@ -35,8 +35,8 @@ using namespace std;
 
 static double rkd_tree[]     = {2, 4, 8};
 static size_t rkd_tree_len   = 3;
-static double rp_select_tree[]     = {2, 4, 8};
-static size_t rp_select_tree_len   = 3;
+static double v2_tree[]     = {2, 4, 8};
+static size_t v2_tree_len   = 3;
 static double rp_tree[]     = {2, 4, 8};
 static size_t rp_tree_len   = 3;
 static double min_leaf  = 0.001; //0.0001
@@ -117,17 +117,17 @@ public:
         s_rkd_tree(min_leaf, rkd_tree[rkd_tree_len-1]);
     }
     
-    void s_rp_select_tree(double min_leaf_size, int n) {
+    void s_v2_tree(double min_leaf_size, int n) {
         stringstream dir;
         for (int i=1; i<=n; i++) {
-            dir << base_dir_ << "/rp_select_tree" << i << "_" << setprecision(2) << min_leaf_size;
-            ifstream rp_select_tree_file (dir.str(), ios::binary);
-            if (rp_select_tree_file.good()) {
-                LOG_INFO("File rp_select_tree%d found!!!\n", i);
-                rp_select_tree_file.clear();
+            dir << base_dir_ << "/v2_tree" << i << "_" << setprecision(2) << min_leaf_size;
+            ifstream v2_tree_file (dir.str(), ios::binary);
+            if (v2_tree_file.good()) {
+                LOG_INFO("File v2_tree%d found!!!\n", i);
+                v2_tree_file.clear();
             }
             else {
-                RPSelectTree<Label, T> tree ((size_t)(min_leaf_size * (*trn_st_).size()), *trn_st_);
+                V2Tree<Label, T> tree ((size_t)(min_leaf_size * (*trn_st_).size()), *trn_st_);
                 ofstream tree_out (dir.str(), ios::binary);
                 tree.save(tree_out);
                 tree_out.close();
@@ -136,8 +136,8 @@ public:
         }
     }
     
-    void generate_rp_select_trees() {
-        s_rp_select_tree(min_leaf, rp_select_tree[rp_select_tree_len-1]);
+    void generate_v2_trees() {
+        s_v2_tree(min_leaf, v2_tree[v2_tree_len-1]);
     }
 
     void s_kd_spill_tree(double min_leaf_size, double a_value) {
@@ -418,7 +418,7 @@ public:
         }
     }
     
-    void s_rp_select_tree_data(double leaf_size, string * result, int n)
+    void s_v2_tree_data(double leaf_size, string * result, int n)
     {
         size_t error_count = 0;
         size_t true_nn_count = 0;
@@ -426,9 +426,9 @@ public:
         vector<vector<size_t>> nn_domain;
         for (int j=1; j<=n; j++) {
             stringstream dir;
-            dir << base_dir_ << "/rp_select_tree" << j << "_" << setprecision(2) << min_leaf;
+            dir << base_dir_ << "/v2_tree" << j << "_" << setprecision(2) << min_leaf;
             ifstream tree_in (dir.str(), ios::binary);
-            RPSelectTree<Label, T> tree (tree_in, *trn_st_);
+            V2Tree<Label, T> tree (tree_in, *trn_st_);
             for (size_t i = 0; i < (*tst_st_).size(); i++) {
                 DataSet<Label, T> subSet = (*trn_st_).subset(tree.subdomain((*tst_st_)[i], (size_t)((leaf_size / n) * (*trn_st_).size())));
                 if (nn_domain.size() < i+1){
@@ -477,10 +477,10 @@ public:
         *result = data.str();
     }
     
-    void generate_rp_select_tree_data(string out_dir)
+    void generate_v2_tree_data(string out_dir)
     {
-        for(int k=0; k<rp_select_tree_len; k++) {
-            ofstream dat_out (out_dir + "/" + to_string(int(rp_select_tree[k])) + "rp_select_tree.dat");
+        for(int k=0; k<v2_tree_len; k++) {
+            ofstream dat_out (out_dir + "/" + to_string(int(v2_tree[k])) + "v2_tree.dat");
             dat_out <<  setw(COL_W) << "leaf";
             dat_out <<  setw(COL_W) << "error rate";
             dat_out <<  setw(COL_W) << "true nn";
@@ -489,7 +489,7 @@ public:
             thread t [leaf_size_array_len];
             string r [leaf_size_array_len];
             for (size_t i = 0; i < leaf_size_array_len; i++) {
-                t[i] = thread(&Test::s_rp_select_tree_data, this, leaf_size_array[i], &(r[i]), rp_select_tree[k]);
+                t[i] = thread(&Test::s_v2_tree_data, this, leaf_size_array[i], &(r[i]), v2_tree[k]);
             }
             for (size_t i = 0; i < leaf_size_array_len; i++) {
                 t[i].join();
