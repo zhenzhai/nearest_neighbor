@@ -21,7 +21,7 @@ using namespace std;
 template<class Label, class T>
 vector<T> * nearest_neighbor(const vector<T> * query, const DataSet<Label, T> & st)
 {
-    LOG_INFO("Enter nearest_neighbor\n");
+    LOG_FINE("Enter nearest_neighbor\n");
     vector<T> * mn_vtr = NULL;
     double mn_dist = 0;
     double l_dist = 0;
@@ -32,7 +32,7 @@ vector<T> * nearest_neighbor(const vector<T> * query, const DataSet<Label, T> & 
             mn_vtr = st[i];
         }
     }
-    LOG_INFO("Exit nearest_neighbor\n");
+    LOG_FINE("Exit nearest_neighbor\n");
     return mn_vtr;
 }
 
@@ -49,7 +49,7 @@ vector<T> * nearest_neighbor(const vector<T> * query, const DataSet<Label, T> & 
 template<class Label, class T>
 DataSet<Label, T> k_nearest_neighbor(size_t k, vector<T> * query, DataSet<Label, T> & st)
 {
-    LOG_INFO("Enter k_nearest_neighbor\n");
+    LOG_FINE("Enter k_nearest_neighbor\n");
     map<vector<T> *, double> dist_mp; 
     vector<double> dist_vtr;
     for (size_t i = 0; i < st.size(); i++) {
@@ -69,8 +69,39 @@ DataSet<Label, T> k_nearest_neighbor(size_t k, vector<T> * query, DataSet<Label,
                 domain.push_back(i);
         }
     }
-    LOG_INFO("Exit k_nearest_neighbor\n");
+    LOG_FINE("Exit k_nearest_neighbor\n");
     return st.subset(domain);
+}
+
+/*
+* Name             : k_nearest_neighbor
+* Prototype        : DataSet<Label, T> k_nearest_neighbor(size_t, const vector<T> *,
+*                                                         const DataSet<Label, T> &)
+* Description      : Gets the k nearest neighbors to a query in a linear fashion.
+* Parameter(s)     : query     - The vector to search the data set against
+*                    st        - The set to search from
+* Return Value     : Gets a data set storing the k nearest neighbors to the query in the data set
+*/
+template<class Label, class T>
+DataSet<Label, T> true_nearest_neighbor(vector<T> * query, DataSet<Label, T> & st)
+{
+	LOG_FINE("Enter true_nearest_neighbor\n");
+	vector<T> * mn_vtr = NULL;
+	double mn_dist = 0;
+	double l_dist = 0;
+	size_t domain_i = 0;
+	for (size_t i = 0; i < st.size(); i++) {
+		l_dist = distance_to(query, st[i]);
+		if (!mn_vtr || l_dist < mn_dist) {
+			mn_dist = l_dist;
+			mn_vtr = st[i];
+			domain_i = i;
+		}
+	}
+	vector<size_t> domain;
+	domain.push_back(domain_i);
+	LOG_FINE("Exit true_nearest_neighbor\n");
+	return st.subset(domain);
 }
 
 /*
@@ -87,7 +118,7 @@ template<class Label, class T>
 DataSet<Label, T> c_approx_nn(double c, vector<T> * query, DataSet<Label, T> & st, 
         vector<T> * nn)
 {
-    LOG_INFO("Enter c_approx_nn\n");
+    LOG_FINE("Enter c_approx_nn\n");
     map<vector<T> * , double> dist_mp;
     for (size_t i = 0; i < st.size(); i++) {
         double dist = distance_to(query, st[i]);
@@ -102,7 +133,7 @@ DataSet<Label, T> c_approx_nn(double c, vector<T> * query, DataSet<Label, T> & s
         }
     }
     DataSet<Label, T> & c_approx = st.subset(domain);
-    LOG_INFO("Exit c_approx_nn\n");
+    LOG_FINE("Exit c_approx_nn\n");
     return c_approx;
 }
 

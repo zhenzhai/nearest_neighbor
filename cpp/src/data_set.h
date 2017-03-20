@@ -65,7 +65,7 @@ public:
 template<class Label, class T>
 size_t max_variance_index(DataSet<Label, T> & subset)
 {
-    LOG_INFO("Enter max_variance_index\n");
+    LOG_FINE("Enter max_variance_index\n");
     LOG_FINE("with subset.size = %ld\n", subset.size());
     vector<double> var;
     vector<T> vtr;
@@ -91,7 +91,7 @@ size_t max_variance_index(DataSet<Label, T> & subset)
             maxIndex = i;
         }
     }
-    LOG_INFO("Exit max_variance_index\n");
+    LOG_FINE("Exit max_variance_index\n");
     LOG_FINE("with result = %ld \n ", maxIndex);
     return maxIndex;
 }
@@ -108,7 +108,7 @@ size_t max_variance_index(DataSet<Label, T> & subset)
 template<class Label, class T>
 vector<int> max_k_variance_index(DataSet<Label, T> & subset, int k)
 {
-    LOG_INFO("Enter max_k_variance_index\n");
+    LOG_FINE("Enter max_k_variance_index\n");
     LOG_FINE("with k = %d\n", k);
     LOG_FINE("with subset.size = %ld\n", subset.size());
     vector<double> var;
@@ -139,7 +139,7 @@ vector<int> max_k_variance_index(DataSet<Label, T> & subset, int k)
     
     sort(max_var.begin(), max_var.end());
     
-    LOG_INFO("Exit max_k_variance_index\n");
+    LOG_FINE("Exit max_k_variance_index\n");
     return max_var;
 }
 
@@ -153,7 +153,7 @@ vector<int> max_k_variance_index(DataSet<Label, T> & subset, int k)
 template<class Label, class T>
 vector<double> variance_vector(DataSet<Label, T> & subset)
 {
-    LOG_INFO("Enter variance_vector\n");
+    LOG_FINE("Enter variance_vector\n");
     LOG_FINE("with subset.size = %ld\n", subset.size());
     vector<double> var;
     vector<T> vtr;
@@ -174,7 +174,7 @@ vector<double> variance_vector(DataSet<Label, T> & subset)
         var.push_back(variance);
     }
     
-    LOG_INFO("Exit variance_vector\n");
+    LOG_FINE("Exit variance_vector\n");
     return var;
 }
 
@@ -191,7 +191,7 @@ vector<double> variance_vector(DataSet<Label, T> & subset)
 template<class Label, class T>
 size_t ran_variance_index(DataSet<Label, T> & subset)
 {
-    LOG_INFO("Enter ran_variance_index\n");
+    LOG_FINE("Enter ran_variance_index\n");
     LOG_FINE("with subset.size = %ld\n", subset.size());
     vector<double> var;
     vector<T> vtr;
@@ -223,7 +223,7 @@ size_t ran_variance_index(DataSet<Label, T> & subset)
     
     srand((int)time(NULL));
     size_t index = max_var[rand() % max_var_size];
-    LOG_INFO("Exit ran_variance_index\n");
+    LOG_FINE("Exit ran_variance_index\n");
     LOG_FINE("with result = %ld \n ", index);
     return index;
 }
@@ -239,7 +239,7 @@ size_t ran_variance_index(DataSet<Label, T> & subset)
 template<class Label, class T>
 vector<double> max_eigen_vector(DataSet<Label, T> & subset, int sample_size)
 {
-    LOG_INFO("Enter max_eigen_vector\n");
+    LOG_FINE("Enter max_eigen_vector\n");
     LOG_FINE("with subset.size = %ld\n", subset.size());
     /*
     int rows = subset[0]->size();
@@ -296,7 +296,7 @@ vector<double> max_eigen_vector(DataSet<Label, T> & subset, int sample_size)
     for (size_t i = 0; i < dim; i++) {
         maxEigVtr.push_back(eigVtr(i) / len);
     }
-    LOG_INFO("Exit max_eigen_vector\n");
+    LOG_FINE("Exit max_eigen_vector\n");
     return maxEigVtr;
 }
 
@@ -308,7 +308,7 @@ DataSet<Label, T>::DataSet(DataSet<Label, T> & parent, vector<size_t> domain) :
   labels_ (parent.labels_),
   vectors_ (parent.vectors_)
 {
-    LOG_INFO("DataSet Constructed\n"); 
+    LOG_FINE("DataSet Constructed\n"); 
     LOG_FINE("with parent, domain.size = %ld\n", domain.size());
     vector<size_t>::iterator itr;
     for (itr = domain.begin(); itr != domain.end(); itr++) {
@@ -322,7 +322,7 @@ DataSet<Label, T>::DataSet(vector_space vectors) :
   labels_ (new label_space),
   vectors_ (new vector_space)
 {
-    LOG_INFO("DataSet Constructed\n"); 
+    LOG_FINE("DataSet Constructed\n"); 
     LOG_FINE("with vectors.size = %ld\n", vectors.size());
     typename vector_space::iterator itr;
     for (itr = vectors.begin(); itr != vectors.end(); itr++) {
@@ -346,7 +346,7 @@ DataSet<Label, T>::DataSet() :
   labels_ (new label_space),
   vectors_ (new vector_space)
 { 
-    LOG_INFO("DataSet Constructed\n"); 
+    LOG_FINE("DataSet Constructed\n"); 
     LOG_FINE("with default constructor\n");
 }
 
@@ -363,7 +363,7 @@ DataSet<Label, T>::DataSet(ifstream & in) :
   labels_ (new label_space),
   vectors_ (new vector_space)
 {
-    LOG_INFO("DataSet Constructed\n"); 
+    LOG_FINE("DataSet Constructed\n"); 
     LOG_FINE("with input stream\n");
     size_t n, m;
     in.read((char *)&n, sizeof(size_t));
@@ -399,7 +399,7 @@ DataSet<Label, T>::~DataSet()
         delete labels_;
         delete vectors_;
     }
-    LOG_INFO("DataSet Deconstructed\n"); 
+    LOG_FINE("DataSet Deconstructed\n"); 
 }
 
 /*
@@ -425,7 +425,7 @@ size_t DataSet<Label, T>::size() const
 template<class Label, class T>
 void DataSet<Label, T>::label(ifstream & in)
 {
-    LOG_INFO("Enter label\n");
+    LOG_FINE("Enter label\n");
     size_t n;
     in.read((char *)&n, sizeof(size_t));
     Label * buffer = new Label[n];
@@ -434,7 +434,7 @@ void DataSet<Label, T>::label(ifstream & in)
     {
         (*labels_)[(*this)[i]] = buffer[i];
     }
-    LOG_INFO("Exit label\n");
+    LOG_FINE("Exit label\n");
 }
 
 /*

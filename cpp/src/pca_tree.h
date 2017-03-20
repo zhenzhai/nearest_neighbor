@@ -134,10 +134,10 @@ template<class Label, class T>
 PCATreeNode<Label, T> * PCATree<Label, T>::build_tree(size_t min_leaf_size,
         DataSet<Label, T> & st, vector<size_t> domain)
 {
-    LOG_INFO("Enter build_tree\n");
+    LOG_FINE("Enter build_tree\n");
     LOG_FINE("with min_leaf_size = %ld and domain.size = %ld\n", min_leaf_size, domain.size());
     if (domain.size() < min_leaf_size) {
-        LOG_INFO("Exit build_tree");
+        LOG_FINE("Exit build_tree");
         LOG_FINE("by hitting base size");
         return new PCATreeNode<Label, T>(domain);
     }
@@ -177,7 +177,7 @@ PCATreeNode<Label, T> * PCATree<Label, T>::build_tree(size_t min_leaf_size,
     result->right_ = build_tree(min_leaf_size, st, subdomain_r);
     LOG_FINE("> sdl = %ld\n", subdomain_l.size());
     LOG_FINE("> sdr = %ld\n", subdomain_r.size());
-    LOG_INFO("Exit build_tree\n");
+    LOG_FINE("Exit build_tree\n");
     return result;
 }
 
@@ -189,7 +189,7 @@ PCATreeNode<Label, T>::PCATreeNode(const vector<size_t> domain) :
   right_ (NULL),
   domain_ (domain)
 { 
-    LOG_INFO("PCATreeNode Constructed\n"); 
+    LOG_FINE("PCATreeNode Constructed\n"); 
     LOG_FINE("with domain.size = %ld\n", domain.size());
 }
 
@@ -202,14 +202,14 @@ PCATreeNode<Label, T>::PCATreeNode(vector<double> dir,
   right_ (NULL),
   domain_ (domain)
 { 
-    LOG_INFO("PCATreeNode Constructed\n"); 
+    LOG_FINE("PCATreeNode Constructed\n"); 
     LOG_FINE("with domain.size = %ld\n", domain.size());
 }
 
 template<class Label, class T>
 PCATreeNode<Label, T>::PCATreeNode(ifstream & in)
 {
-    LOG_INFO("PCATreeNode Constructed\n"); 
+    LOG_FINE("PCATreeNode Constructed\n"); 
     LOG_FINE("with input stream\n");
     size_t dim;
     in.read((char *)&dim, sizeof(size_t));
@@ -239,18 +239,22 @@ PCATreeNode<Label, T>::~PCATreeNode()
         LOG_FINE("Deleted right subtree\n");
         delete right_;
     }
-    LOG_INFO("PCATreeNode Deconstructed\n"); 
+    LOG_FINE("PCATreeNode Deconstructed\n"); 
 }
 
 template<class Label, class T>
 void PCATreeNode<Label, T>::save(ofstream & out) const
 {
-    LOG_INFO("Saving PCATreeNode\n"); 
+    LOG_FINE("Saving PCATreeNode\n"); 
     LOG_FINE("> domain.size = %ld\n", domain_.size());
     size_t dim = dir_.size();
-    out.write((char *)&dim, sizeof(size_t)); 
-    out.write((char *)&dir_[0], 
-            sizeof(double) * dir_.size());
+    out.write((char *)&dim, sizeof(size_t));
+	if (dir_.empty()) {
+		out.write((char *)&dir_, sizeof(double) * dim);
+	}
+	else {
+		out.write((char *)&dir_[0], sizeof(double) * dim);
+	}
     out.write((char *)&pivot_, sizeof(double)); 
     size_t sz = domain_.size();
     out.write((char *)&sz, sizeof(size_t)); 
@@ -309,7 +313,7 @@ PCATree<Label, T>::~PCATree()
 template<class Label, class T>
 void PCATree<Label, T>::save(ofstream & out) const
 {
-    LOG_INFO("Saving PCATreeNode\n"); 
+    LOG_FINE("Saving PCATreeNode\n"); 
     queue<PCATreeNode<Label, T> *> to_save;
     to_save.push(root_);
     while (!to_save.empty()) {
@@ -328,7 +332,7 @@ void PCATree<Label, T>::save(ofstream & out) const
 template<class Label, class T>
 vector<size_t> PCATree<Label, T>::subdomain(vector<T> * query, size_t leaf_size)
 {
-    LOG_INFO("Enter subdomain\n");
+    LOG_FINE("Enter subdomain\n");
     LOG_FINE("with leaf_size = %ld\n", leaf_size);
     queue<PCATreeNode<Label, T> *> expl;
     expl.push(root_);
@@ -345,7 +349,7 @@ vector<size_t> PCATree<Label, T>::subdomain(vector<T> * query, size_t leaf_size)
         else
             return cur->domain_;
     }
-    LOG_INFO("Exit subdomain\n");
+    LOG_FINE("Exit subdomain\n");
     return vector<size_t>();
 }
 #endif
