@@ -39,12 +39,12 @@ static double v2_tree[]     = {2, 4, 8};
 static size_t v2_tree_len   = 3;
 static double rp_tree[]     = {2, 4, 8};
 static size_t rp_tree_len   = 3;
-static double min_leaf  = 0.001; //0.0001
-static double leaf_size_array[] = {0.04, 0.05, 0.08, 0.1, 0.15};
+static double min_leaf = 0.0001;
+static double leaf_size_array[] = {0.001, 0.002, 0.004, 0.006, 0.008, 0.01, 0.015, 0.02, 0.03, 0.05};
 //{0.015, 0.03, 0.06, 0.09, 0.1, 0.13, 0.15, 0.17, 0.19, 0.21};
 //{0.005, 0.01, 0.015, 0.02, 0.03, 0.05, 0.08, 0.1, 0.13, 0.15};
 //{0.01, 0.013, 0.015, 0.02, 0.03, 0.05, 0.08, 0.1, 0.13, 0.15};
-const size_t leaf_size_array_len = 5;//10;
+const size_t leaf_size_array_len = 10;
 static double a_array []      = {0.05, 0.1};
 const size_t a_array_len      = 2;
 const size_t splits     = 3;
@@ -63,12 +63,16 @@ public:
     ~Test();
 
     void s_kd_tree(double min_leaf_size) {
+		LOG_INFO("Building kd tree.\n");
         stringstream dir; 
         dir << base_dir_ << "/kd_tree_" << setprecision(2) << min_leaf_size;
         KDTree<Label, T> tree ((size_t)(min_leaf_size * (*trn_st_).size()), *trn_st_);
+		LOG_INFO("Done building kd tree.\n");
+		LOG_INFO("Writing kd tree.\n");
         ofstream tree_out (dir.str(), ios::binary);
         tree.save(tree_out);
         tree_out.close();
+		LOG_INFO("Done writing kd tree.\n");
     }
 
     void generate_kd_trees() {
@@ -76,12 +80,14 @@ public:
     }
     
     void s_n_spill_tree(double min_leaf_size, double a_value, int num_splits) {
+		LOG_INFO("Building n spill tree.\n");
         stringstream dir;
         dir << base_dir_ << "/" << num_splits << "_spill_tree_" << setprecision(2) << a_value << "_" << min_leaf_size;
         NSpillTree<Label, T> tree ((size_t)(min_leaf_size * (*trn_st_).size()), num_splits, a_value, *trn_st_);
         ofstream tree_out (dir.str(), ios::binary);
         tree.save(tree_out);
         tree_out.close();
+		LOG_INFO("Done building n spill tree.\n");
     }
     
     void generate_n_spill_trees() {
@@ -95,8 +101,10 @@ public:
     }
     
     void s_rkd_tree(double min_leaf_size, int n) {
+		LOG_INFO("Building rkd trees.\n");
         stringstream dir;
         for (int i=1; i<=n; i++) {
+			LOG_INFO("Building rkd tree %d.\n", i);
             dir << base_dir_ << "/rkd_tree" << i << "_" << setprecision(2) << min_leaf_size;
             ifstream rkd_tree_file (dir.str(), ios::binary);
             if (rkd_tree_file.good()) {
@@ -111,6 +119,7 @@ public:
             }
             dir.str("");
         }
+		LOG_INFO("Done building rkd trees.\n");
     }
     
     void generate_rkd_trees() {
@@ -118,8 +127,10 @@ public:
     }
     
     void s_v2_tree(double min_leaf_size, int n) {
+		LOG_INFO("Building v2 trees.\n");
         stringstream dir;
         for (int i=1; i<=n; i++) {
+			LOG_INFO("Building v2 tree %d.\n", i);
             dir << base_dir_ << "/v2_tree" << i << "_" << setprecision(2) << min_leaf_size;
             ifstream v2_tree_file (dir.str(), ios::binary);
             if (v2_tree_file.good()) {
@@ -134,6 +145,7 @@ public:
             }
             dir.str("");
         }
+		LOG_INFO("Done building v2 trees.\n");
     }
     
     void generate_v2_trees() {
@@ -141,12 +153,14 @@ public:
     }
 
     void s_kd_spill_tree(double min_leaf_size, double a_value) {
+		LOG_INFO("Building kd spill tree.\n");
         stringstream dir; 
         dir << base_dir_ << "/kd_spill_tree_" << setprecision(3) << a_value << "_" << min_leaf_size;
         KDSpillTree<Label, T> tree ((size_t)(min_leaf_size * (*trn_st_).size()), a_value, *trn_st_);
         ofstream tree_out (dir.str(), ios::binary);
         tree.save(tree_out);
         tree_out.close();
+		LOG_INFO("Done building kd spill tree.\n");
     }
 
     void generate_kd_spill_trees() {
@@ -161,12 +175,14 @@ public:
 
     void s_kd_v_spill_tree(double min_leaf_size, double a_value)
     {
+		LOG_INFO("Building kd virtual spill tree.\n");
         stringstream dir; 
         dir << base_dir_ << "/kd_v_spill_tree_" << setprecision(2) << a_value << "_" << min_leaf_size;
         KDVirtualSpillTree<Label, T> tree ((size_t)(min_leaf_size * (*trn_st_).size()), a_value, *trn_st_);
         ofstream tree_out (dir.str(), ios::binary);
         tree.save(tree_out);
         tree_out.close();
+		LOG_INFO("Done building kd virtual spill tree.\n");
     }
 
     void generate_kd_v_spill_trees()
@@ -182,8 +198,10 @@ public:
     
     void s_rp_tree(double min_leaf_size, int n)
     {
+		LOG_INFO("Building rp trees.\n");
         stringstream dir;
         for (int i=1; i<=n; i++) {
+			LOG_INFO("Building rp tree %d.\n", i);
             dir << base_dir_ << "/rp_tree_" << i << "_" << setprecision(2) << min_leaf_size;
             ifstream rp_tree_file (dir.str(), ios::binary);
             if (rp_tree_file.good()) {
@@ -198,6 +216,7 @@ public:
             }
             dir.str("");
         }
+		LOG_INFO("Done building rp trees.\n");
             
     }
     
@@ -209,12 +228,14 @@ public:
 
     void s_pca_tree(double min_leaf_size)
     {
+		LOG_INFO("Building pca tree.\n");
         stringstream dir; 
         dir << base_dir_ << "/pca_tree_" << setprecision(2) << min_leaf_size;
         PCATree<Label, T> tree ((size_t)(min_leaf_size * (*trn_st_).size()), *trn_st_);
         ofstream tree_out (dir.str(), ios::binary);
         tree.save(tree_out);
         tree_out.close();
+		LOG_INFO("Done building pca tree.\n");
     }
 
     void generate_pca_trees()
@@ -224,12 +245,14 @@ public:
 
     void s_pca_spill_tree(double min_leaf_size, double a_value)
     {
+		LOG_INFO("Building pca spill tree.\n");
         stringstream dir; 
         dir << base_dir_ << "/pca_spill_tree_" << setprecision(2) << a_value << "_" << min_leaf_size;
         PCASpillTree<Label, T> tree ((size_t)(min_leaf_size * (*trn_st_).size()), a_value, *trn_st_);
         ofstream tree_out (dir.str(), ios::binary);
         tree.save(tree_out);
         tree_out.close();
+		LOG_INFO("Done building pca spill tree.\n");
     }
 
     void generate_pca_spill_trees()
@@ -245,6 +268,7 @@ public:
 
     void s_kd_tree_data(double leaf_size, string * result)
     {
+		LOG_INFO("Running kd tree test of size %ld.\n", (*tst_st_).size());
         stringstream dir; 
         dir << base_dir_ << "/kd_tree_" << setprecision(2) << min_leaf;
         ifstream tree_in (dir.str(), ios::binary);
@@ -253,6 +277,8 @@ public:
         size_t true_nn_count = 0;
         unsigned long long subdomain_count = 0;
         for (size_t i = 0; i < (*tst_st_).size(); i++) {
+			if (i % 100 == 0)
+				LOG_INFO("		Query %ld.\n", i);
             DataSet<Label, T> subSet = (*trn_st_).subset(tree.subdomain((*tst_st_)[i], (size_t)(leaf_size * (*trn_st_).size())));
             vector<T> * nn_vtr = nearest_neighbor((*tst_st_)[i], subSet);
             Label nn_lbl = (*trn_st_).get_label(nn_vtr);
@@ -269,6 +295,7 @@ public:
         data <<  setw(COL_W) << (subdomain_count * 1. / (*tst_st_).size());
         data << endl;
         *result = data.str();
+		LOG_INFO("Done kd tree test.\n");
     }
 
     void generate_kd_tree_data(string out_dir)
@@ -293,6 +320,7 @@ public:
     
     void s_n_spill_tree_data(double leaf_size, double a_value, int num_splits, string * result)
     {
+		LOG_INFO("Running n spill tree test of size %ld.\n", (*tst_st_).size());
         stringstream dir;
         dir << base_dir_ << "/" << num_splits << "_spill_tree_" << setprecision(2) << a_value << "_" << min_leaf;
         ifstream tree_in (dir.str(), ios::binary);
@@ -301,6 +329,8 @@ public:
         size_t true_nn_count = 0;
         unsigned long long subdomain_count = 0;
         for (size_t i = 0; i < (*tst_st_).size(); i++) {
+			if (i % 100 == 0)
+				LOG_INFO("		Query %ld.\n", i);
             DataSet<Label, T> subSet = (*trn_st_).subset(tree.subdomain((*tst_st_)[i], (size_t)(leaf_size * (*trn_st_).size())));
             vector<T> * nn_vtr = nearest_neighbor((*tst_st_)[i], subSet);
             Label nn_lbl = (*trn_st_).get_label(nn_vtr);
@@ -318,6 +348,7 @@ public:
         data <<  setw(COL_W) << (subdomain_count * 1. / (*tst_st_).size());
         data << endl;
         *result = data.str();
+		LOG_INFO("Done n spill tree test.\n");
     }
     
     void generate_n_spill_tree_data(string out_dir)
@@ -349,11 +380,13 @@ public:
     
     void s_rkd_tree_data(double leaf_size, string * result, int n)
     {
+		LOG_INFO("Running rkd trees test of size %ld.\n", (*tst_st_).size());
         size_t error_count = 0;
         size_t true_nn_count = 0;
         unsigned long long subdomain_count = 0;
         vector<vector<size_t>> nn_domain;
         for (int j=1; j<=n; j++) {
+			LOG_INFO("Running queries in rkd tree %d.\n", j);
             stringstream dir;
             dir << base_dir_ << "/rkd_tree" << j << "_" << setprecision(2) << min_leaf;
             ifstream tree_in (dir.str(), ios::binary);
@@ -371,6 +404,8 @@ public:
             dir.str("");
         }
         for (size_t i = 0; i < (*tst_st_).size(); i++) {
+			if (i % 100 == 0)
+				LOG_INFO("		Query %ld linear search.\n", i);
             vector<T> * nn_vtr = nearest_neighbor((*tst_st_)[i], (*trn_st_).subset(nn_domain[i]));
             Label nn_lbl = (*trn_st_).get_label(nn_vtr);
             if (nn_lbl != (*tst_st_).get_label(i))
@@ -394,6 +429,7 @@ public:
         data <<  setw(COL_W) << (subdomain_count * 1. / (*tst_st_).size());
         data << endl;
         *result = data.str();
+		LOG_INFO("Done rkd trees test.\n");
     }
     
     void generate_rkd_tree_data(string out_dir)
@@ -420,11 +456,13 @@ public:
     
     void s_v2_tree_data(double leaf_size, string * result, int n)
     {
+		LOG_INFO("Running V2 trees test of size %ld.\n", (*tst_st_).size());
         size_t error_count = 0;
         size_t true_nn_count = 0;
         unsigned long long subdomain_count = 0;
         vector<vector<size_t>> nn_domain;
         for (int j=1; j<=n; j++) {
+			LOG_INFO("Running queries in v2 tree %d.\n", j);
             stringstream dir;
             dir << base_dir_ << "/v2_tree" << j << "_" << setprecision(2) << min_leaf;
             ifstream tree_in (dir.str(), ios::binary);
@@ -452,6 +490,8 @@ public:
             dir.str("");
         }
         for (size_t i = 0; i < (*tst_st_).size(); i++) {
+			if (i % 100 == 0)
+				LOG_INFO("		Query %ld linear search.\n", i);
             vector<T> * nn_vtr = nearest_neighbor((*tst_st_)[i], (*trn_st_).subset(nn_domain[i]));
             Label nn_lbl = (*trn_st_).get_label(nn_vtr);
             if (nn_lbl != (*tst_st_).get_label(i))
@@ -475,6 +515,7 @@ public:
         data <<  setw(COL_W) << (subdomain_count * 1. / (*tst_st_).size());
         data << endl;
         *result = data.str();
+		LOG_INFO("Done v2 trees test.\n");
     }
     
     void generate_v2_tree_data(string out_dir)
@@ -501,6 +542,7 @@ public:
 
     void s_kd_spill_tree_data(double leaf_size, double a_value, string * result)
     {
+		LOG_INFO("Running kd spill trees test of size %ld.\n", (*tst_st_).size());
         stringstream dir; 
         dir << base_dir_ << "/kd_spill_tree_" << setprecision(2) << a_value << "_" << min_leaf;
         ifstream tree_in (dir.str(), ios::binary);
@@ -509,6 +551,8 @@ public:
         size_t true_nn_count = 0;
         unsigned long long subdomain_count = 0;
         for (size_t i = 0; i < (*tst_st_).size(); i++) {
+			if (i % 100 == 0)
+				LOG_INFO("		Query %ld.\n", i);
             DataSet<Label, T> subSet = (*trn_st_).subset(tree.subdomain((*tst_st_)[i], (size_t)(leaf_size * (*trn_st_).size())));
             vector<T> * nn_vtr = nearest_neighbor((*tst_st_)[i],subSet);
             Label nn_lbl = (*trn_st_).get_label(nn_vtr);
@@ -523,7 +567,7 @@ public:
         size_t space_blowup = 0;
         int tree_height = 0;
         int number_leaves = 1;
-        LOG_INFO("Space calculation\n");
+        LOG_INFO("Calculating space blowup.\n");
         size_t l_c = (size_t)(leaf_size * (*trn_st_).size());
         queue<KDTreeNode<Label, T> *> expl;
         expl.push(tree.get_root());
@@ -541,7 +585,7 @@ public:
             else
                 break;
         }
-        LOG_INFO("Done space calculation\n");
+        LOG_INFO("Done calculation\n");
         size_t root_size = tree.get_root()->get_domain().size();
         
         stringstream data;
@@ -553,6 +597,7 @@ public:
         data <<  setw(COL_W) << 1. * space_blowup/root_size;
         data << endl;
         *result = data.str();
+		LOG_INFO("Done kd spill tree test.\n");
     }
 
     void generate_kd_spill_tree_data(string out_dir)
@@ -583,6 +628,7 @@ public:
 
     void s_kd_v_spill_tree_data(double leaf_size, double a_value, string * result)
     {
+		LOG_INFO("Running kd virtual spill trees test of size %ld.\n", (*tst_st_).size());
         stringstream dir; 
         dir << base_dir_ << "/kd_v_spill_tree_" << setprecision(2) << a_value << "_" << min_leaf;
         ifstream tree_in (dir.str(), ios::binary);
@@ -592,6 +638,8 @@ public:
         unsigned long long subdomain_count = 0;
         size_t number_of_leaves = 0;
         for (size_t i = 0; i < (*tst_st_).size(); i++) {
+			if (i % 100 == 0)
+				LOG_INFO("		Query %ld.\n", i);
             DataSet<Label, T> subSet = (*trn_st_).subset(tree.subdomain((*tst_st_)[i], (size_t)(leaf_size * (*trn_st_).size()), & number_of_leaves));
             vector<T> * nn_vtr = nearest_neighbor((*tst_st_)[i], subSet);
             Label nn_lbl = (*trn_st_).get_label(nn_vtr);
@@ -610,6 +658,7 @@ public:
         data <<  setw(COL_W) << (number_of_leaves * 1. / (*tst_st_).size());
         data << endl;
         *result = data.str();
+		LOG_INFO("Done kd virtual spill tree test.\n");
     }
 
     void generate_kd_v_spill_tree_data(string out_dir)
@@ -640,11 +689,13 @@ public:
 
     void s_rp_tree_data(double leaf_size, string * result, int n)
     {
+		LOG_INFO("Running rp trees test of size %ld.\n", (*tst_st_).size());
         size_t error_count = 0;
         size_t true_nn_count = 0;
         unsigned long long subdomain_count = 0;
         vector<vector<size_t>> nn_domain;
         for (int j=1; j<=n; j++) {
+			LOG_INFO("Running queries in rp tree %d.\n", j);
             stringstream dir;
             dir << base_dir_ << "/rp_tree_" << j << "_" << setprecision(2) << min_leaf;
             ifstream tree_in (dir.str(), ios::binary);
@@ -673,6 +724,8 @@ public:
         }
 
         for (size_t i = 0; i < (*tst_st_).size(); i++) {
+			if (i % 100 == 0)
+				LOG_INFO("		Query %ld linear search.\n", i);
             vector<T> * nn_vtr = nearest_neighbor((*tst_st_)[i], (*trn_st_).subset(nn_domain[i]));
             Label nn_lbl = (*trn_st_).get_label(nn_vtr);
             if (nn_lbl != (*tst_st_).get_label(i))
@@ -699,6 +752,7 @@ public:
         data <<  setw(COL_W) << (subdomain_count * 1. / (*tst_st_).size());
         data << endl;
         *result = data.str();
+		LOG_INFO("Done rp trees test.\n");
     }
     
     void generate_rp_tree_data(string out_dir)
@@ -726,6 +780,7 @@ public:
     
     void s_pca_tree_data(double leaf_size, string * result)
     {
+		LOG_INFO("Running pca trees test of size %ld.\n", (*tst_st_).size());
         stringstream dir;
         dir << base_dir_ << "/pca_tree_" << setprecision(2) << min_leaf;
         ifstream tree_in (dir.str(), ios::binary);
@@ -734,6 +789,8 @@ public:
         size_t true_nn_count = 0;
         unsigned long long subdomain_count = 0;
         for (size_t i = 0; i < (*tst_st_).size(); i++) {
+			if (i % 100 == 0)
+				LOG_INFO("		Query %ld.\n", i);
             DataSet<Label, T> subSet = (*trn_st_).subset(tree.subdomain((*tst_st_)[i], (size_t)(leaf_size * (*trn_st_).size())));
             vector<T> * nn_vtr = nearest_neighbor((*tst_st_)[i], subSet);
             Label nn_lbl = (*trn_st_).get_label(nn_vtr);
@@ -750,6 +807,7 @@ public:
         data <<  setw(COL_W) << (subdomain_count * 1. / (*tst_st_).size());
         data << endl;
         *result = data.str();
+		LOG_INFO("Done rp trees test.\n");
     }
     
     void generate_pca_tree_data(string out_dir)
@@ -774,6 +832,7 @@ public:
 
     void s_pca_spill_tree_data(double leaf_size, double a_value, string * result)
     {
+		LOG_INFO("Running pca spill tree test of size %ld.\n", (*tst_st_).size());
         stringstream dir; 
         dir << base_dir_ << "/pca_spill_tree_" << setprecision(2) << a_value << "_" << min_leaf;
         ifstream tree_in (dir.str(), ios::binary);
@@ -782,6 +841,8 @@ public:
         size_t true_nn_count = 0;
         unsigned long long subdomain_count = 0;
         for (size_t i = 0; i < (*tst_st_).size(); i++) {
+			if (i % 100 == 0)
+				LOG_INFO("		Query %ld.\n", i);
             DataSet<Label, T> subSet = (*trn_st_).subset(tree.subdomain((*tst_st_)[i], (size_t)(leaf_size * (*trn_st_).size())));
             vector<T> * nn_vtr = nearest_neighbor((*tst_st_)[i],
                                  subSet);
@@ -797,7 +858,7 @@ public:
         size_t space_blowup = 0;
         int tree_height = 0;
         int number_leaves = 1;
-        LOG_INFO("Space calculation\n");
+        LOG_INFO("Calculate space blowup\n");
         size_t l_c = (size_t)(leaf_size * (*trn_st_).size());
         queue<PCATreeNode<Label, T> *> expl;
         expl.push(tree.get_root());
@@ -815,7 +876,7 @@ public:
             else
                 break;
         }
-        LOG_INFO("Done space calculation\n");
+        LOG_INFO("Done space calculation.\n");
         size_t root_size = tree.get_root()->get_domain().size();
 
         stringstream data;
@@ -827,6 +888,7 @@ public:
         data <<  setw(COL_W) << 1. * space_blowup/root_size;
         data << endl;
         *result = data.str();
+		LOG_INFO("Done pca spill tree test.\n");
     }
 
     void generate_pca_spill_tree_data(string out_dir)
@@ -892,13 +954,20 @@ Test<Label, T>::Test(string base_dir) :
         LOG_INFO("Success!\n");
     } else {
         LOG_WARNING("File \"k_true_nn\" not found!!!\n");
-        size_t k = 10;
+        size_t k = 1;
         nn_dat_in.close();
         LOG_WARNING("Generating \"k_true_nn\" with k = %ld\n", k);
         ofstream nn_dat_out (base_dir + "/k_true_nn", ios::binary);
         nn_dat_out.write((char *)&k, sizeof(size_t));
         for (size_t i = 0; i < tst_st_->size(); i++) {
-            DataSet<Label, T> l_st = k_nearest_neighbor(k, (*tst_st_)[i], *trn_st_);
+			LOG_INFO("Running %ld of %ld.\n", i, tst_st_->size());
+			DataSet<Label, T> l_st;
+			if (k == 1) {
+				l_st = true_nearest_neighbor((*tst_st_)[i], *trn_st_);
+			}
+			else {
+				l_st = k_nearest_neighbor(k, (*tst_st_)[i], *trn_st_);
+			}
             for (size_t j = 0; j < k; j++) {
                 nn_dat_out.write((char *)&(l_st.get_domain()[j]), sizeof(size_t));
                 nn_mp_[(*tst_st_)[i]].push_back(l_st.get_domain()[j]);
@@ -950,6 +1019,7 @@ base_dir_ (base_dir)
         ofstream nn_dat_out (base_dir + "/c" + to_string(c) + "_true_nn", ios::binary);
         int array_size = 0;
         for (size_t i = 0; i < tst_st_->size(); i++) {
+			LOG_FINE("Running %f of %f.\n", i, tst_st_->size());
             vector<T> * nn_vtr = nearest_neighbor((*tst_st_)[i], *trn_st_);
             DataSet<Label, T> l_st = c_approx_nn(c, (*tst_st_)[i], *trn_st_, nn_vtr);
             array_size = int((l_st.get_domain()).size());
