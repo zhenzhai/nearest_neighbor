@@ -48,16 +48,16 @@ if __name__ == "__main__"
     im, la = load_mnist()
     print "Writing training files"
     im = [i.flatten() for i in im]
-    np.savetxt('raw_data/train_vectors', im, delimiter=',', fmt='%d')
-    np.savetxt('raw_data/train_labels', la, fmt='%d')
+    np.savetxt('train_vectors', im, delimiter=',', fmt='%d')
+    np.savetxt('train_labels', la, fmt='%d')
 
 
     im2, la2 = load_mnist(dataset="testing")
 
     print "Writing testing files"
     im2 = [i.flatten() for i in im2]
-    np.savetxt('raw_data/test_vectors', im2, delimiter=',', fmt='%d')
-    np.savetxt('raw_data/test_labels', la2, fmt='%d')
+    np.savetxt('test_vectors', im2, delimiter=',', fmt='%d')
+    np.savetxt('test_labels', la2, fmt='%d')
 
 
 

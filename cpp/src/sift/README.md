@@ -2,9 +2,18 @@
 
 Detail about the dataset 'ANN_SIFT1M' is [here](http://corpus-texmex.irisa.fr/).
 
-* Unzip downloaded files in current directory.
+* Unzip downloaded files in folder "raw_data".
 
-* Run
+* Use Matlab run the following in folder "raw_data":
+		
+		base = fvecs_reader('sift_base.fvecs');
+		base = base.';
+		query = fvecs_reader('sift_query.fvecs');
+		query = query.';
+		dlmwrite('train_vec', base);
+		dlmwrite('test_vec', query);
+
+* Run the preprocess.py in "raw_data. It will generate dumpy label files for train and test.
 
 		python preprocess.py
 
@@ -14,6 +23,6 @@ Detail about the dataset 'ANN_SIFT1M' is [here](http://corpus-texmex.irisa.fr/).
 
 		cd ..
 		make
-		./main.o sift convert 100000 10000 100
+		./main.o sift convert 985462 10000 128
 
 * Converted data will be saved in current directory.

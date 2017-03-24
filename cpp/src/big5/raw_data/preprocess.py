@@ -1,5 +1,7 @@
 from collections import defaultdict
 import random
+import pickle as pkl
+import csv
 
 def remove_duplicate(data100):
     print 'remove duplicate from data of size ', len(data100)
@@ -10,7 +12,7 @@ def remove_duplicate(data100):
     index = 0
     count = 0
     for line in data100:
-        data = line[:109]
+        data = line[:100]
         string_data = str(data)
         if not unique_dict[string_data]:
             unique_dict[string_data] = 1
@@ -58,34 +60,34 @@ def split_train_test(vec, lab, train_size, test_size):
                 big5_test_lab.append(l)
                 test_sam = test_sam[1:]
             sam = sam[1:]
-        if i % 100000 == 0:
+        if i % 10000 == 0:
             print "    at index", i
     print "Done"
     print "train vec of size: ", len(big5_train_vec)
     print "test vec of size: ", len(big5_test_vec)
 
     print "Writing to files"
-    train_vec = open("convert_data/train_vectors", "w")
+    train_vec = open("train_vectors", "w")
     for b in big5_train_vec:
         train_vec.write(','.join(b) + '\n')
     print "writing train vector"
-    train_lab = open("convert_data/train_labels", "w")
+    train_lab = open("train_labels", "w")
     for b in big5_train_lab:
         train_lab.write(b + '\n')
     print "writing train label"
-    test_vec = open("convert_data/test_vectors", "w")
+    test_vec = open("test_vectors", "w")
     for b in big5_test_vec:
         test_vec.write(','.join(b) + '\n')
     print "writing test vector"
-    test_lab = open("convert_data/test_labels", "w")
+    test_lab = open("test_labels", "w")
     for b in big5_test_lab:
         test_lab.write(b + '\n')
     print "writing test label"
 
-if __name__ == '__main__':
+def filter_data():
     print 'Reading raw data file ...'
-    big5_file = open('big5.csv', 'r')
-    big5 = [b.split(',')[1:] for b in big5_file.readlines()]
+    big5_file = csv.reader(open('big5.csv', "r"))
+    big5 = [b[1:] for b in big5_file]
 
     ### Only capture data with 100 questions
     print 'Filtering raw data ...'
@@ -95,8 +97,13 @@ if __name__ == '__main__':
             big5_100data.append(b)
 
     vec, lab = remove_duplicate(big5_100data)
-    split_train_test(vec, lab, 10000, 1000)
+    simple_vec = open("simple_vec","w")
+    pkl.dump(vec, simple_vec)
+    simple_lab = open("simple_lab","w")
+    pkl.dump(lab, simple_lab)
 
-
-
-
+if __name__ == "__main__":
+	#filter_data()
+	vec = pkl.load(open("simple_vec","r"))
+	lab = pkl.load(open("simple_lab","r"))
+	split_train_test(vec, lab, 990000, 10000)

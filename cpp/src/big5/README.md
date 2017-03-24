@@ -6,9 +6,9 @@ You will need to register as a collaborator before you download the dataset.
 
 Detail about the dataset is [here](http://mypersonality.org/wiki/doku.php?id=list_of_variables_available#personality_scores).
 
-* Place downloaded csv file in current directory.
+* Place downloaded csv file in "raw_data" directory.
 
-* Run
+* Run in "raw_data"
 
 		python preprocess.py
 
@@ -18,6 +18,6 @@ Detail about the dataset is [here](http://mypersonality.org/wiki/doku.php?id=lis
 
 		cd ..
 		make
-		./main.o big5 convert 100000 10000 100
+		./main.o big5 convert 990000 10000 100
 
 * Converted data will be saved in current directory.

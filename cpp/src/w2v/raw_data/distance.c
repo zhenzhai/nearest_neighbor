@@ -61,7 +61,7 @@ int main(int argc, char **argv) {
   
   FILE *fp;
   FILE *fpl;
-  fp = fopen("GoogleNews", "w+");
+  fp = fopen("GoogleNewsData", "w+");
   fpl = fopen("GoogleNewsLabels", "w+");
   printf("writing to file\n");
   int count = 0;
@@ -79,6 +79,7 @@ int main(int argc, char **argv) {
       printf("%d\n",count);
   }
   fclose(fp);
+  fclose(fpl);
 
   return 0;
 }
