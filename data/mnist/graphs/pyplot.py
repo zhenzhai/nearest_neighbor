@@ -211,16 +211,16 @@ def kd_pca_ran_rp_rps():
 	pca_x, pca_y = read_file(3,2,'pca_tree.dat')
 	rp8_x, rp8_y = read_file(3,2,'8rp_tree.dat')
 	ran8_x, ran8_y = read_file(3,2,'8rkd_tree.dat')
-	rs8_x, rs8_y = read_file(3,2,'8rp_select_tree.dat')
+	v28_x, v28_y = read_file(3,2,'8rp_select_tree.dat')
 	kd_line, = plt.plot(kd_x, kd_y, 'ro-', label='K-D Tree', lw=3, ms=8)
 	pca_line, = plt.plot(pca_x, pca_y, 'bo-', label='PCA Tree', lw=3, ms=8)
 	rp8_line, = plt.plot(rp8_x, rp8_y, 'co-', label='8 RP Trees', lw=3, ms=8)
 	ran8_line, = plt.plot(ran8_x, ran8_y, 'mo-', label='8 R-K-D Trees', lw=3, ms=8)
-	rs8_line, = plt.plot(rs8_x, rs8_y, 'go-', label='8 $V^2$ Trees', lw=3, ms=8)
-	plt.legend(handles=[kd_line, pca_line, rp8_line, ran8_line, rs8_line],loc=4)
+	v28_line, = plt.plot(v28_x, v28_y, 'go-', label='8 $V^2$ Trees', lw=3, ms=8)
+	plt.legend(handles=[kd_line, pca_line, rp8_line, ran8_line, v28_line],loc=4)
 	figure = plt.gcf()
 	figure.set_size_inches(13, 10)
-	plt.savefig(data_set + "_kd_pca_ran8_rp8_rs8.png")
+	plt.savefig(data_set + "_kd_pca_ran8_rp8_v28.png")
 
 
 def rp_ran_v2():
