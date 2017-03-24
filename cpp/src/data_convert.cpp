@@ -2,8 +2,7 @@
 //  data_convert.cpp
 //
 #include "data_convert.h"
-#include <errno.h>
-#include <Windows.h>
+#include "logging.h"
 
 typedef unsigned char byte;
 
@@ -35,20 +34,22 @@ void data_generate(const string& data_name, size_t TRAIN_MAX, size_t TEST_MAX, s
     
     
     /* WRITE TRAIN DATA AND LABEL*/
-    fprintf(stderr, "> converting data\n");
-    fprintf(stderr, "  > populating data buffer for train data\n");
+    LOG_INFO("> converting data\n");
+    LOG_FINE("  > populating data buffer for train data\n");
 
     string filepath = data_name + TRAIN_VECTOR_PATH;
     fin = fopen(filepath.c_str(), "rb");
     if (fin == NULL)
     {
-        fprintf(stderr, "ERROR: Can't locate the input file.\n");
+        LOG_ERROR("ERROR: Can't locate the input file.\n");
         return;
     }
     
+	LOG_INFO("Reading train vectors\n");
     //height is the number of vectors
     datah = 0;
     while (fgets(strbuf, TRAIN_MAX, fin)) {
+		if (datah % 10000) LOG_FINE("    > %ld\n", labelh);
         tok = strtok(strbuf, ",");
         dataw = 0;
         while (tok) {
@@ -59,7 +60,7 @@ void data_generate(const string& data_name, size_t TRAIN_MAX, size_t TEST_MAX, s
         datah++;
     }
     fclose(fin);
-    fprintf(stderr, "  > dimensions w: %d, h: %d\n", dataw, datah);
+    LOG_INFO("  > dimensions w: %d, h: %d\n", dataw, datah);
     filepath = data_name+TRAIN_LABEL_PATH;
     fin = fopen(filepath.c_str(), "rb");
     filepath = data_name+TRN_VTR_PATH;
@@ -68,8 +69,9 @@ void data_generate(const string& data_name, size_t TRAIN_MAX, size_t TEST_MAX, s
     fout2 = fopen(filepath.c_str(), "wb");
     
     labelh = 0;
+	LOG_INFO("Reading train labels\n");
     while (fscanf(fin, "%d\n", &labelbuf[labelh]) != EOF) {
-        fprintf(stderr, "    > %ld:    %d\n", labelh, labelbuf[labelh]);
+		if (labelh % 10000) LOG_FINE("    > %ld:    %d\n", labelh, labelbuf[labelh]);
         labelh++;
     }
     
@@ -100,9 +102,11 @@ void data_generate(const string& data_name, size_t TRAIN_MAX, size_t TEST_MAX, s
         return;
     }
     
+	LOG_INFO("Reading test vectors\n");
     //height is the number of vectors
     datah = 0;
     while (fgets(strbuf, TEST_MAX, fin)) {
+		if (datah % 10000) LOG_FINE("    > %ld\n", datah);
         tok = strtok(strbuf, ",");
         dataw = 0;
         while (tok) {
@@ -121,9 +125,10 @@ void data_generate(const string& data_name, size_t TRAIN_MAX, size_t TEST_MAX, s
     filepath = data_name+TST_LBL_PATH;
     fout2 = fopen(filepath.c_str(), "wb");
     
+	LOG_INFO("Reading test labels\n");
     labelh = 0;
     while (fscanf(fin, "%d\n", &labelbuf[labelh]) != EOF) {
-        fprintf(stderr, "    > %ld:    %d\n", labelh, labelbuf[labelh]);
+		if (labelh % 10000) LOG_FINE("    > %ld:    %d\n", labelh, labelbuf[labelh]);
         labelh++;
     }
     

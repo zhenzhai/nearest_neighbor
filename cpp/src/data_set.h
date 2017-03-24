@@ -280,11 +280,11 @@ vector<double> max_eigen_vector(DataSet<Label, T> & subset, int sample_size)
     Eigen::MatrixXd eigVtr = eig.eigenvectors();
     Eigen::VectorXd eigVal = eig.eigenvalues();
     
-    //convert eigen vector back
     double eigenval = eigVal[eigVal.size()-1];
+	//convert eigen vector back
     //eigenval = 1 / eigenval;
-    
-    eigVtr = centered.adjoint() * eigVtr;
+    //eigVtr = centered.adjoint() * eigVtr;
+
     eigVtr = eigVtr.rightCols(1);// * eigenval;
     LOG_FINE("> Done eigenvectors...\n");
     vector<double> maxEigVtr;

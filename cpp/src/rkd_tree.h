@@ -46,10 +46,10 @@ template<class Label, class T>
 KDTreeNode<Label, T> * RKDTree<Label, T>::build_tree(size_t min_leaf_size,
                                                     DataSet<Label, T> & st, vector<size_t> domain)
 {
-    LOG_INFO("Enter build_tree\n");
+    LOG_FINE("Enter build_tree\n");
     LOG_FINE("with min_leaf_size = %ld and domain.size = %ld\n", min_leaf_size, domain.size());
     if (domain.size() < min_leaf_size) {
-        LOG_INFO("Exit build_tree");
+        LOG_FINE("Exit build_tree");
         LOG_FINE("by hitting base size");
         return new KDTreeNode<Label, T>(domain);
     }
@@ -112,7 +112,7 @@ KDTreeNode<Label, T> * RKDTree<Label, T>::build_tree(size_t min_leaf_size,
     result->set_right(build_tree(min_leaf_size, st, subdomain_r));
     LOG_FINE("> sdl = %ld\n", subdomain_l.size());
     LOG_FINE("> sdr = %ld\n", subdomain_r.size());
-    LOG_INFO("Exit build_tree\n");
+    LOG_FINE("Exit build_tree\n");
     return result;
 }
 

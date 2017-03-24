@@ -84,6 +84,8 @@ public:
         stringstream dir;
         dir << base_dir_ << "/" << num_splits << "_spill_tree_" << setprecision(2) << a_value << "_" << min_leaf_size;
         NSpillTree<Label, T> tree ((size_t)(min_leaf_size * (*trn_st_).size()), num_splits, a_value, *trn_st_);
+		LOG_INFO("Done building n spill tree.\n");
+		LOG_INFO("Writing n spill tree.\n");
         ofstream tree_out (dir.str(), ios::binary);
         tree.save(tree_out);
         tree_out.close();
@@ -157,6 +159,8 @@ public:
         stringstream dir; 
         dir << base_dir_ << "/kd_spill_tree_" << setprecision(3) << a_value << "_" << min_leaf_size;
         KDSpillTree<Label, T> tree ((size_t)(min_leaf_size * (*trn_st_).size()), a_value, *trn_st_);
+		LOG_INFO("Done building kd spill tree.\n");
+		LOG_INFO("Writing kd spill tree.\n");
         ofstream tree_out (dir.str(), ios::binary);
         tree.save(tree_out);
         tree_out.close();
@@ -179,6 +183,8 @@ public:
         stringstream dir; 
         dir << base_dir_ << "/kd_v_spill_tree_" << setprecision(2) << a_value << "_" << min_leaf_size;
         KDVirtualSpillTree<Label, T> tree ((size_t)(min_leaf_size * (*trn_st_).size()), a_value, *trn_st_);
+		LOG_INFO("Done building kd virtual spill tree.\n");
+		LOG_INFO("Writing kd virtual spill tree.\n");
         ofstream tree_out (dir.str(), ios::binary);
         tree.save(tree_out);
         tree_out.close();
@@ -232,6 +238,8 @@ public:
         stringstream dir; 
         dir << base_dir_ << "/pca_tree_" << setprecision(2) << min_leaf_size;
         PCATree<Label, T> tree ((size_t)(min_leaf_size * (*trn_st_).size()), *trn_st_);
+		LOG_INFO("Done building pca tree.\n");
+		LOG_INFO("Writing pca tree.\n");
         ofstream tree_out (dir.str(), ios::binary);
         tree.save(tree_out);
         tree_out.close();
@@ -249,6 +257,8 @@ public:
         stringstream dir; 
         dir << base_dir_ << "/pca_spill_tree_" << setprecision(2) << a_value << "_" << min_leaf_size;
         PCASpillTree<Label, T> tree ((size_t)(min_leaf_size * (*trn_st_).size()), a_value, *trn_st_);
+		LOG_INFO("Done building pca spill tree.\n");
+		LOG_INFO("Writing pca spill tree.\n");
         ofstream tree_out (dir.str(), ios::binary);
         tree.save(tree_out);
         tree_out.close();
@@ -277,8 +287,6 @@ public:
         size_t true_nn_count = 0;
         unsigned long long subdomain_count = 0;
         for (size_t i = 0; i < (*tst_st_).size(); i++) {
-			if (i % 100 == 0)
-				LOG_INFO("		Query %ld.\n", i);
             DataSet<Label, T> subSet = (*trn_st_).subset(tree.subdomain((*tst_st_)[i], (size_t)(leaf_size * (*trn_st_).size())));
             vector<T> * nn_vtr = nearest_neighbor((*tst_st_)[i], subSet);
             Label nn_lbl = (*trn_st_).get_label(nn_vtr);
@@ -329,8 +337,6 @@ public:
         size_t true_nn_count = 0;
         unsigned long long subdomain_count = 0;
         for (size_t i = 0; i < (*tst_st_).size(); i++) {
-			if (i % 100 == 0)
-				LOG_INFO("		Query %ld.\n", i);
             DataSet<Label, T> subSet = (*trn_st_).subset(tree.subdomain((*tst_st_)[i], (size_t)(leaf_size * (*trn_st_).size())));
             vector<T> * nn_vtr = nearest_neighbor((*tst_st_)[i], subSet);
             Label nn_lbl = (*trn_st_).get_label(nn_vtr);
@@ -403,9 +409,8 @@ public:
             }
             dir.str("");
         }
+		LOG_INFO("Queries linear search in all trees.\n");
         for (size_t i = 0; i < (*tst_st_).size(); i++) {
-			if (i % 100 == 0)
-				LOG_INFO("		Query %ld linear search.\n", i);
             vector<T> * nn_vtr = nearest_neighbor((*tst_st_)[i], (*trn_st_).subset(nn_domain[i]));
             Label nn_lbl = (*trn_st_).get_label(nn_vtr);
             if (nn_lbl != (*tst_st_).get_label(i))
@@ -489,9 +494,8 @@ public:
             }
             dir.str("");
         }
+		LOG_INFO("Queries linear search in all trees.\n");
         for (size_t i = 0; i < (*tst_st_).size(); i++) {
-			if (i % 100 == 0)
-				LOG_INFO("		Query %ld linear search.\n", i);
             vector<T> * nn_vtr = nearest_neighbor((*tst_st_)[i], (*trn_st_).subset(nn_domain[i]));
             Label nn_lbl = (*trn_st_).get_label(nn_vtr);
             if (nn_lbl != (*tst_st_).get_label(i))
@@ -551,8 +555,6 @@ public:
         size_t true_nn_count = 0;
         unsigned long long subdomain_count = 0;
         for (size_t i = 0; i < (*tst_st_).size(); i++) {
-			if (i % 100 == 0)
-				LOG_INFO("		Query %ld.\n", i);
             DataSet<Label, T> subSet = (*trn_st_).subset(tree.subdomain((*tst_st_)[i], (size_t)(leaf_size * (*trn_st_).size())));
             vector<T> * nn_vtr = nearest_neighbor((*tst_st_)[i],subSet);
             Label nn_lbl = (*trn_st_).get_label(nn_vtr);
@@ -638,8 +640,6 @@ public:
         unsigned long long subdomain_count = 0;
         size_t number_of_leaves = 0;
         for (size_t i = 0; i < (*tst_st_).size(); i++) {
-			if (i % 100 == 0)
-				LOG_INFO("		Query %ld.\n", i);
             DataSet<Label, T> subSet = (*trn_st_).subset(tree.subdomain((*tst_st_)[i], (size_t)(leaf_size * (*trn_st_).size()), & number_of_leaves));
             vector<T> * nn_vtr = nearest_neighbor((*tst_st_)[i], subSet);
             Label nn_lbl = (*trn_st_).get_label(nn_vtr);
@@ -722,10 +722,8 @@ public:
             }
             dir.str("");
         }
-
+		LOG_INFO("Queries linear search in all trees.\n");
         for (size_t i = 0; i < (*tst_st_).size(); i++) {
-			if (i % 100 == 0)
-				LOG_INFO("		Query %ld linear search.\n", i);
             vector<T> * nn_vtr = nearest_neighbor((*tst_st_)[i], (*trn_st_).subset(nn_domain[i]));
             Label nn_lbl = (*trn_st_).get_label(nn_vtr);
             if (nn_lbl != (*tst_st_).get_label(i))
@@ -789,8 +787,6 @@ public:
         size_t true_nn_count = 0;
         unsigned long long subdomain_count = 0;
         for (size_t i = 0; i < (*tst_st_).size(); i++) {
-			if (i % 100 == 0)
-				LOG_INFO("		Query %ld.\n", i);
             DataSet<Label, T> subSet = (*trn_st_).subset(tree.subdomain((*tst_st_)[i], (size_t)(leaf_size * (*trn_st_).size())));
             vector<T> * nn_vtr = nearest_neighbor((*tst_st_)[i], subSet);
             Label nn_lbl = (*trn_st_).get_label(nn_vtr);
@@ -841,8 +837,6 @@ public:
         size_t true_nn_count = 0;
         unsigned long long subdomain_count = 0;
         for (size_t i = 0; i < (*tst_st_).size(); i++) {
-			if (i % 100 == 0)
-				LOG_INFO("		Query %ld.\n", i);
             DataSet<Label, T> subSet = (*trn_st_).subset(tree.subdomain((*tst_st_)[i], (size_t)(leaf_size * (*trn_st_).size())));
             vector<T> * nn_vtr = nearest_neighbor((*tst_st_)[i],
                                  subSet);
