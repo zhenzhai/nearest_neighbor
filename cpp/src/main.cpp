@@ -14,7 +14,7 @@ int main(int argc, char* argv[])
         cerr << "Usage: " << endl;
         cerr << "   1. Convert Data "<< argv[0] << " DataName(mnist/cifar/songs/big5/w2v/sift) convert train_size test_size width" << endl;
         cerr << "   2. Run Trees " << argv[0] << " DataName(mnist, cifar, songs, big5, w2v, sift)" << endl;
-        cerr << "   3. Run Specific Tree " << argv[0] << " DataName(mnist/cifar/songs/big5/w2v/sift) tree_name(kd/rkd/rp/pca/pca_spill/kd_spill/kd_v_spill)" << endl;
+        cerr << "   3. Run Specific Tree " << argv[0] << " DataName(mnist/cifar/songs/big5/w2v/sift) tree_name(kd/rkd/rp/pca/pca_spill/kd_spill/kd_v_spill/diff)" << endl;
 	} else {
 		string set_DIR = argv[1];
 		if (argc == 6) {
@@ -61,6 +61,9 @@ int main(int argc, char* argv[])
 				mTest.generate_kd_v_spill_trees();
 				mTest.generate_kd_v_spill_tree_data(set_DIR);
 			}
+            else if (tree == "diff") {
+                mTest.difficulty(set_DIR);
+            }
 
 		}
 		else {
