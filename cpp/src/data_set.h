@@ -282,20 +282,17 @@ vector<double> max_eigen_vector(DataSet<Label, T> & subset, int sample_size)
     
     double eigenval = eigVal[eigVal.size()-1];
 	//convert eigen vector back
-    //eigenval = 1 / eigenval;
-    //eigVtr = centered.adjoint() * eigVtr;
+	//Eigen::MatrixXd oriEigVtr = centered.adjoint() * eigVtr;
+	//TODO: scale back to unit vector
+	//eigenval = 1 / sqrt(eigenval);
+    //eigVtr = eigVtr.rightCols(1) * eigenval;
+	Eigen::MatrixXd lastEigVtr = eigVtr.rightCols(1);
 
-    eigVtr = eigVtr.rightCols(1);// * eigenval;
     LOG_FINE("> Done eigenvectors...\n");
     vector<double> maxEigVtr;
-    double len = 0.0;
-    for (size_t i = 0; i < dim; i++) {
-        len += eigVtr(i) * eigVtr(i);
-    }
-    LOG_FINE("> vtr.length = %lf\n", len);
-    for (size_t i = 0; i < dim; i++) {
-        maxEigVtr.push_back(eigVtr(i) / len);
-    }
+	for (size_t i = 0; i < dim; i++) {
+		maxEigVtr.push_back(lastEigVtr(i));
+	}
     LOG_FINE("Exit max_eigen_vector\n");
     return maxEigVtr;
 }
