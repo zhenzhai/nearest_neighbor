@@ -34,7 +34,7 @@ def label_points(x_index, y_index, x_off, y_off, labels):
 					 connectionstyle="arc,rad=10"))
 
 def kd():
-	plt.axis([0,14000,0,0.6])
+	plt.axis([0,35000,0,0.1])
 	kd_x, kd_y = read_file(3,2,'kd_tree.dat')
 	kd_line, = plt.plot(kd_x, kd_y, 'ro-', label='KD Tree', lw=3, ms=8)
 	plt.legend(handles=[kd_line],loc=4)
@@ -197,13 +197,13 @@ def rp_v2():
 	rps_line, = plt.plot(rps_x, rps_y, 'co-', label='2 $V^2$ Trees', lw=3, ms=8)
 	rps4_line, = plt.plot(rps4_x, rps4_y, 'mo-', label='4 $V^2$ Trees', lw=3, ms=8)
 	rps8_line, = plt.plot(rps8_x, rps8_y, 'ko-', label='8 $V^2$ Trees', lw=3, ms=8)
-	plt.legend(handles=[ran_line,ran4_line,ran8_line,rps_line,rps4_line,rps8_line],loc=4)
+	plt.legend(handles=[ran_line,ran4_line,ran8_line,rps_line,rps4_line,rps8_line],loc=2)
 	figure = plt.gcf()
 	figure.set_size_inches(13, 10)
 	plt.savefig(data_set + "_rp_v2.png")
 
 def kd_pca_ran_rp():
-	plt.axis([0,14000,0,0.8])
+	plt.axis([0,35000,0,0.6])
 	kd_x, kd_y = read_file(3,2,'kd_tree.dat')
 	pca_x, pca_y = read_file(3,2,'pca_tree.dat')
 	rp8_x, rp8_y = read_file(3,2,'8rp_tree.dat')
@@ -212,36 +212,36 @@ def kd_pca_ran_rp():
 	pca_line, = plt.plot(pca_x, pca_y, 'bo-', label='PCA Tree', lw=3, ms=8)
 	rp8_line, = plt.plot(rp8_x, rp8_y, 'co-', label='8 RP Trees', lw=3, ms=8)
 	ran8_line, = plt.plot(ran8_x, ran8_y, 'mo-', label='8 RKD Trees', lw=3, ms=8)
-	plt.legend(handles=[kd_line, pca_line, rp8_line, ran8_line],loc=4)
+	plt.legend(handles=[kd_line, pca_line, rp8_line, ran8_line],loc=2)
 	figure = plt.gcf()
 	figure.set_size_inches(13, 10)
 	plt.savefig(data_set + "_kd_pca_ran8_rp8.png")
 
 def kd_pca_ran_rp_v2():
-	plt.axis([0,14000,0,1])
+	plt.axis([0,35000,0,0.8])
 	kd_x, kd_y = read_file(3,2,'kd_tree.dat')
 	pca_x, pca_y = read_file(3,2,'pca_tree.dat')
 	rp8_x, rp8_y = read_file(3,2,'8rp_tree.dat')
 	ran8_x, ran8_y = read_file(3,2,'8rkd_tree.dat')
-	v28_x, v28_y = read_file(3,2,'8rp_select_tree.dat')
+	v28_x, v28_y = read_file(3,2,'8v2_tree.dat')
 	kd_line, = plt.plot(kd_x, kd_y, 'ro-', label='K-D Tree', lw=3, ms=8)
 	pca_line, = plt.plot(pca_x, pca_y, 'bo-', label='PCA Tree', lw=3, ms=8)
 	rp8_line, = plt.plot(rp8_x, rp8_y, 'co-', label='8 RP Trees', lw=3, ms=8)
 	ran8_line, = plt.plot(ran8_x, ran8_y, 'mo-', label='8 R-K-D Trees', lw=3, ms=8)
 	v28_line, = plt.plot(v28_x, v28_y, 'go-', label='8 $V^2$ Trees', lw=3, ms=8)
-	plt.legend(handles=[kd_line, pca_line, rp8_line, ran8_line, v28_line],loc=4)
+	plt.legend(handles=[kd_line, pca_line, rp8_line, ran8_line, v28_line],loc=2)
 	figure = plt.gcf()
 	figure.set_size_inches(13, 10)
 	plt.savefig(data_set + "_kd_pca_ran8_rp8_v28.png")
 
-def rp_ran_v2():
-	plt.axis([0,13000,0,1])
+def ran_rp_v2():
+	plt.axis([0,35000,0,0.8])
 	rp_x, rp_y = read_file(3,2,'2rp_tree.dat')
 	rp4_x, rp4_y = read_file(3,2,'4rp_tree.dat')
 	rp8_x, rp8_y = read_file(3,2,'8rp_tree.dat')
-	v2_x, v2_y = read_file(3,2,'2rp_select_tree.dat')
-	v24_x, v24_y = read_file(3,2,'4rp_select_tree.dat')
-	v28_x, v28_y = read_file(3,2,'8rp_select_tree.dat')
+	v2_x, v2_y = read_file(3,2,'2v2_tree.dat')
+	v24_x, v24_y = read_file(3,2,'4v2_tree.dat')
+	v28_x, v28_y = read_file(3,2,'8v2_tree.dat')
 	ran_x, ran_y = read_file(3,2,'2rkd_tree.dat')
 	ran4_x, ran4_y = read_file(3,2,'4rkd_tree.dat')
 	ran8_x, ran8_y = read_file(3,2,'8rkd_tree.dat')
@@ -254,10 +254,10 @@ def rp_ran_v2():
 	ran_line, = plt.plot(ran_x, ran_y, 'go-', label='2 RKD Trees', lw=2, ms=8)
 	ran4_line, = plt.plot(ran4_x, ran4_y, 'gs-', label='4 RKD Trees', lw=2, ms=8)
 	ran8_line, = plt.plot(ran8_x, ran8_y, 'g^-', label='8 RKD Trees', lw=2, ms=8)
-	plt.legend(handles=[rp_line,rp4_line,rp8_line,v2_line,v24_line,v28_line, ran_line,ran4_line,ran8_line],loc=4, prop={'size':13})
+	plt.legend(handles=[rp_line,rp4_line,rp8_line,ran_line,ran4_line,ran8_line,v2_line,v24_line,v28_line],loc=2, prop={'size':13})
 	figure = plt.gcf()
 	figure.set_size_inches(13, 10)
-	plt.savefig(data_set + "_rp_ran_v2.png")
+	plt.savefig(data_set + "_ran_rp_v2.png")
 
 def main():
 	font = {'size' : 18}
@@ -268,7 +268,7 @@ def main():
 
 	global data_set
 	data_set = 'songs'
-	rp_ran_v2()
+	kd_pca_ran_rp()
 
 main()
 
