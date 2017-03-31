@@ -919,15 +919,21 @@ public:
         LOG_INFO("Getting difficulty data.\n");
 
         stringstream data;
-        size_t train_size = (*trn_st_).size();
-        double measure = 0.0;
+        size_t train_size = (*trn_st_).size(); 
         for (size_t i = 0; i < (*tst_st_).size(); i++) {
+			LOG_INFO(" %ld\n", i);
+			double measure = 0.0;
             vector<T> * query = (*tst_st_)[i];
             vector<T> * nn_vtr = (*trn_st_)[nn_mp_[query][0]];
             double nn_dist = distance_to(query, nn_vtr);
-            for (size_t j = 0; j < train_size; j++) {
-                double denominator = distance_to(query, (*trn_st_)[j]);
-                measure += nn_dist/denominator;
+			for (size_t j = 0; j < train_size; j++) {
+				double denominator = distance_to(query, (*trn_st_)[j]);
+				if (denominator == 0) {
+					measure += 0;
+				}
+				else {
+					measure += nn_dist / denominator;
+				}
             }
             measure = measure/train_size;
             data <<  setw(COL_W) << measure << endl;
