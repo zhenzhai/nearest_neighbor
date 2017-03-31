@@ -11,6 +11,22 @@ def plt_diff(file_name, color):
 	dat, = plt.plot(x, color, label=file_name)
 	return dat
 
+def get_percentile(file_name, perc):
+	print "getting percentile for ", file_name
+	with open(file_name + '_difficulty.dat') as f:
+		lines = np.array([d.strip() for d in f.readlines()[1:]])
+	all_diff = lines.astype(np.float)
+	perc_value = []
+	for p in perc:
+		print '		', p
+		perc_value.append(np.percentile(all_diff, p))
+	with open('diff_percentile.dat', 'a') as wf:
+		wf.write(file_name)
+		wf.write('\t')
+		wf.write(str(perc_value))
+		wf.write('\n')
+	return perc_value
+
 def plt_diff_value():
 	font = {'size' : 20}
 	plt.rc('font', **font)
@@ -22,22 +38,22 @@ def plt_diff_value():
 	plt.xlabel('Percentile', labelpad = 10)
 	plt.ylabel('Difficulty', labelpad = 10)
 
-	filename = 'diff_percentiles.dat'
-	with open(filename) as f:
-		file_lines = f.readlines()
 	y = [25, 50, 75]
-	big5x = [f.split()[1] for f in file_lines[:3]]
-	cifarx = [f.split()[1] for f in file_lines[3:6]]
-	mnistx = [f.split()[1] for f in file_lines[6:9]]
-	songsx = [f.split()[1] for f in file_lines[9:12]]
-	w2vx = [f.split()[1] for f in file_lines[12:]]
+	big5x = get_percentile('big5', y)
+	cifarx = get_percentile('cifar', y)
+	mnistx = get_percentile('mnist', y)
+	siftx = get_percentile('sift', y)
+	w2vx = get_percentile('w2v', y)
+	songsx = get_percentile('songs', y)
+
 	big5, = plt.plot(y, big5x, 'ro-', label='big5', lw=3, ms=8)
 	cifar, = plt.plot(y, cifarx, 'co-', label='cifar', lw=3, ms=8)
 	mnist, = plt.plot(y, mnistx, 'bo-', label='mnist', lw=3, ms=8)
 	songs, = plt.plot(y, songsx, 'go-', label='songs', lw=3, ms=8)
+	sift, = plt.plot(y, siftx, 'ko-', label='sift', lw=3, ms=8)
 	w2v, = plt.plot(y, w2vx, 'mo-', label='w2v', lw=3, ms=8)
 
-	plt.legend(handles=[mnist, cifar, songs, big5, w2v],loc=4)
+	plt.legend(handles=[mnist, cifar, songs, big5, w2v, sift],loc=4)
 	figure = plt.gcf()
 	figure.set_size_inches(13, 10)
 	plt.savefig("percentiles.png")
@@ -97,5 +113,5 @@ def plt_kd():
 	plt.savefig("all_kd.png")
 
 
-#plt_diff_value()
-plt_kd()
+plt_diff_value()
+#plt_kd()
