@@ -20,23 +20,20 @@ def get_percentile(file_name, perc):
 	for p in perc:
 		print '		', p
 		perc_value.append(np.percentile(all_diff, p))
-	with open('diff_percentile.dat', 'a') as wf:
+	'''with open('diff_percentile.dat', 'a') as wf:
 		wf.write(file_name)
 		wf.write('\t')
 		wf.write(str(perc_value))
-		wf.write('\n')
+		wf.write('\n')'''
 	return perc_value
 
 def plt_diff_value():
 	font = {'size' : 20}
 	plt.rc('font', **font)
-	x = np.linspace(0,100)
-	y = np.linspace(0,1)
-	plt.ylim(0,0.6)
-	X,Y = np.meshgrid(x,y)
 	plt.title('Difficulty of Datasets', y=1.02)
 	plt.xlabel('Percentile', labelpad = 10)
 	plt.ylabel('Difficulty', labelpad = 10)
+	plt.axis([0,100,0,0.6])
 
 	y = [25, 50, 75]
 	big5x = get_percentile('big5', y)
@@ -53,7 +50,7 @@ def plt_diff_value():
 	sift, = plt.plot(y, siftx, 'ko-', label='sift', lw=3, ms=8)
 	w2v, = plt.plot(y, w2vx, 'mo-', label='w2v', lw=3, ms=8)
 
-	plt.legend(handles=[mnist, cifar, songs, big5, w2v, sift],loc=4)
+	plt.legend(handles=[mnist, cifar, songs, big5, w2v, sift],loc=2)
 	figure = plt.gcf()
 	figure.set_size_inches(13, 10)
 	plt.savefig("percentiles.png")
@@ -62,10 +59,7 @@ def plt_diff_value():
 def plt_points():
 	font = {'size' : 20}
 	plt.rc('font', **font)
-	x = np.linspace(0,1000)
-	y = np.linspace(0,1)
 	plt.ylim(0,1)
-	X,Y = np.meshgrid(x,y)
 	plt.title('Difficulty of Datasets', y=1.02)
 	plt.xlabel('Index of Data Points', labelpad = 10)
 	plt.ylabel('Difficulty', labelpad = 10)
@@ -75,8 +69,9 @@ def plt_points():
 	songs = plt_diff('songs', 'bo')
 	big5 = plt_diff('big5', 'go')
 	w2v = plt_diff('w2v', 'mo')
+	sift = plt_diff('sift', 'ko')
 
-	plt.legend(handles=[mnist, cifar, songs, big5, w2v],loc=4)
+	plt.legend(handles=[mnist, cifar, songs, big5, w2v, sift],loc=4)
 	figure = plt.gcf()
 	figure.set_size_inches(13, 10)
 	plt.savefig("diff.png")
@@ -93,25 +88,46 @@ def kd(data_set, color):
 	kd_line, = plt.plot(kd_x, kd_y, color+'-', label=data_set, lw=3, ms=8)
 	return kd_line
 
-def plt_kd():
+def v2(data_set, color):
+	v2_x, v2_y = read_file(3,2,'../{0}/true_nn_accuracy/8v2_tree.dat'.format(data_set))
+	v2_line, = plt.plot(v2_x, v2_y, color+'-', label=data_set, lw=3, ms=8)
+	return v2_line
+
+def plt_all(tree, yran):
 	font = {'size' : 20}
 	plt.rc('font', **font)
-	plt.title('K-D Tree True NN Percentage', y=1.02)
+	if tree == "kd":
+		tree_name = "K-D"
+	elif tree == "v2":
+		tree_name = "Two Vantage Point"
+	plt.title(tree_name+' Tree True NN Percentage', y=1.02)
 	plt.xlabel('Number of Distance Computations', labelpad = 10)
 	plt.ylabel('Fraction Correct NN', labelpad = 10)
-	plt.axis([0,50000,0,0.8])
+	plt.axis([0,50000,0,yran])
 
-	mnist = kd('mnist', 'bo')
-	cifar = kd('cifar', 'co')
-	songs = kd('songs', 'go')
-	big5 = kd('big5', 'ro')
-	w2v = kd('w2v', 'mo')
+	if tree == 'kd':
+		mnist = kd('mnist', 'bo')
+		cifar = kd('cifar', 'co')
+		songs = kd('songs', 'go')
+		big5 = kd('big5', 'ro')
+		w2v = kd('w2v', 'mo')
+		sift = kd('sift', 'ko')
+	elif tree == 'v2':
+		mnist = v2('mnist', 'bo')
+		cifar = v2('cifar', 'co')
+		songs = v2('songs', 'go')
+		big5 = v2('big5', 'ro')
+		w2v = v2('w2v', 'mo')
+		sift = v2('sift', 'ko')
 
-	plt.legend(handles=[mnist, cifar, songs, big5, w2v],loc=1)
+	plt.legend(handles=[mnist, cifar, songs, big5, w2v, sift],loc=1)
 	figure = plt.gcf()
 	figure.set_size_inches(13, 10)
-	plt.savefig("all_kd.png")
+	plt.savefig("all_{0}.png".format(tree))
+
+
 
 
 plt_diff_value()
-#plt_kd()
+#plt_all("kd", 1)
+#plt_all("v2", 1)
