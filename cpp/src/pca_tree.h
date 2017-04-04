@@ -142,35 +142,30 @@ PCATreeNode<Label, T> * PCATree<Label, T>::build_tree(size_t min_leaf_size,
         return new PCATreeNode<Label, T>(domain);
     }
     DataSet<Label, T> subst = st.subset(domain);
+
+	/*find dominant eigenvector*/
     vector<double> mx_var_dir = max_eigen_vector(subst, 1000);
+
+	/*project all the data at the dominant eigenvector*/
     vector<double> values;
     for (size_t i = 0; i < subst.size(); i++)
         values.push_back(dot(*subst[i], mx_var_dir));
+
+	/*find pivot to split*/
     double pivot = selector(values, (size_t)(values.size() * 0.5));
+
+	/*split to left and right child*/
     vector<size_t> subdomain_l;
     size_t subdomain_l_lim = (size_t)(values.size() * 0.5);
-    LOG_FINE("> l_lim = %ld\n", subdomain_l_lim);
+    LOG_FINE("> left_lim = %ld\n", subdomain_l_lim);
     vector<size_t> subdomain_r;
-    vector<size_t> pivot_pool;
     for (size_t i = 0; i < domain.size(); i++) {
-        if (pivot == values[i])
-            pivot_pool.push_back(domain[i]);
-        else if (pivot > values[i])
+        if (values[i] <= pivot)
             subdomain_l.push_back(domain[i]);
         else
             subdomain_r.push_back(domain[i]);
     }
-    //TODO: use tie breaker here
-    while (subdomain_l_lim > subdomain_l.size()) {
-        size_t curr = pivot_pool.back();
-        pivot_pool.pop_back();
-        subdomain_l.push_back(curr);
-    }
-    while (!pivot_pool.empty()) {
-        size_t curr = pivot_pool.back();
-        pivot_pool.pop_back();
-        subdomain_r.push_back(curr);
-    }
+
     PCATreeNode<Label, T> * result = new PCATreeNode<Label, T>(mx_var_dir, 
             pivot, domain);
     result->left_ = build_tree(min_leaf_size, st, subdomain_l);

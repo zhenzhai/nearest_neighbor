@@ -149,15 +149,22 @@ KDTreeNode<Label, T> * KDTree<Label, T>::build_tree(size_t min_leaf_size,
         return new KDTreeNode<Label, T>(domain);
     }
     DataSet<Label, T> subst = st.subset(domain);
+
+	/*find max variance index*/
     size_t mx_var_index = max_variance_index(subst);
+
+	/*get all the values at the max variance index*/
     vector<T> values;
     for (size_t i = 0; i < subst.size(); i++) {
         values.push_back((*subst[i])[mx_var_index]);
     }
+
     double pivot = selector(values, (size_t)(values.size() * 0.5));
     vector<size_t> subdomain_l;
     size_t subdomain_l_lim = (size_t)(values.size() * 0.5);
     LOG_FINE("> left_limit = %ld\n", subdomain_l_lim);
+
+	/*Distribute to left, right, and pivot node*/
     vector<size_t> subdomain_r;
     vector<size_t> pivot_pool;
     for (size_t i = 0; i < domain.size(); i++) {
@@ -169,15 +176,15 @@ KDTreeNode<Label, T> * KDTree<Label, T>::build_tree(size_t min_leaf_size,
             subdomain_r.push_back(domain[i]);
     }
     
-    //distribute pivot pool to all the children nodes
-    //dot a random vector then do split again
+    /*Distribute pivot pool to all the children nodes
+    dot a random vector then do split again*/
     size_t dimension = (*subst[0]).size();
     vector<double> tie_breaker = random_tie_breaker(dimension);
     
-    //extract the vectors from dataset
+	/*extract the vectors from dataset*/
     DataSet<Label, T> tie_vectors = st.subset(pivot_pool);
     
-    //update pool using randome tie breaker
+	/*update pivot pool using random tie breaker*/
     vector<double> update_pool;
 	double product = 0;
     for (int j = 0; j < tie_vectors.size(); j++) {
@@ -187,30 +194,15 @@ KDTreeNode<Label, T> * KDTree<Label, T>::build_tree(size_t min_leaf_size,
 		product = 0;
     }
     
-    //find the tie_pivots and distribute tie vectors
-    int k = subdomain_l_lim - subdomain_l.size();
-    
-    //store new pivots in update_pool
-    double tie_pivot;
-    
-    tie_pivot = selector(update_pool, k);
+    /*Distribute to left and right based on projected data*/
+	int k = subdomain_l_lim - subdomain_l.size();
+    double tie_pivot = selector(update_pool, k);
     for (int j = 0; j < update_pool.size(); j++) {
         if (update_pool[j] <= tie_pivot)
             subdomain_l.push_back(pivot_pool[j]);
         else
             subdomain_r.push_back(pivot_pool[j]);
     }
-
-    /*while (subdomain_l_lim > subdomain_l.size()) {
-        size_t curr = pivot_pool.back();
-        pivot_pool.pop_back();
-        subdomain_l.push_back(curr);
-    }
-    while (!pivot_pool.empty()) {
-        size_t curr = pivot_pool.back();
-        pivot_pool.pop_back();
-        subdomain_r.push_back(curr);
-    }*/
     
     KDTreeNode<Label, T> * result = new KDTreeNode<Label, T>
             (mx_var_index, pivot, domain, dimension, tie_pivot, tie_breaker);
