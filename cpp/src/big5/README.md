@@ -18,6 +18,6 @@ Detail about the dataset is [here](http://mypersonality.org/wiki/doku.php?id=lis
 
 		cd ..
 		make
-		./main.o big5 convert 990000 10000 100
+		./main.o big5 convert 996171 10000 100
 
 * Converted data will be saved in current directory.
