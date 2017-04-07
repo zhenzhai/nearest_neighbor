@@ -188,7 +188,6 @@ KDTreeNode<Label, T> * KDTree<Label, T>::build_tree(size_t min_leaf_size,
     vector<double> update_pool;
 	double product = 0;
     for (int j = 0; j < tie_vectors.size(); j++) {
-		vector<T> tmp = *tie_vectors[j];
         product = dot(*tie_vectors[j], tie_breaker);
         update_pool.push_back(product);
 		product = 0;

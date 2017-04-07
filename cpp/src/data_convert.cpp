@@ -49,7 +49,7 @@ void data_generate(const string& data_name, size_t TRAIN_MAX, size_t TEST_MAX, s
     //height is the number of vectors
     datah = 0;
     while (fgets(strbuf, TRAIN_MAX, fin)) {
-		if (datah % 10000) LOG_FINE("    > %ld\n", labelh);
+		if (datah % 10000) LOG_FINE("    > %ld\n", datah);
         tok = strtok(strbuf, ",");
         dataw = 0;
         while (tok) {
