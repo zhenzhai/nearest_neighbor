@@ -46,11 +46,11 @@ template<class Label, class T>
 KDTreeNode<Label, T> * KDSpillTree<Label, T>::build_tree(size_t min_leaf_size, double spill_factor,
         DataSet<Label, T> & st, vector<size_t> domain)
 {
-    LOG_INFO("Enter build_tree\n");
+    LOG_FINE("Enter build_tree\n");
     LOG_FINE("with min_leaf_size = %ld and domain.size = %ld\n", min_leaf_size, domain.size());
     if (domain.size() < min_leaf_size) {
-        LOG_INFO("Exit build_tree");
-        LOG_FINE("by hitting base size");
+        LOG_FINE("Exit build_tree\n");
+        LOG_FINE("by hitting base size\n");
         return new KDTreeNode<Label, T>(domain);
     }
     DataSet<Label, T> subst = st.subset(domain);
@@ -119,8 +119,17 @@ KDTreeNode<Label, T> * KDSpillTree<Label, T>::build_tree(size_t min_leaf_size, d
     
     /*update left pool using random tie breaker*/
     vector<double> update_left_pool;
+	double old_pro = 0;
+	double product = 0;
     for (int j = 0; j < left_pool_vectors.size(); j++) {
-        double product = dot(*left_pool_vectors[j], tie_breaker);
+		vector<T> c = *left_pool_vectors[j];
+        product = dot(c, tie_breaker);
+		if (product == old_pro) {
+			int tmp = 0;
+			tmp += 1;
+			LOG_INFO("%d Not working %d\n", tmp, j);
+		}
+		old_pro = product;
         update_left_pool.push_back(product);
     }
 
