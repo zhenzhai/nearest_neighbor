@@ -33,21 +33,21 @@ using namespace std;
 #define SUBDOMAIN       (0x0004)
 #endif
 
-static double rkd_tree[]     = {2, 4, 8};
-static size_t rkd_tree_len   = 3;
-static double v2_tree[]     = {2, 4, 8};
-static size_t v2_tree_len   = 3;
-static double rp_tree[]     = {2, 4, 8};
-static size_t rp_tree_len   = 3;
-static double min_leaf = 0.0001;
-static double leaf_size_array[] = {0.001, 0.002, 0.004, 0.006, 0.008, 0.01, 0.015, 0.02, 0.03, 0.05};
+static double rkd_tree[]	= {2, 4, 8};
+static size_t rkd_tree_len	= 3;
+static double v2_tree[]		= {2, 4, 8};
+static size_t v2_tree_len	= 3;
+static double rp_tree[]		= {2, 4, 8};
+static size_t rp_tree_len	= 3;
+static double min_leaf		= 0.0001;
+static double a_array[]		= {0.05, 0.1};
+const size_t a_array_len	= 2;
+const size_t splits			= 3;
+const size_t leaf_size_array_len = 10;
+static double leaf_size_array[] = { 0.001 , 0.002, 0.004, 0.006, 0.008, 0.01, 0.015, 0.02, 0.03, 0.05 };
 //{0.015, 0.03, 0.06, 0.09, 0.1, 0.13, 0.15, 0.17, 0.19, 0.21};
 //{0.005, 0.01, 0.015, 0.02, 0.03, 0.05, 0.08, 0.1, 0.13, 0.15};
 //{0.01, 0.013, 0.015, 0.02, 0.03, 0.05, 0.08, 0.1, 0.13, 0.15};
-const size_t leaf_size_array_len = 10;
-static double a_array []      = {0.05, 0.1};
-const size_t a_array_len      = 2;
-const size_t splits     = 3;
 
 template<class Label, class T>
 class Test
@@ -567,7 +567,6 @@ public:
         
         //calculate space blowup
         size_t space_blowup = 0;
-        int tree_height = 0;
         int number_leaves = 1;
         LOG_INFO("Calculating space blowup.\n");
         size_t l_c = (size_t)(leaf_size * (*trn_st_).size());
@@ -579,13 +578,13 @@ public:
             expl.pop();
             if (cur->get_left() && cur->get_right() && cur->get_domain().size() >= l_c) {
                 expl.push(cur->get_right());
-                size_t dsize = cur->get_domain().size();
-                space_blowup = dsize * number_leaves;
-                tree_height++;
                 number_leaves = number_leaves * 2;
-            }
-            else
-                break;
+			}
+			else {
+				size_t dsize = cur->get_domain().size();
+				space_blowup = dsize * number_leaves;
+				break;
+			}
         }
         LOG_INFO("Done calculation\n");
         size_t root_size = tree.get_root()->get_domain().size();
@@ -604,28 +603,30 @@ public:
 
     void generate_kd_spill_tree_data(string out_dir)
     {
-        ofstream dat_out (out_dir + "/kd_spill_tree.dat");
-        dat_out <<  setw(COL_W) << "leaf";
-        dat_out <<  setw(COL_W) << "alpha";
-        dat_out <<  setw(COL_W) << "error rate";
-        dat_out <<  setw(COL_W) << "true nn";
-        dat_out <<  setw(COL_W) << "subdomain";
-        dat_out <<  setw(COL_W) << "space blowup";
-        dat_out << endl;
-        thread t [leaf_size_array_len][a_array_len];
-        string r [leaf_size_array_len][a_array_len];
-        for (size_t i = 0; i < leaf_size_array_len; i++) {
-            for (size_t j = 0; j < a_array_len; j++) {
-                t[i][j] = thread(&Test<Label, T>::s_kd_spill_tree_data, this, leaf_size_array[i], a_array[j], &(r[i][j]));
-            }
-        }
-        for (size_t i = 0; i < leaf_size_array_len; i++) {
-            for (size_t j = 0; j < a_array_len; j++) {
-                t[i][j].join();
-                dat_out << r[i][j];
-            }
-        }
-        dat_out.close();
+		thread t[leaf_size_array_len][a_array_len];
+		string r[leaf_size_array_len][a_array_len];
+		for (size_t j = 0; j < a_array_len; j++) {
+			for (size_t i = 0; i < leaf_size_array_len; i++) {
+				t[i][j] = thread(&Test<Label, T>::s_pca_spill_tree_data, this, leaf_size_array[i], a_array[j], &(r[i][j]));
+			}
+		}
+		for (size_t j = 0; j < a_array_len; j++) {
+			stringstream dir;
+			dir << out_dir << "/kd_spill_tree_" << setprecision(2) << a_array[j] << ".dat";
+			ofstream dat_out(dir.str());
+			dat_out << setw(COL_W) << "leaf";
+			dat_out << setw(COL_W) << "alpha";
+			dat_out << setw(COL_W) << "error rate";
+			dat_out << setw(COL_W) << "true nn";
+			dat_out << setw(COL_W) << "subdomain";
+			dat_out << setw(COL_W) << "space blowup";
+			dat_out << endl;
+			for (size_t i = 0; i < leaf_size_array_len; i++) {
+				t[i][j].join();
+				dat_out << r[i][j];
+			}
+			dat_out.close();
+		}
     }
 
     void s_kd_v_spill_tree_data(double leaf_size, double a_value, string * result)
@@ -803,7 +804,7 @@ public:
         data <<  setw(COL_W) << (subdomain_count * 1. / (*tst_st_).size());
         data << endl;
         *result = data.str();
-		LOG_INFO("Done rp trees test.\n");
+		LOG_INFO("Done pca trees test.\n");
     }
     
     void generate_pca_tree_data(string out_dir)
@@ -850,7 +851,6 @@ public:
         
         //calculate space blowup
         size_t space_blowup = 0;
-        int tree_height = 0;
         int number_leaves = 1;
         LOG_INFO("Calculate space blowup\n");
         size_t l_c = (size_t)(leaf_size * (*trn_st_).size());
@@ -862,13 +862,13 @@ public:
             expl.pop();
             if (cur->get_left() && cur->get_right() && cur->get_domain().size() >= l_c) {
                 expl.push(cur->get_right());
-                size_t dsize = cur->get_domain().size();
-                space_blowup = dsize * number_leaves;
-                tree_height++;
-                number_leaves = number_leaves * 2;
-            }
-            else
-                break;
+				number_leaves = number_leaves * 2;
+			}
+			else {
+				size_t dsize = cur->get_domain().size();
+				space_blowup = dsize * number_leaves;
+				break;
+			}
         }
         LOG_INFO("Done space calculation.\n");
         size_t root_size = tree.get_root()->get_domain().size();
@@ -887,28 +887,30 @@ public:
 
     void generate_pca_spill_tree_data(string out_dir)
     {
-        ofstream dat_out (out_dir + "/pca_spill_tree.dat");
-        dat_out <<  setw(COL_W) << "leaf";
-        dat_out <<  setw(COL_W) << "alpha";
-        dat_out <<  setw(COL_W) << "error rate";
-        dat_out <<  setw(COL_W) << "true nn";
-        dat_out <<  setw(COL_W) << "subdomain";
-        dat_out <<  setw(COL_W) << "space blowup";
-        dat_out << endl;
         thread t [leaf_size_array_len][a_array_len];
         string r [leaf_size_array_len][a_array_len];
-        for (size_t i = 0; i < leaf_size_array_len; i++) {
-            for (size_t j = 0; j < a_array_len; j++) {
+		for (size_t j = 0; j < a_array_len; j++) {
+			for (size_t i = 0; i < leaf_size_array_len; i++) {
                 t[i][j] = thread(&Test<Label, T>::s_pca_spill_tree_data, this, leaf_size_array[i], a_array[j], &(r[i][j]));
             }
         }
-        for (size_t i = 0; i < leaf_size_array_len; i++) {
-            for (size_t j = 0; j < a_array_len; j++) {
-                t[i][j].join();
-                dat_out << r[i][j];
-            }
-        }
-        dat_out.close();
+		for (size_t j = 0; j < a_array_len; j++) {
+			stringstream dir;
+			dir << out_dir << "/pca_spill_tree_" << setprecision(2) << a_array[j] << ".dat";
+			ofstream dat_out(dir.str());
+			dat_out << setw(COL_W) << "leaf";
+			dat_out << setw(COL_W) << "alpha";
+			dat_out << setw(COL_W) << "error rate";
+			dat_out << setw(COL_W) << "true nn";
+			dat_out << setw(COL_W) << "subdomain";
+			dat_out << setw(COL_W) << "space blowup";
+			dat_out << endl;
+			for (size_t i = 0; i < leaf_size_array_len; i++) {
+				t[i][j].join();
+				dat_out << r[i][j];
+			}
+			dat_out.close();
+		}
     }
     
     void difficulty(string out_dir)
@@ -942,7 +944,7 @@ public:
         dat_out.close();
         LOG_INFO("Done difficulty calculation.\n");
     }
-    
+
 };
 
 template<class Label, class T>
@@ -987,7 +989,8 @@ Test<Label, T>::Test(string base_dir) :
         ofstream nn_dat_out (base_dir + "/k_true_nn", ios::binary);
         nn_dat_out.write((char *)&k, sizeof(size_t));
         for (size_t i = 0; i < tst_st_->size(); i++) {
-			LOG_INFO("Running %ld of %ld.\n", i, tst_st_->size());
+			if (i % 1000 == 0)
+				LOG_INFO("Running %ld of %ld.\n", i, tst_st_->size());
 			DataSet<Label, T> l_st;
 			if (k == 1) {
 				l_st = true_nearest_neighbor((*tst_st_)[i], *trn_st_);

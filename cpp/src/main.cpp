@@ -61,12 +61,19 @@ int main(int argc, char* argv[])
 				mTest.generate_kd_v_spill_trees();
 				mTest.generate_kd_v_spill_tree_data(set_DIR);
 			}
-            else if (tree == "diff") {
+            else if (tree == "difficulty") {
                 mTest.difficulty(set_DIR);
             }
+			else {
+				cerr << "Wrong Tree Name!" << endl;
+				cerr << "Usage: " << endl;
+				cerr << "   1. Convert Data " << argv[0] << " DataName(mnist/cifar/songs/big5/w2v/sift) convert train_size test_size width" << endl;
+				cerr << "   2. Run Trees " << argv[0] << " DataName(mnist, cifar, songs, big5, w2v, sift)" << endl;
+				cerr << "   3. Run Specific Tree " << argv[0] << " DataName(mnist/cifar/songs/big5/w2v/sift) tree_name(kd/rkd/rp/pca/pca_spill/kd_spill/kd_v_spill/diff)" << endl;
+			}
 
 		}
-		else {
+		else if (argc == 2) {
 			/* For approximate NN search */
 			//Test<byte,float> mTest(DIR + set_DIR, 1.4);
 
@@ -96,6 +103,12 @@ int main(int argc, char* argv[])
 
 			mTest.generate_kd_v_spill_trees();
 			mTest.generate_kd_v_spill_tree_data(set_DIR);
+		}
+		else {
+			cerr << "Usage: " << endl;
+			cerr << "   1. Convert Data " << argv[0] << " DataName(mnist/cifar/songs/big5/w2v/sift) convert train_size test_size width" << endl;
+			cerr << "   2. Run Trees " << argv[0] << " DataName(mnist, cifar, songs, big5, w2v, sift)" << endl;
+			cerr << "   3. Run Specific Tree " << argv[0] << " DataName(mnist/cifar/songs/big5/w2v/sift) tree_name(kd/rkd/rp/pca/pca_spill/kd_spill/kd_v_spill/diff)" << endl;
 		}
 	}
 	cout << "Type any key to terminate." << endl;
