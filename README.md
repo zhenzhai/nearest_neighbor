@@ -5,7 +5,7 @@ We looked at 7 different data structures, they are k-d trees, randomized k-d tre
 
 We did our experiments on 6 different dataset, including MNIST, CIFAR, Word2Vec, BIG5, ANN_SIFT, and the Million Songs.
 
-* Statistical data and graphs are located in folder [/data](https://github.com/zhenzhai/nearest_neighbor/tree/master/data).
+* Statistical data and graphs are located in folder [/output_data](https://github.com/zhenzhai/nearest_neighbor/tree/master/output_data).
 
 * Source files are located in folder [/cpp](https://github.com/zhenzhai/nearest_neighbor/tree/master/cpp).
 

@@ -8,6 +8,6 @@
 
   * "graphs" stores all the graphs and the python script that generate the graphs.
 
-* Folder ["difficulty"](https://github.com/zhenzhai/nearest_neighbor/tree/master/data/difficulty) holds graphs and .dat files that use to measure the difficulty of each dataset.
+* Folder ["difficulty"](https://github.com/zhenzhai/nearest_neighbor/tree/master/output_data/difficulty) holds graphs and .dat files that use to measure the difficulty of each dataset.
 
 * "pyplot.py" has python code to plot all graphs
