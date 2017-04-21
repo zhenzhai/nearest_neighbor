@@ -267,14 +267,14 @@ def songs():
 
 	data = "songs"
 	y_range = 35000
-	#kd(data,y_range,0.1,4)
-	#kd_pca(data,y_range,0.6,2)
-	#kd_pca_rkd(data,y_range,0.6,2)
-	#kd_rkd2(data,y_range,0.3,2)
-	#kd_rkd8(data,y_range,0.3,2)
-	#kd_pca_rkd_rp(data,y_range,0.6,2)
-	#kd_rp2(data,y_range,0.3,2)
-	#kd_rp8(data,y_range,0.3,2)
+	#kd(data,y_range,1,2)
+	#kd_pca(data,y_range,1,2)
+	#kd_pca_rkd(data,y_range,1,2)
+	#kd_rkd2(data,y_range,1,2)
+	#kd_rkd8(data,y_range,1,2)
+	#kd_pca_rkd_rp(data,y_range,1,2)
+	#kd_rp2(data,y_range,1,2)
+	#kd_rp8(data,y_range,1,2)
 	#kd_pca_rkd_rp_v2(data,y_range,1,2)
 	#rp_v2(data,y_range,1,2)
 	#rkd_rp_v2(data,y_range,1,2)
@@ -367,14 +367,14 @@ def w2v():
 
 	data = "w2v"
 	y_range = 100000
-	#kd(data,y_range,0.5,4)
-	#kd_pca(data,y_range,0.5,4)
-	#kd_pca_rkd(data,y_range,0.5,2)
-	#kd_rkd2(data,y_range,0.5,2)
-	#kd_rkd8(data,y_range,0.5,2)
+	#kd(data,y_range,1,4)
+	#kd_pca(data,y_range,1,4)
+	#kd_pca_rkd(data,y_range,1,2)
+	#kd_rkd2(data,y_range,1,2)
+	#kd_rkd8(data,y_range,1,2)
 	#kd_pca_rkd_rp(data,y_range,1,2)
-	#kd_rp2(data,y_range,0.5,2)
-	#kd_rp8(data,y_range,0.5,2)
+	#kd_rp2(data,y_range,1,2)
+	#kd_rp8(data,y_range,1,2)
 	#kd_pca_rkd_rp_v2(data,y_range,1,2)
 	#rp_v2(data,y_range,1,2)
 	#rkd_rp_v2(data,y_range,1,2)
@@ -408,5 +408,5 @@ def mnist():
 	#spill_vspill(data,y_range,1,4)
 	#rkd_spill_vspill(data,y_range,1,4)
 
-big5()
+songs()
 
