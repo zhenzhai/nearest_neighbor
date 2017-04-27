@@ -5,12 +5,33 @@ import numpy as np
 import os
 import random
 import fnmatch
+from collections import defaultdict
 
 def get_timbre(file_name):
 	h5 = hdf5_getters.open_h5_file_read(file_name)
 	timbre = hdf5_getters.get_segments_timbre(h5)
 	h5.close()
 	return [timbre[:100].flatten()]
+
+def remove_duplicate(train_data):
+    print 'remove duplicate from data of size ', len(train_data)
+    vec = []
+    unique_dict = defaultdict(int)
+
+    index = 0
+    count = 0
+    for line in train_data:
+        string_data = str(line)
+        if not unique_dict[string_data]:
+            unique_dict[string_data] = 1
+            vec.append(line)
+            count += 1
+        index += 1
+        if index % 100000 == 0:
+            print '    at index ', index
+    print 'Done'
+    print 'Down size from ', index, ' to ', count
+    return vec
 
 def main(test_size):
 
@@ -31,6 +52,8 @@ def main(test_size):
 	
 	dim = len(timbre[0])
 	print "Extract timbre of dimension ", dim
+
+	timbre = remove_duplicate(timbre)
 	# Split files into train and test
 	print "Spliting data into train and test ..."
 	random.seed(1)

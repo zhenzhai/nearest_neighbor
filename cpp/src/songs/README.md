@@ -17,6 +17,6 @@ The python script will write train and test features into files "train_vectors" 
 
 		cd ../..
 		make
-		./main.o songs convert 951593 10000 1200
+		./main.o songs convert 951175 10000 1200
 
 * Converted data will be saved in current directory.
