@@ -33,18 +33,19 @@ using namespace std;
 #define SUBDOMAIN       (0x0004)
 #endif
 
-static double rkd_tree[]	= {2, 4, 8};
-static size_t rkd_tree_len	= 3;
-static double v2_tree[]		= {2, 4, 8};
-static size_t v2_tree_len	= 3;
-static double rp_tree[]		= {2, 4, 8};
-static size_t rp_tree_len	= 3;
-static double min_leaf		= 0.0001;
+static double rkd_tree[] = {2, 4, 8};
+static size_t rkd_tree_len = 3;
+static double v2_tree[] = {2, 4, 8};
+static size_t v2_tree_len = 3;
+static double rp_tree[] = {2, 4, 8};
+static size_t rp_tree_len = 3;
+static double min_leaf = 0.0001;// 0.001;
 static double a_array[]		= {0.05, 0.1};
 const size_t a_array_len	= 2;
 const size_t splits			= 3;
 const size_t leaf_size_array_len = 10;
-static double leaf_size_array[] = { 0.001 , 0.002, 0.004, 0.006, 0.008, 0.01, 0.015, 0.02, 0.03, 0.05 };
+static double leaf_size_array[] = { 0.001, 0.002, 0.004, 0.006, 0.008, 0.01, 0.015, 0.02, 0.03, 0.05 };
+//{0.001, 0.002, 0.004, 0.006, 0.008, 0.01, 0.015, 0.02, 0.03, 0.05};
 //{0.015, 0.03, 0.06, 0.09, 0.1, 0.13, 0.15, 0.17, 0.19, 0.21};
 //{0.005, 0.01, 0.015, 0.02, 0.03, 0.05, 0.08, 0.1, 0.13, 0.15};
 //{0.01, 0.013, 0.015, 0.02, 0.03, 0.05, 0.08, 0.1, 0.13, 0.15};
@@ -66,13 +67,20 @@ public:
 		LOG_INFO("Building kd tree.\n");
         stringstream dir; 
         dir << base_dir_ << "/kd_tree_" << setprecision(2) << min_leaf_size;
-        KDTree<Label, T> tree ((size_t)(min_leaf_size * (*trn_st_).size()), *trn_st_);
-		LOG_INFO("Done building kd tree.\n");
-		LOG_INFO("Writing kd tree.\n");
-        ofstream tree_out (dir.str(), ios::binary);
-        tree.save(tree_out);
-        tree_out.close();
-		LOG_INFO("Done writing kd tree.\n");
+		ifstream kd_tree_file(dir.str(), ios::binary);
+		if (kd_tree_file.good()) {
+			LOG_INFO("File kd_tree found!!!\n");
+			kd_tree_file.clear();
+		}
+		else {
+			KDTree<Label, T> tree((size_t)(min_leaf_size * (*trn_st_).size()), *trn_st_);
+			LOG_INFO("Done building kd tree.\n");
+			LOG_INFO("Writing kd tree.\n");
+			ofstream tree_out(dir.str(), ios::binary);
+			tree.save(tree_out);
+			tree_out.close();
+			LOG_INFO("Done writing kd tree.\n");
+		}
     }
 
     void generate_kd_trees() {
@@ -237,13 +245,20 @@ public:
 		LOG_INFO("Building pca tree.\n");
         stringstream dir; 
         dir << base_dir_ << "/pca_tree_" << setprecision(2) << min_leaf_size;
-        PCATree<Label, T> tree ((size_t)(min_leaf_size * (*trn_st_).size()), *trn_st_);
-		LOG_INFO("Done building pca tree.\n");
-		LOG_INFO("Writing pca tree.\n");
-        ofstream tree_out (dir.str(), ios::binary);
-        tree.save(tree_out);
-        tree_out.close();
-		LOG_INFO("Done building pca tree.\n");
+		ifstream pca_tree_file(dir.str(), ios::binary);
+		if (pca_tree_file.good()) {
+			LOG_INFO("File pca_tree found!!!\n");
+			pca_tree_file.clear();
+		}
+		else {
+			PCATree<Label, T> tree((size_t)(min_leaf_size * (*trn_st_).size()), *trn_st_);
+			LOG_INFO("Done building pca tree.\n");
+			LOG_INFO("Writing pca tree.\n");
+			ofstream tree_out(dir.str(), ios::binary);
+			tree.save(tree_out);
+			tree_out.close();
+			LOG_INFO("Done building pca tree.\n");
+		}
     }
 
     void generate_pca_trees()
@@ -292,8 +307,18 @@ public:
             Label nn_lbl = (*trn_st_).get_label(nn_vtr);
             if (nn_lbl != (*tst_st_).get_label(i))
                 error_count++;
-            if (nn_vtr == (*trn_st_)[nn_mp_[(*tst_st_)[i]][0]])
-                true_nn_count++;
+			// NN accuracy
+            /*if (nn_vtr == (*trn_st_)[nn_mp_[(*tst_st_)[i]][0]])
+                true_nn_count++;*/
+
+			// kNN accuracy
+			for (int k = 0; k < nn_mp_[(*tst_st_)[i]].size(); k++) {
+				if (nn_vtr == (*trn_st_)[nn_mp_[(*tst_st_)[i]][k]]) {
+					true_nn_count++;
+					break;
+				}
+			}
+
             subdomain_count += subSet.size();
         }
         stringstream data;
@@ -308,7 +333,7 @@ public:
 
     void generate_kd_tree_data(string out_dir)
     {
-        ofstream dat_out (out_dir + "/kd_tree.dat");
+        ofstream dat_out (out_dir + "/10kd_tree.dat");
         dat_out <<  setw(COL_W) << "leaf";
         dat_out <<  setw(COL_W) << "error rate";
         dat_out <<  setw(COL_W) << "true nn";
@@ -342,8 +367,17 @@ public:
             Label nn_lbl = (*trn_st_).get_label(nn_vtr);
             if (nn_lbl != (*tst_st_).get_label(i))
                 error_count++;
+			// NN accuracy
             if (nn_vtr == (*trn_st_)[nn_mp_[(*tst_st_)[i]][0]])
                 true_nn_count++;
+
+			// kNN accuracy
+			/*for (int k = 0; k < nn_mp_[(*tst_st_)[i]].size(); k++) {
+				if (nn_vtr == (*trn_st_)[nn_mp_[(*tst_st_)[i]][k]]) {
+					true_nn_count++;
+					break;
+				}
+			}*/
             subdomain_count += subSet.size();
         }
         stringstream data;
@@ -416,16 +450,16 @@ public:
             if (nn_lbl != (*tst_st_).get_label(i))
                 error_count++;
             // NN accuracy
-            if (nn_vtr == (*trn_st_)[nn_mp_[(*tst_st_)[i]][0]])
-                true_nn_count++;
+            /*if (nn_vtr == (*trn_st_)[nn_mp_[(*tst_st_)[i]][0]])
+                true_nn_count++;*/
             
             // kNN accuracy
-            /*for (int k = 0; k < nn_mp_[(*tst_st_)[i]].size(); k++) {
+            for (int k = 0; k < nn_mp_[(*tst_st_)[i]].size(); k++) {
                 if (nn_vtr == (*trn_st_)[nn_mp_[(*tst_st_)[i]][k]]) {
                     true_nn_count++;
                     break;
                 }
-            }*/
+            }
         }
         stringstream data;
         data <<  setw(COL_W) << leaf_size;
@@ -501,16 +535,16 @@ public:
             if (nn_lbl != (*tst_st_).get_label(i))
                 error_count++;
             // NN accuracy
-            if (nn_vtr == (*trn_st_)[nn_mp_[(*tst_st_)[i]][0]])
-                true_nn_count++;
+            /*if (nn_vtr == (*trn_st_)[nn_mp_[(*tst_st_)[i]][0]])
+                true_nn_count++;*/
             
-            // kNN accuracy
-            /*for (int k = 0; k < nn_mp_[(*tst_st_)[i]].size(); k++) {
-             if (nn_vtr == (*trn_st_)[nn_mp_[(*tst_st_)[i]][k]]) {
-             true_nn_count++;
-             break;
-             }
-             }*/
+			// kNN accuracy
+			for (int k = 0; k < nn_mp_[(*tst_st_)[i]].size(); k++) {
+				if (nn_vtr == (*trn_st_)[nn_mp_[(*tst_st_)[i]][k]]) {
+					true_nn_count++;
+					break;
+				}
+			}
         }
         stringstream data;
         data <<  setw(COL_W) << leaf_size;
@@ -560,8 +594,18 @@ public:
             Label nn_lbl = (*trn_st_).get_label(nn_vtr);
             if (nn_lbl != (*tst_st_).get_label(i))
                 error_count++;
+			// NN accuracy
             if (nn_vtr == (*trn_st_)[nn_mp_[(*tst_st_)[i]][0]])
                 true_nn_count++;
+
+			// kNN accuracy
+			/*for (int k = 0; k < nn_mp_[(*tst_st_)[i]].size(); k++) {
+				if (nn_vtr == (*trn_st_)[nn_mp_[(*tst_st_)[i]][k]]) {
+					true_nn_count++;
+					break;
+				}
+			}*/
+
             subdomain_count += subSet.size();
         }
         
@@ -603,16 +647,25 @@ public:
 
     void generate_kd_spill_tree_data(string out_dir)
     {
-		thread t[leaf_size_array_len][a_array_len];
-		string r[leaf_size_array_len][a_array_len];
-		for (size_t j = 0; j < a_array_len; j++) {
+		//thread t[leaf_size_array_len][a_array_len];
+		string r[a_array_len][leaf_size_array_len];
+
+		//Multi threading
+		/*for (size_t j = 0; j < a_array_len; j++) {
 			for (size_t i = 0; i < leaf_size_array_len; i++) {
-				t[i][j] = thread(&Test<Label, T>::s_pca_spill_tree_data, this, leaf_size_array[i], a_array[j], &(r[i][j]));
+				t[i][j] = thread(&Test<Label, T>::s_kd_spill_tree_data, this, leaf_size_array[i], a_array[j], &(r[i][j]));
+			}
+		}*/
+
+		//single thread process for large dataset
+		for (size_t i = 0; i < a_array_len; i++) {
+			for (size_t j = 0; j < leaf_size_array_len; j++) {
+				s_kd_spill_tree_data(leaf_size_array[j], a_array[i], &(r[i][j]));
 			}
 		}
-		for (size_t j = 0; j < a_array_len; j++) {
+		for (size_t i = 0; i < a_array_len; i++) {
 			stringstream dir;
-			dir << out_dir << "/kd_spill_tree_" << setprecision(2) << a_array[j] << ".dat";
+			dir << out_dir << "/kd_spill_tree_" << setprecision(2) << a_array[i] << ".dat";
 			ofstream dat_out(dir.str());
 			dat_out << setw(COL_W) << "leaf";
 			dat_out << setw(COL_W) << "alpha";
@@ -621,8 +674,8 @@ public:
 			dat_out << setw(COL_W) << "subdomain";
 			dat_out << setw(COL_W) << "space blowup";
 			dat_out << endl;
-			for (size_t i = 0; i < leaf_size_array_len; i++) {
-				t[i][j].join();
+			for (size_t j = 0; j < leaf_size_array_len; j++) {
+				//t[i][j].join();
 				dat_out << r[i][j];
 			}
 			dat_out.close();
@@ -731,17 +784,16 @@ public:
                 error_count++;
             
             // True NN accuracy
-            if (nn_vtr == (*trn_st_)[nn_mp_[(*tst_st_)[i]][0]])
-                true_nn_count++;
+            /*if (nn_vtr == (*trn_st_)[nn_mp_[(*tst_st_)[i]][0]])
+                true_nn_count++;*/
             
-            
-            // kNN accuracy
-            /*for (int k = 0; k < nn_mp_[(*tst_st_)[i]].size(); k++) {
-                if (nn_vtr == (*trn_st_)[nn_mp_[(*tst_st_)[i]][k]]) {
-                    true_nn_count++;
-                    break;
-                }
-            }*/
+			// kNN accuracy
+			for (int k = 0; k < nn_mp_[(*tst_st_)[i]].size(); k++) {
+				if (nn_vtr == (*trn_st_)[nn_mp_[(*tst_st_)[i]][k]]) {
+					true_nn_count++;
+					break;
+				}
+			}
         }
         
         stringstream data;
@@ -793,8 +845,18 @@ public:
             Label nn_lbl = (*trn_st_).get_label(nn_vtr);
             if (nn_lbl != (*tst_st_).get_label(i))
                 error_count++;
-            if (nn_vtr == (*trn_st_)[nn_mp_[(*tst_st_)[i]][0]])
-                true_nn_count++;
+			// NN accuracy
+            /*if (nn_vtr == (*trn_st_)[nn_mp_[(*tst_st_)[i]][0]])
+                true_nn_count++;*/
+
+			// kNN accuracy
+			for (int k = 0; k < nn_mp_[(*tst_st_)[i]].size(); k++) {
+				if (nn_vtr == (*trn_st_)[nn_mp_[(*tst_st_)[i]][k]]) {
+					true_nn_count++;
+					break;
+				}
+			}
+
             subdomain_count += subSet.size();
         }
         stringstream data;
@@ -844,8 +906,17 @@ public:
             Label nn_lbl = (*trn_st_).get_label(nn_vtr);
             if (nn_lbl != (*tst_st_).get_label(i))
                 error_count++;
+			// NN accuracy
             if (nn_vtr == (*trn_st_)[nn_mp_[(*tst_st_)[i]][0]])
                 true_nn_count++;
+
+			// kNN accuracy
+			/*for (int k = 0; k < nn_mp_[(*tst_st_)[i]].size(); k++) {
+				if (nn_vtr == (*trn_st_)[nn_mp_[(*tst_st_)[i]][k]]) {
+					true_nn_count++;
+					break;
+				}
+			}*/
             subdomain_count += subSet.size();
         }
         
@@ -887,16 +958,22 @@ public:
 
     void generate_pca_spill_tree_data(string out_dir)
     {
-        thread t [leaf_size_array_len][a_array_len];
-        string r [leaf_size_array_len][a_array_len];
-		for (size_t j = 0; j < a_array_len; j++) {
+        //thread t [a_array_len][leaf_size_array_len];
+        string r[a_array_len][leaf_size_array_len];
+		/*for (size_t j = 0; j < a_array_len; j++) {
 			for (size_t i = 0; i < leaf_size_array_len; i++) {
                 t[i][j] = thread(&Test<Label, T>::s_pca_spill_tree_data, this, leaf_size_array[i], a_array[j], &(r[i][j]));
             }
-        }
-		for (size_t j = 0; j < a_array_len; j++) {
+        }*/
+		for (size_t i = 0; i < a_array_len; i++) {
+			for (size_t j = 0; j < leaf_size_array_len; j++) {
+				s_pca_spill_tree_data(leaf_size_array[j], a_array[i], &(r[i][j]));
+			}
+		}
+
+		for (size_t i = 0; i < a_array_len; i++) {
 			stringstream dir;
-			dir << out_dir << "/pca_spill_tree_" << setprecision(2) << a_array[j] << ".dat";
+			dir << out_dir << "/pca_spill_tree_" << setprecision(2) << a_array[i] << ".dat";
 			ofstream dat_out(dir.str());
 			dat_out << setw(COL_W) << "leaf";
 			dat_out << setw(COL_W) << "alpha";
@@ -905,8 +982,8 @@ public:
 			dat_out << setw(COL_W) << "subdomain";
 			dat_out << setw(COL_W) << "space blowup";
 			dat_out << endl;
-			for (size_t i = 0; i < leaf_size_array_len; i++) {
-				t[i][j].join();
+			for (size_t j = 0; j < leaf_size_array_len; j++) {
+				//t[i][j].join();
 				dat_out << r[i][j];
 			}
 			dat_out.close();
@@ -983,7 +1060,7 @@ Test<Label, T>::Test(string base_dir) :
         LOG_INFO("Success!\n");
     } else {
         LOG_WARNING("File \"k_true_nn\" not found!!!\n");
-        size_t k = 1;
+        size_t k = 10;
         nn_dat_in.close();
         LOG_WARNING("Generating \"k_true_nn\" with k = %ld\n", k);
         ofstream nn_dat_out (base_dir + "/k_true_nn", ios::binary);
