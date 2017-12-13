@@ -14,7 +14,7 @@ int main(int argc, char* argv[])
         cerr << "Usage: " << endl;
         cerr << "   1. Convert Data "<< argv[0] << " DataName(mnist/cifar/songs/big5/w2v/sift) convert train_size test_size width" << endl;
         cerr << "   2. Run Trees " << argv[0] << " DataName(mnist, cifar, songs, big5, w2v, sift)" << endl;
-        cerr << "   3. Run Specific Tree " << argv[0] << " DataName(mnist/cifar/songs/big5/w2v/sift) tree_name(kd/rkd/rp/pca/pca_spill/kd_spill/kd_v_spill/diff)" << endl;
+        cerr << "   3. Run Specific Tree " << argv[0] << " DataName(mnist/cifar/songs/big5/w2v/sift) tree_name(kd/rkd/rp/v2/pca/pca_spill/kd_spill/kd_v_spill/diff)" << endl;
 	} else {
 		string set_DIR = argv[1];
 		if (argc == 6) {
@@ -44,6 +44,10 @@ int main(int argc, char* argv[])
 			else if (tree == "rp") {
 				mTest.generate_rp_trees();
 				mTest.generate_rp_tree_data(set_DIR);
+			}
+			else if (tree == "v2") {
+				mTest.generate_v2_trees();
+				mTest.generate_v2_tree_data(set_DIR);
 			}
 			else if (tree == "pca") {
 				mTest.generate_pca_trees();
@@ -101,8 +105,8 @@ int main(int argc, char* argv[])
 			mTest.generate_kd_spill_trees();
 			mTest.generate_kd_spill_tree_data(set_DIR);
 
-			mTest.generate_kd_v_spill_trees();
-			mTest.generate_kd_v_spill_tree_data(set_DIR);
+			/*mTest.generate_kd_v_spill_trees();
+			mTest.generate_kd_v_spill_tree_data(set_DIR);*/
 		}
 		else {
 			cerr << "Usage: " << endl;
