@@ -34,10 +34,12 @@ def read_partial_file_w_label(dataset, x_index, y_index, l_index, start, end, fi
 
 def label_points(x_index, y_index, x_off, y_off, labels):
 	for i in xrange(len(x_index)):
+		#if i == 1:
+		#	continue
 		plt.annotate(labels[i],
 					 xy=(x_index[i],y_index[i]), 
 					 xytext=(x_off, y_off), 
-					 textcoords='offset points')
+					 textcoords='offset points', fontsize=20)
 					 #arrowprops=dict(arrowstyle="->",
 					 #connectionstyle="arc,rad=10"))
 
@@ -152,14 +154,14 @@ def kd_pca_rkd_rp_v2(dataset, xran, yran, legend_loc):
 	rp8_x, rp8_y = read_file(dataset,3,2,'8rp_tree.dat')
 	rkd8_x, rkd8_y = read_file(dataset,3,2,'8rkd_tree.dat')
 	v28_x, v28_y = read_file(dataset,3,2,'8v2_tree.dat')
-	kd_line, = plt.plot(kd_x, kd_y, 'ro-', label='K-D Tree', lw=3, ms=8)
-	pca_line, = plt.plot(pca_x, pca_y, 'bo-', label='PCA Tree', lw=3, ms=8)
-	rp8_line, = plt.plot(rp8_x, rp8_y, 'co-', label='8 RP Trees', lw=3, ms=8)
-	rkd8_line, = plt.plot(rkd8_x, rkd8_y, 'mo-', label='8 R-K-D Trees', lw=3, ms=8)
-	v28_line, = plt.plot(v28_x, v28_y, 'go-', label='8 $V^2$ Trees', lw=3, ms=8)
+	kd_line, = plt.plot(kd_x, kd_y, 'rD-', label='K-D Tree', lw=10, ms=30)
+	pca_line, = plt.plot(pca_x, pca_y, 'g^-', label='PCA Tree', lw=10, ms=30)
+	rp8_line, = plt.plot(rp8_x, rp8_y, 'cv-', label='8 RP Trees', lw=10, ms=30)
+	rkd8_line, = plt.plot(rkd8_x, rkd8_y, 'ms-', label='8 R-K-D Trees', lw=10, ms=30)
+	v28_line, = plt.plot(v28_x, v28_y, 'bo-', label='8 $V^2$ Trees', lw=10, ms=30)
 	plt.legend(handles=[kd_line, pca_line, rp8_line, rkd8_line, v28_line],loc=legend_loc)
 	figure = plt.gcf()
-	figure.set_size_inches(13, 10)
+	figure.set_size_inches(30, 20)
 	plt.savefig("{0}/graphs/{0}_kd_pca_rkd8_rp8_v28.png".format(dataset))
 
 def kd_spill(dataset, xran, yran, legend_loc):
@@ -170,8 +172,8 @@ def kd_spill(dataset, xran, yran, legend_loc):
 	kd_line, = plt.plot(kd_x, kd_y, 'ro-', label='K-D Tree', lw=3, ms=8)
 	spill05_line, = plt.plot(spill05_x, spill05_y, 'mo-', label='K-D Spill $\\alpha=0.05$', lw=3, ms=8)
 	spill1_line, = plt.plot(spill1_x, spill1_y, 'go-', label='K-D Spill $\\alpha=0.1$', lw=3, ms=8)
-	label_points(spill05_x, spill05_y, -5, -25, spill05_label)
-	label_points(spill1_x, spill1_y, -25, 10, spill1_label)
+	label_points(spill05_x, spill05_y, -25, 10, spill05_label)
+	label_points(spill1_x, spill1_y, 5, -25, spill1_label)
 	plt.legend(handles=[kd_line, spill05_line, spill1_line],loc=legend_loc)
 	label_points(spill1_x[-1:], spill1_y[-1:], -25, 40, ['space blowup'])
 	figure = plt.gcf()
@@ -269,18 +271,45 @@ def rkd_rp_v2(dataset, xran, yran, legend_loc):
 	figure.set_size_inches(13, 10)
 	plt.savefig("{0}/graphs/{0}_rkd_rp_v2.png".format(dataset))
 
-def kd_pca_v2_spill(dataset, xran, yran, legend_loc):
+def kd_v2_spill(dataset, xran, yran, legend_loc):
 	plt.axis([0,xran,0,yran])
 	kd_x, kd_y = read_file(dataset,3,2,'kd_tree.dat')
-	pca_x, pca_y = read_file(dataset, 3,2,'pca_tree.dat')
+	#pca_x, pca_y = read_file(dataset, 3,2,'pca_tree.dat')
+	spill05_x, spill05_y, spill05_label = read_file_label(dataset,4,3,5,'kd_spill_tree_0.05.dat')
+	spill1_x, spill1_y, spill1_label = read_partial_file_w_label(dataset,4,3,5,0,9,'kd_spill_tree_0.1.dat')
+	v2_x, v2_y = read_file(dataset,3,2,'2v2_tree.dat')
+	v24_x, v24_y = read_file(dataset,3,2,'4v2_tree.dat')
+	v28_x, v28_y = read_file(dataset,3,2,'8v2_tree.dat')
+
+	kd_line, = plt.plot(kd_x, kd_y, 'ro-', label='K-D Tree', lw=3, ms=8)
+	#pca_line, = plt.plot(pca_x, pca_y, 'co-', label='PCA Tree', lw=3, ms=8)
+	spill05_line, = plt.plot(spill05_x, spill05_y, 'mo-', label='K-D Spill $\\alpha=0.05$', lw=3, ms=8)
+	spill1_line, = plt.plot(spill1_x, spill1_y, 'go-', label='K-D Spill $\\alpha=0.1$', lw=3, ms=8)
+	v2_line, = plt.plot(v2_x, v2_y, 'bo-', label='2 $V^2$ Trees', lw=2, ms=8)
+	v24_line, = plt.plot(v24_x, v24_y, 'bs-', label='4 $V^2$ Trees', lw=2, ms=8)
+	v28_line, = plt.plot(v28_x, v28_y, 'b^-', label='8 $V^2$ Trees', lw=2, ms=8)
+
+	label_points(spill05_x, spill05_y, -5, -25, spill05_label)
+	label_points(spill1_x, spill1_y, -25, 10, spill1_label)
+	plt.legend(handles=[kd_line, spill05_line, spill1_line, v2_line, v24_line, v28_line],loc=legend_loc, fontsize=20)
+	label_points(spill1_x[-1:], spill1_y[-1:], -20, 40, ['space blowup'])
+
+	figure = plt.gcf()
+	figure.set_size_inches(13, 10)
+	plt.savefig("{0}/graphs/{0}_kd_v2_spill.png".format(dataset))
+
+def pca_v2_spill(dataset, xran, yran, legend_loc):
+	plt.axis([0,xran,0,yran])
+	kd_x, kd_y = read_file(dataset,3,2,'pca_tree.dat')
+	#pca_x, pca_y = read_file(dataset, 3,2,'pca_tree.dat')
 	spill05_x, spill05_y, spill05_label = read_file_label(dataset,4,3,5,'pca_spill_tree_0.05.dat')
 	spill1_x, spill1_y, spill1_label = read_partial_file_w_label(dataset,4,3,5,0,9,'pca_spill_tree_0.1.dat')
 	v2_x, v2_y = read_file(dataset,3,2,'2v2_tree.dat')
 	v24_x, v24_y = read_file(dataset,3,2,'4v2_tree.dat')
 	v28_x, v28_y = read_file(dataset,3,2,'8v2_tree.dat')
 
-	kd_line, = plt.plot(kd_x, kd_y, 'ro-', label='K-D Tree', lw=3, ms=8)
-	pca_line, = plt.plot(pca_x, pca_y, 'co-', label='PCA Tree', lw=3, ms=8)
+	kd_line, = plt.plot(kd_x, kd_y, 'ro-', label='PCA Tree', lw=3, ms=8)
+	#pca_line, = plt.plot(pca_x, pca_y, 'co-', label='PCA Tree', lw=3, ms=8)
 	spill05_line, = plt.plot(spill05_x, spill05_y, 'mo-', label='PCA Spill $\\alpha=0.05$', lw=3, ms=8)
 	spill1_line, = plt.plot(spill1_x, spill1_y, 'go-', label='PCA Spill $\\alpha=0.1$', lw=3, ms=8)
 	v2_line, = plt.plot(v2_x, v2_y, 'bo-', label='2 $V^2$ Trees', lw=2, ms=8)
@@ -289,15 +318,15 @@ def kd_pca_v2_spill(dataset, xran, yran, legend_loc):
 
 	label_points(spill05_x, spill05_y, -5, -25, spill05_label)
 	label_points(spill1_x, spill1_y, -25, 10, spill1_label)
-	plt.legend(handles=[kd_line, pca_line, spill05_line, spill1_line, v2_line, v24_line, v28_line],loc=legend_loc, fontsize=20)
-	label_points(spill1_x[-1:], spill1_y[-1:], -25, 40, ['space blowup'])
+	plt.legend(handles=[kd_line, spill05_line, spill1_line, v2_line, v24_line, v28_line],loc=legend_loc, fontsize=20)
+	label_points(spill1_x[-1:], spill1_y[-1:], 0, 35, ['space blowup'])
 
 	figure = plt.gcf()
 	figure.set_size_inches(13, 10)
-	plt.savefig("{0}/graphs/{0}_kd_pca_v2_spill.png".format(dataset))
+	plt.savefig("{0}/graphs/{0}_pca_v2_spill.png".format(dataset))
 
 def songs():
-	font = {'size' : 18}
+	font = {'size' : 20}
 	plt.rc('font', **font)
 	plt.title('Million Songs True NN Percentage', y=1.02)
 	plt.xlabel('Number of Distance Computations', labelpad = 10)
@@ -316,11 +345,12 @@ def songs():
 	#kd_pca_rkd_rp_v2(data,y_range,1,2)
 	#rp_v2(data,y_range,1,2)
 	#rkd_rp_v2(data,y_range,1,2)
-	#kd_spill(data,y_range,0.2,4)
+	#kd_spill(data,y_range,1,2)
 	#pca_spill(data,y_range,1,4)
 	#spill_vspill(data,y_range,1,4)
 	#rkd_spill_vspill(data,y_range,1,4)
-	#kd_pca_v2_spill(data,y_range,1,2)
+	#kd_v2_spill(data,y_range,1,2)
+	#pca_v2_spill(data,y_range,1,2)
 
 def sift():
 	font = {'size' : 20}
@@ -346,17 +376,18 @@ def sift():
 	#pca_spill(data,y_range,1,4)
 	#spill_vspill(data,y_range,1,4)
 	#rkd_spill_vspill(data,y_range,1,4)
-	#kd_pca_v2_spill(data,y_range,1,4)
+	#kd_v2_spill(data,y_range,1,4)
+	#pca_v2_spill(data,y_range,1,4)
 
 def cifar():
-	font = {'size' : 20}
+	font = {'size' : 60}
 	plt.rc('font', **font)
 	plt.title('CIFAR True NN Percentage', y=1.02)
 	plt.xlabel('Number of Distance Computations', labelpad = 10)
 	plt.ylabel('Fraction Correct NN', labelpad = 10)
 
 	data = "cifar"
-	y_range = 9000
+	y_range = 7000
 	#kd(data,y_range,1,4)
 	#kd_pca(data,y_range,1,4)
 	#kd_pca_rkd(data,y_range,1,4)
@@ -365,14 +396,15 @@ def cifar():
 	#kd_pca_rkd_rp(data,y_range,1,4)
 	#kd_rp2(data,y_range,1,2)
 	#kd_rp8(data,y_range,1,4)
-	#kd_pca_rkd_rp_v2(data,y_range,1,4)
+	kd_pca_rkd_rp_v2(data,y_range,1,4)
 	#rp_v2(data,y_range,1,4)
 	#rkd_rp_v2(data,y_range,1,4)
 	#kd_spill(data,y_range,1,4)
 	#pca_spill(data,y_range,1,4)
 	#spill_vspill(data,y_range,1,4)
 	#rkd_spill_vspill(data,y_range,1,4)
-	#kd_pca_v2_spill(data,y_range,1,4)
+	#kd_v2_spill(data,y_range,1,4)
+	#pca_v2_spill(data,y_range,1,4)
 
 def big5():
 	font = {'size' : 20}
@@ -398,7 +430,8 @@ def big5():
 	#pca_spill(data,y_range,1,4)
 	#spill_vspill(data,y_range,1,4)
 	#rkd_spill_vspill(data,y_range,1,4)
-	#kd_pca_v2_spill(data,y_range,1,2)
+	#kd_v2_spill(data,y_range,1,2)
+	#pca_v2_spill(data,y_range,1,2)
 
 def w2v():
 	font = {'size' : 20}
@@ -420,16 +453,17 @@ def w2v():
 	#kd_pca_rkd_rp_v2(data,y_range,1,2)
 	#rp_v2(data,y_range,1,2)
 	#rkd_rp_v2(data,y_range,1,2)
-	#kd_spill(data,y_range,0.4,4)
-	#pca_spill(data,y_range,0.6,4)
+	#kd_spill(data,y_range,1,2)
+	#pca_spill(data,y_range,1,2)
 	#spill_vspill(data,y_range,1,4)
 	#rkd_spill_vspill(data,y_range,1,4)
-	#kd_pca_v2_spill(data,y_range,1,2)
+	#kd_v2_spill(data,y_range,1,2)
+	#pca_v2_spill(data,y_range,1,2)
 
 def mnist():
 	font = {'size' : 20}
 	plt.rc('font', **font)
-	plt.title('MNIST True NN Percentage', y=1.02)
+	plt.title('MNIST 10 NN Percentage', y=1.02)
 	plt.xlabel('Number of Distance Computations', labelpad = 10)
 	plt.ylabel('Fraction Correct NN', labelpad = 10)
 
@@ -450,7 +484,7 @@ def mnist():
 	#pca_spill(data,y_range,1,4)
 	#spill_vspill(data,y_range,1,4)
 	#rkd_spill_vspill(data,y_range,1,4)
-	#kd_pca_v2_spill(data,y_range,1,4)
+	#kd_v2_spill(data,y_range,1,4)
+	#pca_v2_spill(data,y_range,1,4)
 
-songs()
-
+cifar()

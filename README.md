@@ -1,7 +1,7 @@
 # Fast Exact Nearest Neighbor Search
-Explore different data structures on nearest neighbor search algorithm.
+We explore different data structures used for nearest neighbor search algorithm.
 
-We looked at 7 different data structures, they are k-d trees, randomized k-d trees, RP trees, V^2 trees, PCA trees, spill trees, and virtual spill trees.
+We look at 7 different data structures, they are k-d trees, randomized k-d trees, RP trees, V^2 trees, PCA trees, spill trees, and virtual spill trees.
 
 We did our experiments on 6 different dataset, including MNIST, CIFAR, Word2Vec, BIG5, ANN_SIFT, and the Million Songs.
 

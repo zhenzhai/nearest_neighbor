@@ -83,9 +83,9 @@ def read_file(x_index, y_index, file):
 		y = [float(i[y_index]) for i in file_lines]
 	return x, y
 
-def kd(data_set, color):
-	kd_x, kd_y = read_file(3,2,'../{0}/true_nn_accuracy/kd_tree.dat'.format(data_set))
-	kd_line, = plt.plot(kd_x, kd_y, color+'-', label=data_set, lw=3, ms=8)
+def kd(data_set, color, p):
+	kd_x, kd_y = read_file(3,2,'../{0}/true_nn_accuracy/10kd_tree.dat'.format(data_set))
+	kd_line, = p.plot(kd_x, kd_y, color+'-', label=data_set, lw=10, ms=30)
 	return kd_line
 
 def v2(data_set, color):
@@ -94,24 +94,32 @@ def v2(data_set, color):
 	return v2_line
 
 def plt_all(tree, yran):
-	font = {'size' : 20}
+	font = {'size' : 60}
 	plt.rc('font', **font)
 	if tree == "kd":
 		tree_name = "K-D"
 	elif tree == "v2":
 		tree_name = "Two Vantage Point"
-	plt.title(tree_name+' Tree True NN Percentage', y=1.02)
+	plt.title(tree_name+' Tree 10-NN Percentage', y=1.02)
 	plt.xlabel('Number of Distance Computations', labelpad = 10)
 	plt.ylabel('Fraction Correct NN', labelpad = 10)
 	plt.axis([0,50000,0,yran])
+	f, axs = plt.subplots(1, 2, sharey = 'row')
 
 	if tree == 'kd':
-		mnist = kd('mnist', 'bo')
-		cifar = kd('cifar', 'co')
-		songs = kd('songs', 'go')
-		big5 = kd('big5', 'ro')
-		w2v = kd('w2v', 'mo')
-		sift = kd('sift', 'ko')
+		mnist = kd('mnist', 'bo', axs[0])
+		cifar = kd('cifar', 'c^', axs[0])
+		#songs = kd('songs', 'g+')
+		big5 = kd('big5', 'rs', axs[0])
+		w2v = kd('w2v', 'mp', axs[0])
+		sift = kd('sift', 'kv', axs[0])
+
+		mnist = kd('mnist', 'bo', axs[1])
+		cifar = kd('cifar', 'c^', axs[1])
+		#songs = kd('songs', 'g+')
+		big5 = kd('big5', 'rs', axs[1])
+		w2v = kd('w2v', 'mp', axs[1])
+		sift = kd('sift', 'kv', axs[1])
 	elif tree == 'v2':
 		mnist = v2('mnist', 'bo')
 		cifar = v2('cifar', 'co')
@@ -120,14 +128,18 @@ def plt_all(tree, yran):
 		w2v = v2('w2v', 'mo')
 		sift = v2('sift', 'ko')
 
-	plt.legend(handles=[mnist, cifar, songs, big5, w2v, sift],loc=1)
-	figure = plt.gcf()
-	figure.set_size_inches(13, 10)
-	plt.savefig("all_{0}.png".format(tree))
+	#plt.legend(handles=[mnist, cifar, big5, w2v, sift],loc=1)
+	#plt.legend(bbox_to_anchor=(-2.1, -1.15, 3.1, 1.), loc="upper center",
+    #       ncol=9, mode="expand", borderaxespad=0., fontsize=80)
+	#plt.tight_layout()
+	#fig = plt.gcf()
+	f.tight_layout()
+	f.set_size_inches(30, 20)
+	plt.savefig("all_10{0}.png".format(tree))
 
 
 
 
-plt_diff_value()
-#plt_all("kd", 1)
+#plt_diff_value()
+plt_all("kd", 1)
 #plt_all("v2", 1)
